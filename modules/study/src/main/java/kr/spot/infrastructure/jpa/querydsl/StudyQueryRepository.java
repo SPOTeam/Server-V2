@@ -61,7 +61,7 @@ public class StudyQueryRepository {
         QStudyStats studyStats = QStudyStats.studyStats;
 
         return query
-                .selectDistinct(study)
+                .select(study)
                 .from(study)
                 .join(studyRegion).on(studyRegion.studyId.eq(study.id))
                 .leftJoin(studyCategory).on(studyCategory.studyId.eq(study.id))
@@ -73,6 +73,7 @@ public class StudyQueryRepository {
                         inCategories(categories, studyCategory),
                         ltCursor(cursor, study)
                 )
+                .groupBy(study.id)
                 .orderBy(
                         orderBy(sortBy, study, studyStats),
                         study.id.desc()
