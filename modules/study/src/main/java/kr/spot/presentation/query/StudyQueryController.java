@@ -5,10 +5,15 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.util.List;
 import kr.spot.ApiResponse;
 import kr.spot.annotations.CurrentMember;
 import kr.spot.application.query.GetMyStudyInfoService;
 import kr.spot.code.status.SuccessStatus;
+import kr.spot.domain.enums.Category;
+import kr.spot.domain.enums.FeeCategory;
+import kr.spot.domain.enums.RecruitingStatus;
+import kr.spot.domain.enums.SortBy;
 import kr.spot.domain.enums.StudyMemberStatus;
 import kr.spot.presentation.query.dto.response.GetStudyOverviewResponse;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +65,33 @@ public class StudyQueryController {
 
     // 필터링 O
     // 내 지역 스터디 - 아무 값 안넣으면 이 회원의 전체 관심 지역 스터디로 조회
+    @Operation(summary = "내 지역 스터디 조회",
+            description = "내 지역 스터디를 조회합니다. 지역 코드를 리스트 형태로 입력해주세요."
+                    + "아무 값도 입력하지 않는 경우에는 회원의 전체 관심 지역 스터디로 조회합니다.")
+    @GetMapping("/by-region")
+    public ResponseEntity<ApiResponse<GetStudyOverviewResponse>> getRegionStudies(
+            @CurrentMember @Parameter(hidden = true) Long viewerId,
+            @RequestParam(required = false) RecruitingStatus recruitingStatus,
+            @RequestParam(required = false) FeeCategory feeCategory,
+            @RequestParam(required = false) List<Category> categories,
+            @RequestParam(required = false) SortBy sortBy,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(50) Integer size,
+            @RequestParam(required = false) List<String> regionCodes
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.onSuccess(SuccessStatus._OK, getMyStudyInfoService.getMyPreferredRegionStudies(
+                        viewerId,
+                        recruitingStatus,
+                        feeCategory,
+                        categories,
+                        sortBy,
+                        cursor,
+                        size,
+                        regionCodes
+                )));
+    }
+
     // 내 관심사 스터디 - 아무 값 안넣으면 이 회원의 전체 관심사 스터디로 조회
     // 모집중 스터디
     // 전체 스터디 조회

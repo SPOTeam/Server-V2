@@ -3,6 +3,10 @@ package kr.spot.application.query;
 import java.util.List;
 import kr.spot.application.mapper.StudyDTOMapper;
 import kr.spot.domain.Study;
+import kr.spot.domain.enums.Category;
+import kr.spot.domain.enums.FeeCategory;
+import kr.spot.domain.enums.RecruitingStatus;
+import kr.spot.domain.enums.SortBy;
 import kr.spot.domain.enums.StudyMemberStatus;
 import kr.spot.infrastructure.jpa.querydsl.StudyQueryRepository;
 import kr.spot.presentation.query.dto.response.GetStudyOverviewResponse;
@@ -18,15 +22,50 @@ public class GetMyStudyInfoService {
 
     private final StudyQueryRepository studyQueryRepository;
 
-    public GetStudyOverviewResponse getMyStudyOverview(Long viewerId, StudyMemberStatus status, Long cursor,
-                                                       int size) {
+    public GetStudyOverviewResponse getMyStudyOverview(
+            Long viewerId,
+            StudyMemberStatus status,
+            Long cursor,
+            int size
+    ) {
         final int pageSize = Math.min(size, MAX_PAGE_SIZE);
-        List<Study> rows = studyQueryRepository.findMyStudies(viewerId, status, cursor, pageSize + 1);
+        List<Study> rows = studyQueryRepository.findMyStudies(
+                viewerId,
+                status,
+                cursor,
+                pageSize + 1
+        );
+        return toCursorPage(rows, pageSize);
+    }
+
+    public GetStudyOverviewResponse getMyPreferredRegionStudies(
+            Long viewerId,
+            RecruitingStatus recruitingStatus,
+            FeeCategory feeCategory,
+            List<Category> categories,
+            SortBy sortBy,
+            Long cursor,
+            Integer size,
+            List<String> regionCodes
+    ) {
+        final int pageSize = Math.min(size, MAX_PAGE_SIZE);
+        List<Study> rows = studyQueryRepository.findMyPreferredRegionStudies(
+                viewerId,
+                recruitingStatus,
+                feeCategory,
+                categories,
+                sortBy,
+                cursor,
+                pageSize + 1,
+                regionCodes
+        );
+        return toCursorPage(rows, pageSize);
+    }
+
+    private GetStudyOverviewResponse toCursorPage(List<Study> rows, int pageSize) {
         boolean hasNext = rows.size() > pageSize;
-        if (hasNext) {
-            rows = rows.subList(0, pageSize);
-        }
-        Long nextCursor = hasNext ? rows.getLast().getId() : null;
-        return StudyDTOMapper.toDTO(rows, hasNext, nextCursor);
+        List<Study> pageContent = hasNext ? rows.subList(0, pageSize) : rows;
+        Long nextCursor = hasNext ? pageContent.getLast().getId() : null;
+        return StudyDTOMapper.toDTO(pageContent, hasNext, nextCursor);
     }
 }
