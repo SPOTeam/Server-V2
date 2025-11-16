@@ -37,7 +37,12 @@ public class GetMyStudyInfoService {
                 cursor,
                 pageSize + 1
         );
-        return toCursorPage(rows, pageSize);
+
+        long totalElements = studyQueryRepository.countMyStudies(
+                viewerId,
+                status
+        );
+        return toCursorPage(rows, pageSize, totalElements);
     }
 
     public GetStudyOverviewResponse getMyPreferredRegionStudies(
@@ -62,14 +67,21 @@ public class GetMyStudyInfoService {
                 pageSize + 1,
                 filterPreferredRegionCodes(regionCodes, preferredRegionCodes)
         );
-        return toCursorPage(rows, pageSize);
+
+        long totalElements = studyQueryRepository.countMyPreferredRegionStudies(
+                recruitingStatus,
+                feeCategory,
+                categories,
+                filterPreferredRegionCodes(regionCodes, preferredRegionCodes)
+        );
+        return toCursorPage(rows, pageSize, totalElements);
     }
 
-    private GetStudyOverviewResponse toCursorPage(List<Study> rows, int pageSize) {
+    private GetStudyOverviewResponse toCursorPage(List<Study> rows, int pageSize, Long totalElements) {
         boolean hasNext = rows.size() > pageSize;
         List<Study> pageContent = hasNext ? rows.subList(0, pageSize) : rows;
         Long nextCursor = hasNext ? pageContent.getLast().getId() : null;
-        return StudyDTOMapper.toDTO(pageContent, hasNext, nextCursor);
+        return StudyDTOMapper.toDTO(pageContent, hasNext, nextCursor, totalElements);
     }
 
     private List<String> filterPreferredRegionCodes(List<String> regionCodes, List<String> preferredRegionCodes) {

@@ -46,6 +46,24 @@ public class StudyQueryRepository {
                 .fetch();
     }
 
+    public long countMyStudies(
+            Long viewerId,
+            StudyMemberStatus status
+    ) {
+        QStudy study = QStudy.study;
+        QStudyMember studyMember = QStudyMember.studyMember;
+
+        return query
+                .select(study.id.countDistinct())
+                .from(studyMember)
+                .join(study).on(study.id.eq(studyMember.studyId))
+                .where(
+                        studyMember.memberId.eq(viewerId),
+                        studyMember.studyMemberStatus.eq(status)
+                )
+                .fetchOne();
+    }
+
     public List<Study> findMyPreferredRegionStudies(
             RecruitingStatus recruitingStatus,
             FeeCategory feeCategory,
@@ -80,6 +98,30 @@ public class StudyQueryRepository {
                 )
                 .limit(limit)
                 .fetch();
+    }
+
+    public long countMyPreferredRegionStudies(
+            RecruitingStatus recruitingStatus,
+            FeeCategory feeCategory,
+            List<Category> categories,
+            List<String> regionCodes
+    ) {
+        QStudy study = QStudy.study;
+        QStudyRegion studyRegion = QStudyRegion.studyRegion;
+        QStudyCategory studyCategory = QStudyCategory.studyCategory;
+
+        return query
+                .select(study.id.countDistinct())
+                .from(study)
+                .join(studyRegion).on(studyRegion.studyId.eq(study.id))
+                .leftJoin(studyCategory).on(studyCategory.studyId.eq(study.id))
+                .where(
+                        studyRegion.regionCode.in(regionCodes),
+                        eqRecruitingStatus(recruitingStatus, study),
+                        eqFeeCategory(feeCategory, study),
+                        inCategories(categories, studyCategory)
+                )
+                .fetchOne();
     }
 
     private BooleanExpression eqRecruitingStatus(RecruitingStatus recruitingStatus, QStudy study) {
