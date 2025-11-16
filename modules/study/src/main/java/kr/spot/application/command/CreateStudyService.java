@@ -4,11 +4,13 @@ import kr.spot.IdGenerator;
 import kr.spot.domain.Study;
 import kr.spot.domain.associations.StudyCategory;
 import kr.spot.domain.associations.StudyRegion;
+import kr.spot.domain.associations.StudyStats;
 import kr.spot.domain.associations.StudyStyle;
 import kr.spot.domain.vo.Fee;
 import kr.spot.infrastructure.jpa.StudyRepository;
 import kr.spot.infrastructure.jpa.associations.StudyCategoryRepository;
 import kr.spot.infrastructure.jpa.associations.StudyRegionRepository;
+import kr.spot.infrastructure.jpa.associations.StudyStatsRepository;
 import kr.spot.infrastructure.jpa.associations.StudyStyleRepository;
 import kr.spot.ports.FileStoragePort;
 import kr.spot.ports.dto.UploadResult;
@@ -31,14 +33,18 @@ public class CreateStudyService {
     private final StudyStyleRepository studyStyleRepository;
     private final StudyRegionRepository studyRegionRepository;
     private final StudyCategoryRepository studyCategoryRepository;
+    private final StudyStatsRepository studyStatsRepository;
 
     public void createStudy(CreateStudyRequest request, Long leaderId, MultipartFile imageFile) {
         long studyId = idGenerator.nextId();
         String imageUrl = uploadStudyImage(imageFile);
         Study study = Study.of(studyId, leaderId, request.name(), request.maxMembers(),
                 Fee.of(request.hasFee(), request.amount()), imageUrl, request.description());
+        StudyStats studyStats = StudyStats.of(studyId);
 
         studyRepository.save(study);
+        studyStatsRepository.save(studyStats);
+
         saveAllStudyCategories(request, studyId);
         saveAllStudyStyles(request, studyId);
         saveAllStudyRegions(request, studyId);
