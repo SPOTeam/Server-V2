@@ -11,11 +11,13 @@ import static org.mockito.Mockito.verify;
 import java.util.Collections;
 import java.util.List;
 import kr.spot.domain.Study;
+import kr.spot.domain.enums.Category;
 import kr.spot.domain.enums.FeeCategory;
 import kr.spot.domain.enums.RecruitingStatus;
 import kr.spot.domain.enums.SortBy;
 import kr.spot.domain.enums.StudyMemberStatus;
 import kr.spot.infrastructure.jpa.querydsl.StudyQueryRepository;
+import kr.spot.ports.GetPreferredCategoryPort;
 import kr.spot.ports.GetPreferredRegionPort;
 import kr.spot.presentation.query.dto.response.GetStudyOverviewResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -32,10 +34,10 @@ class GetMyStudyInfoServiceTest {
 
     @InjectMocks
     private GetMyStudyInfoService getMyStudyInfoService;
-
     @Mock
     private GetPreferredRegionPort getPreferredRegionPort;
-
+    @Mock
+    private GetPreferredCategoryPort getPreferredCategoryPort;
     @Mock
     private StudyQueryRepository studyQueryRepository;
 
@@ -219,6 +221,71 @@ class GetMyStudyInfoServiceTest {
             verify(getPreferredRegionPort).get(viewerId);
             verify(studyQueryRepository).findMyPreferredRegionStudies(
                     any(), any(), any(), any(), any(), eq(pageSize + 1), eq(Collections.emptyList())
+            );
+            assertThat(response.content()).isEmpty();
+            assertThat(response.hasNext()).isFalse();
+            assertThat(response.nextCursor()).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("내 관심 카테고리 스터디 목록 조회 (getMyPreferredCategoryStudies)")
+    class GetMyPreferredCategoryStudies {
+        private final Long viewerId = 1L;
+        private final int pageSize = 10;
+
+        @Test
+        @DisplayName("선호 카테고리가 있고 필터가 없으면, 모든 선호 카테고리의 스터디를 조회한다")
+        void should_find_studies_in_all_preferred_regions_when_no_filter() {
+            // given
+            List<String> preferredCategoryName = List.of("SELF_STUDY", "CAREER");
+            List<Category> preferredCategory = List.of(Category.SELF_STUDY, Category.CAREER);
+            List<Study> studies = createStudies(pageSize + 1);
+            Long expectedNextCursor = studies.get(pageSize - 1).getId();
+
+            given(getPreferredCategoryPort.get(viewerId)).willReturn(preferredCategoryName);
+            given(studyQueryRepository.findMyPreferredCategoryStudies(any(), any(), any(), any(), anyInt(),
+                    eq(preferredCategory)))
+                    .willReturn(studies);
+
+            // when
+            GetStudyOverviewResponse response = getMyStudyInfoService.getMyPreferredCategoryStudies(
+                    viewerId, null, RecruitingStatus.RECRUITING, FeeCategory.ABOVE_50K,
+                    SortBy.HITS, null, pageSize
+            );
+
+            // then
+            verify(getPreferredCategoryPort).get(viewerId);
+            verify(studyQueryRepository).findMyPreferredCategoryStudies(
+                    eq(RecruitingStatus.RECRUITING), eq(FeeCategory.ABOVE_50K), eq(SortBy.HITS),
+                    eq(null), eq(pageSize + 1),
+                    eq(List.of(Category.SELF_STUDY, Category.CAREER))
+            );
+            assertThat(response.content()).hasSize(pageSize);
+            assertThat(response.hasNext()).isTrue();
+            assertThat(response.nextCursor()).isEqualTo(expectedNextCursor);
+        }
+
+
+        @Test
+        @DisplayName("선호 카테고리가 없으면, 빈 결과를 반환한다")
+        void should_return_empty_when_no_preferred_regions() {
+            // given
+            given(getPreferredCategoryPort.get(viewerId)).willReturn(Collections.emptyList());
+            given(studyQueryRepository.findMyPreferredCategoryStudies(any(), any(), any(), any(), anyInt(),
+                    eq(Collections.emptyList())))
+                    .willReturn(Collections.emptyList());
+
+            // when
+            GetStudyOverviewResponse response = getMyStudyInfoService.getMyPreferredCategoryStudies(
+                    viewerId, null, RecruitingStatus.RECRUITING, FeeCategory.ABOVE_50K,
+                    SortBy.HITS, null, pageSize
+            );
+
+            // then
+            verify(getPreferredCategoryPort).get(viewerId);
+            verify(studyQueryRepository).findMyPreferredCategoryStudies(
+                    any(), any(), any(), any(), eq(pageSize + 1), eq(Collections.emptyList())
             );
             assertThat(response.content()).isEmpty();
             assertThat(response.hasNext()).isFalse();
