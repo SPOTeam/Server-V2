@@ -73,7 +73,7 @@ public class GetMyStudyInfoService {
     }
 
     private List<String> filterPreferredRegionCodes(List<String> regionCodes, List<String> preferredRegionCodes) {
-        if (regionCodes.isEmpty()) {
+        if (regionCodes == null || regionCodes.isEmpty()) {
             return preferredRegionCodes;
         }
         return preferredRegionCodes.stream()
