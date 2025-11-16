@@ -1,11 +1,15 @@
 package kr.spot.infrastructure.jpa.querydsl;
 
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import kr.spot.domain.QStudy;
 import kr.spot.domain.Study;
+import kr.spot.domain.associations.QStudyCategory;
 import kr.spot.domain.associations.QStudyMember;
+import kr.spot.domain.associations.QStudyRegion;
+import kr.spot.domain.associations.QStudyStats;
 import kr.spot.domain.enums.Category;
 import kr.spot.domain.enums.FeeCategory;
 import kr.spot.domain.enums.RecruitingStatus;
@@ -20,7 +24,11 @@ public class StudyQueryRepository {
 
     private final JPAQueryFactory query;
 
-    public List<Study> findMyStudies(Long viewerId, StudyMemberStatus status, Long cursor, int limit) {
+    public List<Study> findMyStudies(
+            Long viewerId,
+            StudyMemberStatus status,
+            Long cursor,
+            int limit) {
         QStudy study = QStudy.study;
         QStudyMember studyMember = QStudyMember.studyMember;
 
@@ -38,14 +46,69 @@ public class StudyQueryRepository {
                 .fetch();
     }
 
-    public List<Study> findMyPreferredRegionStudies(Long viewerId, RecruitingStatus recruitingStatus,
-                                                    FeeCategory feeCategory,
-                                                    List<Category> categories, SortBy sortBy, Long cursor,
-                                                    Integer size, List<String> regionCodes) {
-        return null;
+    public List<Study> findMyPreferredRegionStudies(
+            RecruitingStatus recruitingStatus,
+            FeeCategory feeCategory,
+            List<Category> categories,
+            SortBy sortBy,
+            Long cursor,
+            int limit,
+            List<String> regionCodes
+    ) {
+        QStudy study = QStudy.study;
+        QStudyRegion studyRegion = QStudyRegion.studyRegion;
+        QStudyCategory studyCategory = QStudyCategory.studyCategory;
+        QStudyStats studyStats = QStudyStats.studyStats;
+
+        return query
+                .selectDistinct(study)
+                .from(study)
+                .join(studyRegion).on(studyRegion.studyId.eq(study.id))
+                .leftJoin(studyCategory).on(studyCategory.studyId.eq(study.id))
+                .leftJoin(studyStats).on(studyStats.studyId.eq(study.id))
+                .where(
+                        studyRegion.regionCode.in(regionCodes),
+                        eqRecruitingStatus(recruitingStatus, study),
+                        eqFeeCategory(feeCategory, study),
+                        inCategories(categories, studyCategory),
+                        ltCursor(cursor, study)
+                )
+                .orderBy(
+                        orderBy(sortBy, study, studyStats),
+                        study.id.desc()
+                )
+                .limit(limit)
+                .fetch();
+    }
+
+    private BooleanExpression eqRecruitingStatus(RecruitingStatus recruitingStatus, QStudy study) {
+        return recruitingStatus == null ? null : study.recruitingStatus.eq(recruitingStatus);
+    }
+
+    private BooleanExpression eqFeeCategory(FeeCategory feeCategory, QStudy study) {
+        return feeCategory == null ? null : study.fee.feeCategory.eq(feeCategory);
+    }
+
+    private BooleanExpression inCategories(List<Category> categories, QStudyCategory studyCategory) {
+        if (categories == null || categories.isEmpty()) {
+            return null;
+        }
+        return studyCategory.category.in(categories);
     }
 
     private BooleanExpression ltCursor(Long cursor, QStudy study) {
         return cursor == null ? null : study.id.lt(cursor);
+    }
+
+    private OrderSpecifier<?> orderBy(SortBy sortBy, QStudy study, QStudyStats studyStats) {
+        if (sortBy == null) {
+            return study.id.desc();
+        }
+
+        return switch (sortBy) {
+            case RECENT -> study.id.desc();
+            case LIKES -> studyStats.likeCount.desc();
+            case HITS -> studyStats.viewCount.desc();
+        };
     }
 }

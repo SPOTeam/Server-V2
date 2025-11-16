@@ -54,7 +54,6 @@ public class GetMyStudyInfoService {
         List<String> preferredRegionCodes = getPreferredRegionPort.get(viewerId);
 
         List<Study> rows = studyQueryRepository.findMyPreferredRegionStudies(
-                viewerId,
                 recruitingStatus,
                 feeCategory,
                 categories,

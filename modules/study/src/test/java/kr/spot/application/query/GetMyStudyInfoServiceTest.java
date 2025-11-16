@@ -11,6 +11,7 @@ import kr.spot.domain.Study;
 import kr.spot.domain.enums.StudyMemberStatus;
 import kr.spot.domain.vo.Fee;
 import kr.spot.infrastructure.jpa.querydsl.StudyQueryRepository;
+import kr.spot.ports.GetPreferredRegionPort;
 import kr.spot.presentation.query.dto.response.GetStudyOverviewResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,13 +24,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class GetMyStudyInfoServiceTest {
 
     @Mock
+    private GetPreferredRegionPort getPreferredRegionPort;
+
+    @Mock
     private StudyQueryRepository studyQueryRepository;
 
     private GetMyStudyInfoService getMyStudyInfoService;
 
     @BeforeEach
     void setUp() {
-        getMyStudyInfoService = new GetMyStudyInfoService(studyQueryRepository);
+        getMyStudyInfoService = new GetMyStudyInfoService(getPreferredRegionPort, studyQueryRepository);
     }
 
     private List<Study> createMockStudies(int count) {
