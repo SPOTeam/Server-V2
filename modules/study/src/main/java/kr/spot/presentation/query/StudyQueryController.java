@@ -34,12 +34,12 @@ public class StudyQueryController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<GetStudyOverviewResponse>> getMyStudies(
             @CurrentMember @Parameter(hidden = true) Long viewerId,
-            @RequestParam(required = false, defaultValue = "OWNER") StudyMemberStatus status,
+            @RequestParam(required = false, defaultValue = "OWNER") String status,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") @Min(1) @Max(50) Integer size
     ) {
         return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,
-                getMyStudyInfoService.getMyStudyOverview(viewerId, status, cursor, size)));
+                getMyStudyInfoService.getMyStudyOverview(viewerId, StudyMemberStatus.convert(status), cursor, size)));
     }
 
     @Operation(summary = "지금 가장 인기있는 스터디 조회",
