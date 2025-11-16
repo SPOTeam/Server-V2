@@ -1,5 +1,8 @@
 package kr.spot.domain.enums;
 
+import kr.spot.code.status.ErrorStatus;
+import kr.spot.exception.GeneralException;
+
 public enum Category {
     LANGUAGE,            // 어학
     CERTIFICATION,       // 자격증
@@ -20,6 +23,15 @@ public enum Category {
             }
         }
         return false;
+    }
+
+    public static Category fromString(String categoryName) {
+        for (Category c : Category.values()) {
+            if (c.name().equals(categoryName)) {
+                return c;
+            }
+        }
+        throw new GeneralException(ErrorStatus._NO_SUCH_CATEGORY);
     }
 
 }

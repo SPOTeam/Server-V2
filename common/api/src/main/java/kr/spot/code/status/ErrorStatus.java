@@ -37,6 +37,7 @@ public enum ErrorStatus implements BaseErrorCode {
     _MAX_MEMBERS_MUST_BE_POSITIVE(400, "STUDY4000", "최대 인원 수는 양수여야 합니다."),
     _INVALID_FEE_AMOUNT(400, "STUDY4000", "유효하지 않은 스터디 비용입니다."),
     _NO_SUCH_CATEGORY(400, "STUDY4001", "존재하지 않는 카테고리입니다."),
+    _NO_SUCH_STUDY_MEMBER_STATUS(400, "STUDY4002", "존재하지 않는 스터디 멤버 상태입니다."),
 
     // 게시글 관련
     _POST_NOT_FOUND(404, "POST404", "게시글을 찾을 수 없습니다."),

@@ -5,15 +5,17 @@ import java.util.List;
 public record GetStudyOverviewResponse(
         List<StudyOverview> content,
         boolean hasNext,
-        Long nextCursor
+        Long nextCursor,
+        Long totalElements
 ) {
 
     public static GetStudyOverviewResponse of(
             List<StudyOverview> content,
             boolean hasNext,
-            Long nextCursor
+            Long nextCursor,
+            Long totalElements
     ) {
-        return new GetStudyOverviewResponse(content, hasNext, nextCursor);
+        return new GetStudyOverviewResponse(content, hasNext, nextCursor, totalElements);
     }
 
     public record StudyOverview(

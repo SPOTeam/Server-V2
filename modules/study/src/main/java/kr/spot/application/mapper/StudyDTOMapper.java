@@ -7,7 +7,8 @@ import kr.spot.presentation.query.dto.response.GetStudyOverviewResponse.StudyOve
 
 public class StudyDTOMapper {
 
-    public static GetStudyOverviewResponse toDTO(List<Study> studies, boolean hasNext, Long nextCursor) {
+    public static GetStudyOverviewResponse toDTO(List<Study> studies, boolean hasNext, Long nextCursor,
+                                                 Long totalElements) {
         List<StudyOverview> list = studies.stream().map(
                 study -> StudyOverview.of(
                         study.getId(),
@@ -22,7 +23,7 @@ public class StudyDTOMapper {
                 )
         ).toList();
 
-        return GetStudyOverviewResponse.of(list, hasNext, nextCursor);
+        return GetStudyOverviewResponse.of(list, hasNext, nextCursor, totalElements);
     }
 
 }

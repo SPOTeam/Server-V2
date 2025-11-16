@@ -15,6 +15,7 @@ import kr.spot.domain.enums.Style;
 import kr.spot.infrastructure.jpa.StudyRepository;
 import kr.spot.infrastructure.jpa.associations.StudyCategoryRepository;
 import kr.spot.infrastructure.jpa.associations.StudyRegionRepository;
+import kr.spot.infrastructure.jpa.associations.StudyStatsRepository;
 import kr.spot.infrastructure.jpa.associations.StudyStyleRepository;
 import kr.spot.ports.FileStoragePort;
 import kr.spot.ports.dto.UploadResult;
@@ -51,6 +52,9 @@ class CreateStudyServiceTest {
     @Mock
     StudyCategoryRepository studyCategoryRepository;
 
+    @Mock
+    StudyStatsRepository studyStatsRepository;
+
     @Captor
     ArgumentCaptor<Study> studyCaptor;
 
@@ -59,7 +63,7 @@ class CreateStudyServiceTest {
     @BeforeEach
     void setUp() {
         createStudyService = new CreateStudyService(idGenerator, fileStoragePort, studyRepository,
-                studyStyleRepository, studyRegionRepository, studyCategoryRepository);
+                studyStyleRepository, studyRegionRepository, studyCategoryRepository, studyStatsRepository);
     }
 
     @Test
