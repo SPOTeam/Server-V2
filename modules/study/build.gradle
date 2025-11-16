@@ -11,6 +11,7 @@ dependencies {
 
     implementation project(":modules:shared")
     implementation project(":modules:auth-api")
+    implementation project(":modules:member-api")
     implementation project(":modules:study-api")
 
     // Spring Boot Starters

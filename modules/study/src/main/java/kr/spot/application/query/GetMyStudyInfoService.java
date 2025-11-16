@@ -9,6 +9,7 @@ import kr.spot.domain.enums.RecruitingStatus;
 import kr.spot.domain.enums.SortBy;
 import kr.spot.domain.enums.StudyMemberStatus;
 import kr.spot.infrastructure.jpa.querydsl.StudyQueryRepository;
+import kr.spot.ports.GetPreferredRegionPort;
 import kr.spot.presentation.query.dto.response.GetStudyOverviewResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class GetMyStudyInfoService {
     public static final int MAX_PAGE_SIZE = 50;
 
+    private final GetPreferredRegionPort getPreferredRegionPort;
     private final StudyQueryRepository studyQueryRepository;
 
     public GetStudyOverviewResponse getMyStudyOverview(
@@ -49,6 +51,8 @@ public class GetMyStudyInfoService {
             List<String> regionCodes
     ) {
         final int pageSize = Math.min(size, MAX_PAGE_SIZE);
+        List<String> preferredRegionCodes = getPreferredRegionPort.get(viewerId);
+
         List<Study> rows = studyQueryRepository.findMyPreferredRegionStudies(
                 viewerId,
                 recruitingStatus,
@@ -57,7 +61,7 @@ public class GetMyStudyInfoService {
                 sortBy,
                 cursor,
                 pageSize + 1,
-                regionCodes
+                filterPreferredRegionCodes(regionCodes, preferredRegionCodes)
         );
         return toCursorPage(rows, pageSize);
     }
@@ -67,5 +71,14 @@ public class GetMyStudyInfoService {
         List<Study> pageContent = hasNext ? rows.subList(0, pageSize) : rows;
         Long nextCursor = hasNext ? pageContent.getLast().getId() : null;
         return StudyDTOMapper.toDTO(pageContent, hasNext, nextCursor);
+    }
+
+    private List<String> filterPreferredRegionCodes(List<String> regionCodes, List<String> preferredRegionCodes) {
+        if (regionCodes.isEmpty()) {
+            return preferredRegionCodes;
+        }
+        return preferredRegionCodes.stream()
+                .filter(regionCodes::contains)
+                .toList();
     }
 }
