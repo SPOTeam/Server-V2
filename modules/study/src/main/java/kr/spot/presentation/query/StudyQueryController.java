@@ -91,7 +91,30 @@ public class StudyQueryController {
                 )));
     }
 
-    // 내 관심사 스터디 - 아무 값 안넣으면 이 회원의 전체 관심사 스터디로 조회
+    @Operation(summary = "내 관심사 스터디 조회",
+            description = "내 관심사 스터디를 조회합니다. 관심 카테고리를 입력해주세요."
+                    + "아무 값도 입력하지 않는 경우에는 회원의 전체 관심 카테고리 스터디로 조회합니다.")
+    @GetMapping("/by-category")
+    public ResponseEntity<ApiResponse<GetStudyOverviewResponse>> getMyPreferredCategoriesStudies(
+            @CurrentMember @Parameter(hidden = true) Long viewerId,
+            @RequestParam(required = false) Category category,
+            @RequestParam(required = false) RecruitingStatus recruitingStatus,
+            @RequestParam(required = false) FeeCategory feeCategory,
+            @RequestParam(required = false) SortBy sortBy,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(50) Integer size
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.onSuccess(SuccessStatus._OK, getMyStudyInfoService.getMyPreferredCategoryStudies(
+                        viewerId,
+                        category,
+                        recruitingStatus,
+                        feeCategory,
+                        sortBy,
+                        cursor,
+                        size
+                )));
+    }
     // 모집중 스터디
     // 전체 스터디 조회
 }

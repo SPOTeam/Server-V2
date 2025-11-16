@@ -124,6 +124,58 @@ public class StudyQueryRepository {
                 .fetchOne();
     }
 
+    public List<Study> findMyPreferredCategoryStudies(
+            RecruitingStatus recruitingStatus,
+            FeeCategory feeCategory,
+            SortBy sortBy,
+            Long cursor,
+            int limit,
+            List<Category> categories
+    ) {
+        QStudy study = QStudy.study;
+        QStudyCategory studyCategory = QStudyCategory.studyCategory;
+        QStudyStats studyStats = QStudyStats.studyStats;
+
+        return query
+                .select(study)
+                .from(study)
+                .leftJoin(studyCategory).on(studyCategory.studyId.eq(study.id))
+                .leftJoin(studyStats).on(studyStats.studyId.eq(study.id))
+                .where(
+                        eqRecruitingStatus(recruitingStatus, study),
+                        eqFeeCategory(feeCategory, study),
+                        inCategories(categories, studyCategory),
+                        ltCursor(cursor, study)
+                )
+                .groupBy(study.id)
+                .orderBy(
+                        orderBy(sortBy, study, studyStats),
+                        study.id.desc()
+                )
+                .limit(limit)
+                .fetch();
+    }
+
+    public long countMyPreferredCategoryStudies(
+            RecruitingStatus recruitingStatus,
+            FeeCategory feeCategory,
+            List<Category> categories
+    ) {
+        QStudy study = QStudy.study;
+        QStudyCategory studyCategory = QStudyCategory.studyCategory;
+
+        return query
+                .select(study.id.countDistinct())
+                .from(study)
+                .leftJoin(studyCategory).on(studyCategory.studyId.eq(study.id))
+                .where(
+                        eqRecruitingStatus(recruitingStatus, study),
+                        eqFeeCategory(feeCategory, study),
+                        inCategories(categories, studyCategory)
+                )
+                .fetchOne();
+    }
+
     private BooleanExpression eqRecruitingStatus(RecruitingStatus recruitingStatus, QStudy study) {
         return recruitingStatus == null ? null : study.recruitingStatus.eq(recruitingStatus);
     }
