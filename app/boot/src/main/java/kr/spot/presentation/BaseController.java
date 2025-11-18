@@ -24,6 +24,14 @@ public class BaseController {
         return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, "OK"));
     }
 
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
+    })
+    @GetMapping("/exception-health-check")
+    public ResponseEntity<ApiResponse<String>> exceptionHealthCheck() {
+        throw new IllegalStateException("Health Check Exception");
+    }
+
     @GetMapping(value = "/current-env", produces = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "[배포 관련] 무중단 배포를 위한 현재 환경 확인", description = """
             ## [배포 관련] 현재 서버의 환경을 확인합니다.

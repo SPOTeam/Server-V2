@@ -1,5 +1,6 @@
 package kr.spot.exception;
 
+import io.sentry.Sentry;
 import kr.spot.ApiResponse;
 import kr.spot.code.status.ErrorStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ public class ExceptionAdvice {
     @ExceptionHandler(Exception.class)
     public ApiResponse<ErrorStatus> exceptionHandle(Exception exception) {
         log.error("Exception has occurred:  {}", exception);
+        Sentry.captureException(exception);
         return new ApiResponse<>(ErrorStatus._INTERNAL_SERVER_ERROR);
     }
 }
