@@ -20,6 +20,7 @@ public abstract class SecurityWhitelist {
             "/webjars",
             "/api/oauth",
             "/api/auth",
+            "/actuator/prometheus"
     };
 
     // 정규식으로 매칭되는 경로들
