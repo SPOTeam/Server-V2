@@ -18,7 +18,10 @@ jobs:
           java-version: '21'
           distribution: 'adopt'
 
-
+      - name: Set Sentry auth token
+        run: |
+          echo "export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}" >> $GITHUB_ENV
+          
       - name: Make application.yml
         run: |
           mkdir -p app/boot/src/main/resources
