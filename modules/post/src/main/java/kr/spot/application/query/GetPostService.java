@@ -16,6 +16,7 @@ import kr.spot.domain.Comment;
 import kr.spot.domain.Post;
 import kr.spot.domain.PostStats;
 import kr.spot.domain.enums.PostType;
+import kr.spot.domain.enums.SortBy;
 import kr.spot.infrastructure.jpa.CommentRepository;
 import kr.spot.infrastructure.jpa.PostRepository;
 import kr.spot.infrastructure.jpa.PostStatsRepository;
@@ -106,8 +107,8 @@ public class GetPostService {
      *
      * @return 인기 게시글 3개의 개요 정보
      */
-    public PostOverviewResponse getHotPosts() {
-        List<Long> top3 = hotPostStore.getTop3();
+    public PostOverviewResponse getHotPosts(SortBy sortBy) {
+        List<Long> top3 = hotPostStore.getTop3(sortBy);
         if (top3.isEmpty()) {
             return PostOverviewResponse.of(List.of());
         }

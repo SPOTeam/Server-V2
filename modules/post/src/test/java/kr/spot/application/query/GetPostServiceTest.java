@@ -25,6 +25,7 @@ import kr.spot.common.PostFixture;
 import kr.spot.domain.Post;
 import kr.spot.domain.PostStats;
 import kr.spot.domain.enums.PostType;
+import kr.spot.domain.enums.SortBy;
 import kr.spot.exception.GeneralException;
 import kr.spot.infrastructure.jpa.CommentRepository;
 import kr.spot.infrastructure.jpa.PostRepository;
@@ -42,6 +43,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class GetPostServiceTest {
+
+    private static final String KEY = "popular:top3:total";
 
     @Mock
     PostViewCounter postViewCounter;
@@ -322,7 +325,7 @@ class GetPostServiceTest {
     void will_return_hot_posts() {
         // given
         List<Long> hotPostIds = List.of(3L, 1L, 2L);
-        when(hotPostStore.getTop3()).thenReturn(hotPostIds);
+        when(hotPostStore.getTop3(SortBy.RECENT)).thenReturn(hotPostIds);
 
         List<Post> posts = List.of(
                 PostFixture.post(1L),
@@ -343,7 +346,7 @@ class GetPostServiceTest {
         ReflectionTestUtils.setField(stats.get(3L), "likeCount", 30L);
 
         // when
-        PostOverviewResponse result = getPostService.getHotPosts();
+        PostOverviewResponse result = getPostService.getHotPosts(SortBy.RECENT);
 
         // then
         assertThat(result).isNotNull();
@@ -355,7 +358,7 @@ class GetPostServiceTest {
                 .containsExactlyInAnyOrder(1L, 2L, 3L);
 
         // Verify interactions
-        verify(hotPostStore).getTop3();
+        verify(hotPostStore).getTop3(SortBy.RECENT);
         verify(postRepository).getPostsByIds(hotPostIds);
         verify(postQueryRepository).findStatsByPostIds(hotPostIds);
     }
@@ -364,15 +367,15 @@ class GetPostServiceTest {
     @DisplayName("인기 게시글이 없으면 null을 반환한다")
     void will_return_null_if_no_hot_posts() {
         // given
-        when(hotPostStore.getTop3()).thenReturn(Collections.emptyList());
+        when(hotPostStore.getTop3(SortBy.RECENT)).thenReturn(Collections.emptyList());
 
         // when
-        PostOverviewResponse result = getPostService.getHotPosts();
+        PostOverviewResponse result = getPostService.getHotPosts(SortBy.RECENT);
 
         // then
         assertThat(result).isNotNull();
         assertThat(result.hotPosts()).isEmpty();
-        verify(hotPostStore).getTop3();
+        verify(hotPostStore).getTop3(SortBy.RECENT);
         verify(postRepository, never()).getPostsByIds(any());
         verify(postQueryRepository, never()).findStatsByPostIds(any());
     }
