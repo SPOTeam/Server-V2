@@ -4,6 +4,7 @@ import java.util.List;
 import kr.spot.domain.Comment;
 import kr.spot.domain.Post;
 import kr.spot.domain.PostStats;
+import kr.spot.domain.association.PostImage;
 import kr.spot.presentation.query.dto.response.PostDetailResponse;
 import kr.spot.presentation.query.dto.response.PostListResponse.PostList;
 import kr.spot.presentation.query.dto.response.PostOverviewResponse.PostOverview;
@@ -45,11 +46,13 @@ public final class PostResponseMapper {
     }
 
     /* -------- 상세용 -------- */
-    public static PostDetailResponse toPostDetail(Post post, PostStats st, long displayView, List<Comment> comments) {
+    public static PostDetailResponse toPostDetail(Post post, PostStats st, PostImage postImage, long displayView,
+                                                  List<Comment> comments) {
         return PostDetailResponse.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
+                .imageUrl(postImage.getImageUrl())
                 .postType(post.getPostType())
                 .writer(PostDetailResponse.WriterInfoResponse.of(
                         post.getWriterInfo().getWriterId(),

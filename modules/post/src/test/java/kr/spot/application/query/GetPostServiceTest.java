@@ -2,6 +2,7 @@ package kr.spot.application.query;
 
 import static kr.spot.common.CommentFixture.comments;
 import static kr.spot.common.PostFixture.post;
+import static kr.spot.common.PostFixture.postImage;
 import static kr.spot.common.PostFixture.postStats;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -28,6 +29,7 @@ import kr.spot.domain.enums.PostType;
 import kr.spot.domain.enums.SortBy;
 import kr.spot.exception.GeneralException;
 import kr.spot.infrastructure.jpa.CommentRepository;
+import kr.spot.infrastructure.jpa.PostImageRepository;
 import kr.spot.infrastructure.jpa.PostRepository;
 import kr.spot.infrastructure.jpa.PostStatsRepository;
 import kr.spot.infrastructure.jpa.querydsl.PostQueryRepository;
@@ -67,6 +69,9 @@ class GetPostServiceTest {
     @Mock
     PostStatsRepository postStatsRepository;
 
+    @Mock
+    PostImageRepository postImageRepository;
+
     GetPostService getPostService;
 
     @BeforeEach
@@ -74,7 +79,8 @@ class GetPostServiceTest {
         getPostService = new GetPostService(postViewCounter, viewAbuseGuard, hotPostStore, postRepository,
                 postQueryRepository,
                 commentRepository,
-                postStatsRepository);
+                postStatsRepository,
+                postImageRepository);
     }
 
     @Test
@@ -88,6 +94,7 @@ class GetPostServiceTest {
 
         when(postRepository.getPostById(postId)).thenReturn(post);
         when(postStatsRepository.getPostStatsById(postId)).thenReturn(postStats);
+        when(postImageRepository.getPostImageById(postId)).thenReturn(postImage());
 
         // when
         var response = getPostService.getPostDetail(postId, viewerId);
@@ -97,6 +104,7 @@ class GetPostServiceTest {
         assertThat(response.postId()).isEqualTo(post.getId());
         assertThat(response.title()).isEqualTo(post.getTitle());
         assertThat(response.content()).isEqualTo(post.getContent());
+        assertThat(response.imageUrl()).isEqualTo(postImage().getImageUrl());
         assertThat(response.postType()).isEqualTo(post.getPostType());
 
         assertThat(response.stats().likeCount()).isEqualTo(postStats.getLikeCount());
@@ -147,6 +155,7 @@ class GetPostServiceTest {
         when(postRepository.getPostById(postId)).thenReturn(post);
         when(postStatsRepository.getPostStatsById(postId)).thenReturn(postStats);
         when(commentRepository.getCommentsByPostId(postId)).thenReturn(comments());
+        when(postImageRepository.getPostImageById(postId)).thenReturn(postImage());
 
         // when
         var response = getPostService.getPostDetail(postId, viewerId);
@@ -171,6 +180,7 @@ class GetPostServiceTest {
         when(postStatsRepository.getPostStatsById(postId)).thenReturn(postStats);
         when(commentRepository.getCommentsByPostId(postId)).thenReturn(
                 java.util.Collections.emptyList());
+        when(postImageRepository.getPostImageById(postId)).thenReturn(postImage());
 
         // when
         var response = getPostService.getPostDetail(postId, viewerId);
@@ -192,6 +202,7 @@ class GetPostServiceTest {
         PostStats stats = postStats(); // 예: DB viewCount = 0L 가정
         when(postRepository.getPostById(postId)).thenReturn(post);
         when(postStatsRepository.getPostStatsById(postId)).thenReturn(stats);
+        when(postImageRepository.getPostImageById(postId)).thenReturn(postImage());
 
         when(viewAbuseGuard.shouldCount(postId, viewerId)).thenReturn(true);
         when(postViewCounter.incrementAndGetDelta(postId)).thenReturn(5L);
@@ -211,6 +222,7 @@ class GetPostServiceTest {
         PostStats stats = postStats(); // DB viewCount = 0L 가정
         when(postRepository.getPostById(postId)).thenReturn(post);
         when(postStatsRepository.getPostStatsById(postId)).thenReturn(stats);
+        when(postImageRepository.getPostImageById(postId)).thenReturn(postImage());
 
         when(viewAbuseGuard.shouldCount(postId, viewerId)).thenReturn(false);
         when(postViewCounter.currentDelta(postId)).thenReturn(7L);
@@ -230,6 +242,7 @@ class GetPostServiceTest {
         PostStats stats = postStats(); // DB viewCount 예: 123L
         when(postRepository.getPostById(postId)).thenReturn(post);
         when(postStatsRepository.getPostStatsById(postId)).thenReturn(stats);
+        when(postImageRepository.getPostImageById(postId)).thenReturn(postImage());
 
         when(viewAbuseGuard.shouldCount(postId, viewerId)).thenReturn(true);
         when(postViewCounter.incrementAndGetDelta(postId)).thenThrow(new RuntimeException("Redis down"));

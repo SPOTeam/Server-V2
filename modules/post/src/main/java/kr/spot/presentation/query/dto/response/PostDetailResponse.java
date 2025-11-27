@@ -10,6 +10,7 @@ public record PostDetailResponse(
         Long postId,
         String title,
         String content,
+        String imageUrl,
         PostType postType,
         WriterInfoResponse writer,
         PostStatsResponse stats,

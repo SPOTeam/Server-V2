@@ -2,6 +2,7 @@ package kr.spot.common;
 
 import kr.spot.domain.Post;
 import kr.spot.domain.PostStats;
+import kr.spot.domain.association.PostImage;
 import kr.spot.domain.enums.PostType;
 import kr.spot.domain.vo.WriterInfo;
 import kr.spot.presentation.command.dto.request.ManagePostRequest;
@@ -38,6 +39,10 @@ public class PostFixture {
 
     public static PostStats postStats() {
         return PostStats.of(POST_ID);
+    }
+
+    public static PostImage postImage() {
+        return PostImage.of(POST_ID, IMAGE_URL1);
     }
 
     public static PostStats postStats(Long postId, long count) {
