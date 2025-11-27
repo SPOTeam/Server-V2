@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -103,7 +102,6 @@ class ManagePostServiceImageTest {
         assertThat(response).isNotNull();
         assertThat(response.postId()).isEqualTo(POST_ID);
 
-        verify(idGenerator, times(2)).nextId(); // For Post and PostImage
         verify(getWriterInfoPort).get(WRITER_ID);
         verify(fileStoragePort).upload(imageFile, "posts/images/");
         verify(postRepository).save(postCaptor.capture());
@@ -137,7 +135,6 @@ class ManagePostServiceImageTest {
         when(postRepository.updatePost(anyLong(), anyString(), anyString(), any(PostType.class), anyLong())).thenReturn(
                 1);
         when(fileStoragePort.upload(any(MultipartFile.class), anyString())).thenReturn(uploadResult);
-        when(idGenerator.nextId()).thenReturn(100L); // For new PostImage ID
         when(postImageRepository.save(any(PostImage.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when

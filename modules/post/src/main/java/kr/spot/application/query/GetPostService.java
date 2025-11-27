@@ -15,8 +15,11 @@ import kr.spot.application.ports.ViewAbuseGuard;
 import kr.spot.domain.Comment;
 import kr.spot.domain.Post;
 import kr.spot.domain.PostStats;
+import kr.spot.domain.association.PostImage;
 import kr.spot.domain.enums.PostType;
+import kr.spot.domain.enums.SortBy;
 import kr.spot.infrastructure.jpa.CommentRepository;
+import kr.spot.infrastructure.jpa.PostImageRepository;
 import kr.spot.infrastructure.jpa.PostRepository;
 import kr.spot.infrastructure.jpa.PostStatsRepository;
 import kr.spot.infrastructure.jpa.querydsl.PostQueryRepository;
@@ -49,6 +52,7 @@ public class GetPostService {
     private final PostQueryRepository postQueryRepository;
     private final CommentRepository commentRepository;
     private final PostStatsRepository postStatsRepository;
+    private final PostImageRepository postImageRepository;
 
     /**
      * 게시글 목록을 커서 기반 페이지네이션으로 조회합니다.
@@ -94,10 +98,11 @@ public class GetPostService {
     public PostDetailResponse getPostDetail(Long postId, Long viewerId) {
         Post post = postRepository.getPostById(postId);
         PostStats postStats = postStatsRepository.getPostStatsById(postId);
+        PostImage postImage = postImageRepository.getPostImageById(postId);
         List<Comment> comments = commentRepository.getCommentsByPostId(postId);
 
         long displayView = postStats.getViewCount() + getViewDeltaFromCounter(postId, viewerId);
-        return toPostDetail(post, postStats, displayView, comments);
+        return toPostDetail(post, postStats, postImage, displayView, comments);
     }
 
 
@@ -106,8 +111,8 @@ public class GetPostService {
      *
      * @return 인기 게시글 3개의 개요 정보
      */
-    public PostOverviewResponse getHotPosts() {
-        List<Long> top3 = hotPostStore.getTop3();
+    public PostOverviewResponse getHotPosts(SortBy sortBy) {
+        List<Long> top3 = hotPostStore.getTop3(sortBy);
         if (top3.isEmpty()) {
             return PostOverviewResponse.of(List.of());
         }

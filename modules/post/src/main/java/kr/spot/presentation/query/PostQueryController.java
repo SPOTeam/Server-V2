@@ -13,6 +13,7 @@ import kr.spot.annotations.CurrentMember;
 import kr.spot.application.query.GetPostService;
 import kr.spot.code.status.SuccessStatus;
 import kr.spot.domain.enums.PostType;
+import kr.spot.domain.enums.SortBy;
 import kr.spot.presentation.query.dto.response.PostDetailResponse;
 import kr.spot.presentation.query.dto.response.PostListResponse;
 import kr.spot.presentation.query.dto.response.PostOverviewResponse;
@@ -70,9 +71,11 @@ public class PostQueryController {
 
     @Operation(summary = "BEST 인기글 조회", description = "인기 게시글 3개를 조회합니다.")
     @GetMapping("/hot")
-    public ResponseEntity<ApiResponse<PostOverviewResponse>> getHotPosts() {
+    public ResponseEntity<ApiResponse<PostOverviewResponse>> getHotPosts(
+            @RequestParam SortBy sortBy
+    ) {
         return ResponseEntity.ok(
-                ApiResponse.onSuccess(SuccessStatus._OK, getPostService.getHotPosts()));
+                ApiResponse.onSuccess(SuccessStatus._OK, getPostService.getHotPosts(sortBy)));
     }
 
     @Operation(summary = "최근 게시글 조회", description = "게시글 종류 별 최신 글을 조회합니다.")

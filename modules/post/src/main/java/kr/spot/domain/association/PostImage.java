@@ -19,13 +19,11 @@ import org.hibernate.annotations.SQLRestriction;
 public class PostImage extends BaseEntity {
 
     @Id
-    private Long id;
-
     private Long postId;
 
     private String imageUrl;
 
-    public static PostImage of(Long id, Long postId, String imageUrl) {
-        return new PostImage(id, postId, imageUrl);
+    public static PostImage of(Long postId, String imageUrl) {
+        return new PostImage(postId, imageUrl);
     }
 }

@@ -24,6 +24,24 @@ public interface PostStatsRepository extends JpaRepository<PostStats, Long> {
             """)
     List<Long> findTop3ByTotal();
 
+    @Query("""
+            select s.postId
+            from PostStats s
+            where s.status = 'ACTIVE'
+            order by s.likeCount desc
+            limit 3
+            """)
+    List<Long> findTop3ByLikeCount();
+
+    @Query("""
+            select s.postId
+            from PostStats s
+            where s.status = 'ACTIVE'
+            order by s.commentCount desc
+            limit 3
+            """)
+    List<Long> findTop3ByCommentCount();
+
     @Modifying
     @Query("update PostStats s set s.likeCount = s.likeCount + 1 where s.postId = :postId")
     int increaseLike(@Param("postId") long postId);

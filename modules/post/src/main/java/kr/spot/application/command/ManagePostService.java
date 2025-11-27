@@ -75,7 +75,7 @@ public class ManagePostService {
     private void updatePostImage(Long postId, MultipartFile imageFiles) {
         UploadResult upload = fileStoragePort.upload(imageFiles, FILE_DIR);
         postImageRepository.deleteByPostId(postId);
-        PostImage postImage = PostImage.of(idGenerator.nextId(), postId, upload.url());
+        PostImage postImage = PostImage.of(postId, upload.url());
         postImageRepository.save(postImage);
     }
 
