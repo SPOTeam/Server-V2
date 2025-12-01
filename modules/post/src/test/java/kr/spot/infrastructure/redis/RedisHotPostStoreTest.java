@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import kr.spot.domain.enums.SortBy;
+import kr.spot.domain.enums.HotPostSortBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -57,7 +57,7 @@ class RedisHotPostStoreTest {
                 .thenReturn(List.of("1", "2", "3"));
 
         // when
-        List<Long> result = store.getTop3(SortBy.RECENT);
+        List<Long> result = store.getTop3(HotPostSortBy.RECENT);
 
         // then
         assertThat(result).containsExactly(1L, 2L, 3L);
@@ -70,7 +70,7 @@ class RedisHotPostStoreTest {
         when(listOps.range(POPULAR_TOP_3_TOTAL_RECENT, 0, 2)).thenReturn(null);
 
         // when
-        List<Long> result = store.getTop3(SortBy.RECENT);
+        List<Long> result = store.getTop3(HotPostSortBy.RECENT);
 
         // then
         assertThat(result).isEmpty();

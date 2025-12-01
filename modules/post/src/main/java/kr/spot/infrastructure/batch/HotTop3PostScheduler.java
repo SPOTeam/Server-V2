@@ -1,10 +1,12 @@
 package kr.spot.infrastructure.batch;
 
+import static kr.spot.domain.enums.HotPostSortBy.COMMENT_COUNT;
+import static kr.spot.domain.enums.HotPostSortBy.RECENT;
+import static kr.spot.domain.enums.HotPostSortBy.RECOMMEND;
 import static kr.spot.infrastructure.batch.HotPostKeyConverter.getKeyBySortType;
 
 import java.util.List;
 import kr.spot.application.ports.HotPostStore;
-import kr.spot.domain.enums.SortBy;
 import kr.spot.infrastructure.jpa.PostStatsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,8 +25,8 @@ public class HotTop3PostScheduler {
         List<Long> recommendedTop3 = postStatsRepository.findTop3ByLikeCount();
         List<Long> commentedTop3 = postStatsRepository.findTop3ByCommentCount();
 
-        store.replaceTop3(recentTop3, getKeyBySortType(SortBy.RECENT));
-        store.replaceTop3(recommendedTop3, getKeyBySortType(SortBy.RECOMMEND));
-        store.replaceTop3(commentedTop3, getKeyBySortType(SortBy.COMMENT_COUNT));
+        store.replaceTop3(recentTop3, getKeyBySortType(RECENT));
+        store.replaceTop3(recommendedTop3, getKeyBySortType(RECOMMEND));
+        store.replaceTop3(commentedTop3, getKeyBySortType(COMMENT_COUNT));
     }
 }
