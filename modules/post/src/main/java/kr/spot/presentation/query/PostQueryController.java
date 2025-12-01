@@ -12,8 +12,8 @@ import kr.spot.ApiResponse;
 import kr.spot.annotations.CurrentMember;
 import kr.spot.application.query.GetPostService;
 import kr.spot.code.status.SuccessStatus;
+import kr.spot.domain.enums.HotPostSortBy;
 import kr.spot.domain.enums.PostType;
-import kr.spot.domain.enums.SortBy;
 import kr.spot.presentation.query.dto.response.PostDetailResponse;
 import kr.spot.presentation.query.dto.response.PostListResponse;
 import kr.spot.presentation.query.dto.response.PostOverviewResponse;
@@ -72,7 +72,7 @@ public class PostQueryController {
     @Operation(summary = "BEST 인기글 조회", description = "인기 게시글 3개를 조회합니다.")
     @GetMapping("/hot")
     public ResponseEntity<ApiResponse<PostOverviewResponse>> getHotPosts(
-            @RequestParam SortBy sortBy
+            @RequestParam HotPostSortBy sortBy
     ) {
         return ResponseEntity.ok(
                 ApiResponse.onSuccess(SuccessStatus._OK, getPostService.getHotPosts(sortBy)));

@@ -4,7 +4,7 @@ import static kr.spot.infrastructure.batch.HotPostKeyConverter.getKeyBySortType;
 
 import java.util.List;
 import kr.spot.application.ports.HotPostStore;
-import kr.spot.domain.enums.SortBy;
+import kr.spot.domain.enums.HotPostSortBy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -32,7 +32,7 @@ public class RedisHotPostStore implements HotPostStore {
     }
 
     @Override
-    public List<Long> getTop3(SortBy sortBy) {
+    public List<Long> getTop3(HotPostSortBy sortBy) {
         List<String> vals = redis.opsForList().range(getKeyBySortType(sortBy), START, END);
         if (vals == null) {
             return List.of();
