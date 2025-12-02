@@ -18,21 +18,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class Fee {
 
-    private boolean hasFee;
-    
-    private Integer amount;
+  private boolean hasFee;
 
-    @Enumerated(EnumType.STRING)
-    private FeeCategory feeCategory;
+  private Integer amount;
 
-    public static Fee of(boolean hasFee, Integer amount) {
-        if (!hasFee) {
-            amount = 0;
-        } else {
-            if (amount == null || amount < 0) {
-                throw new GeneralException(ErrorStatus._INVALID_FEE_AMOUNT);
-            }
-        }
-        return new Fee(hasFee, amount, FeeCategory.getFeeCategory(amount));
+  @Enumerated(EnumType.STRING)
+  private FeeCategory feeCategory;
+
+  public static Fee of(boolean hasFee, Integer amount) {
+    if (!hasFee) {
+      amount = 0;
+    } else {
+      if (amount == null || amount < 0) {
+        throw new GeneralException(ErrorStatus._INVALID_FEE_AMOUNT);
+      }
     }
+    return new Fee(hasFee, amount, FeeCategory.getFeeCategory(amount));
+  }
 }

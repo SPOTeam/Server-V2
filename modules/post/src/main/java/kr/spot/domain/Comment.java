@@ -18,26 +18,26 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Comment extends BaseEntity {
 
-    @Id
-    private Long id;
+  @Id
+  private Long id;
 
-    private Long postId;
+  private Long postId;
 
-    private WriterInfo writerInfo;
+  private WriterInfo writerInfo;
 
-    private String content;
+  private String content;
 
-    public static Comment of(Long id, Long postId, WriterInfo writerInfo, String content) {
-        return new Comment(id, postId, writerInfo, content);
-    }
+  public static Comment of(Long id, Long postId, WriterInfo writerInfo, String content) {
+    return new Comment(id, postId, writerInfo, content);
+  }
 
-    public void update(Long currentMemberId, String content) {
-        writerInfo.validateIsOwnMember(currentMemberId);
-        this.content = content;
-    }
+  public void update(Long currentMemberId, String content) {
+    writerInfo.validateIsOwnMember(currentMemberId);
+    this.content = content;
+  }
 
-    public void delete(Long currentMemberId) {
-        writerInfo.validateIsOwnMember(currentMemberId);
-        super.delete();
-    }
+  public void delete(Long currentMemberId) {
+    writerInfo.validateIsOwnMember(currentMemberId);
+    super.delete();
+  }
 }

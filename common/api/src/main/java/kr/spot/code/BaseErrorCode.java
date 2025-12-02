@@ -2,7 +2,7 @@ package kr.spot.code;
 
 public interface BaseErrorCode {
 
-    public ErrorReasonDTO getReason();
+  ErrorReasonDTO getReason();
 
-    public ErrorReasonDTO getReasonHttpStatus();
+  ErrorReasonDTO getReasonHttpStatus();
 }

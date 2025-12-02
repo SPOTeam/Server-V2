@@ -35,105 +35,105 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TokenReissueServiceTest {
 
-    @Mock
-    IdGenerator idGenerator;
-    @Mock
-    TokenProvider tokenProvider;
-    @Mock
-    RefreshTokenRepository refreshTokenRepository;
+  @Mock
+  IdGenerator idGenerator;
+  @Mock
+  TokenProvider tokenProvider;
+  @Mock
+  RefreshTokenRepository refreshTokenRepository;
 
-    TokenReissueService service;
+  TokenReissueService service;
 
-    @BeforeEach
-    void setUp() {
-        service = new TokenReissueService(idGenerator, tokenProvider, refreshTokenRepository);
-    }
+  @BeforeEach
+  void setUp() {
+    service = new TokenReissueService(idGenerator, tokenProvider, refreshTokenRepository);
+  }
+
+  @Test
+  @DisplayName("성공적으로 토큰을 재발급한다")
+  void should_reissueTokenSuccessfully() {
+    // given
+    RefreshToken saved = savedRefreshToken(100L);
+
+    doNothing().when(tokenProvider).validateToken(OLD_REFRESH);
+    when(tokenProvider.getMemberIdByToken(OLD_REFRESH)).thenReturn(MEMBER_ID);
+    when(refreshTokenRepository.findByMemberId(MEMBER_ID)).thenReturn(Optional.of(saved));
+    when(tokenProvider.createToken(MEMBER_ID)).thenReturn(newTokenDTO());
+    when(idGenerator.nextId()).thenReturn(999L);
+
+    // when
+    TokenDTO result = service.reissueToken(OLD_REFRESH);
+
+    // then
+    assertEquals(NEW_ACCESS, result.accessToken());
+    assertEquals(NEW_REFRESH, result.refreshToken());
+    verify(refreshTokenRepository).deleteByMemberId(MEMBER_ID);
+    verify(refreshTokenRepository).save(any(RefreshToken.class));
+  }
+
+  @Test
+  @DisplayName("토큰 검증에 실패하면 예외를 던진다")
+  void should_throwException_when_tokenInvalidOnValidate() {
+    // given
+    doThrow(new GeneralException(ErrorStatus._INVALID_REFRESH_TOKEN))
+        .when(tokenProvider).validateToken(OLD_REFRESH);
+
+    // when & then
+    GeneralException ex = assertThrows(GeneralException.class,
+        () -> service.reissueToken(OLD_REFRESH));
+
+    assertEquals(ErrorStatus._INVALID_REFRESH_TOKEN, ex.getStatus());
+  }
+
+  @Test
+  @DisplayName("DB에 리프레시 토큰이 없으면 예외를 던진다")
+  void should_throwException_when_refreshTokenNotFoundInDb() {
+    // given
+    doNothing().when(tokenProvider).validateToken(OLD_REFRESH);
+    when(tokenProvider.getMemberIdByToken(OLD_REFRESH)).thenReturn(MEMBER_ID);
+    when(refreshTokenRepository.findByMemberId(MEMBER_ID)).thenReturn(Optional.empty());
+
+    // when & then
+    assertThrows(GeneralException.class, () -> service.reissueToken(OLD_REFRESH));
+  }
+
+  @Test
+  @DisplayName("DB 저장 토큰과 요청 토큰이 다르면 예외를 던진다")
+  void should_throwException_when_refreshTokenMismatch() {
+    // given
+    RefreshToken mismatched = mismatchedRefreshToken(100L);
+
+    doNothing().when(tokenProvider).validateToken(OLD_REFRESH);
+    when(tokenProvider.getMemberIdByToken(OLD_REFRESH)).thenReturn(MEMBER_ID);
+    when(refreshTokenRepository.findByMemberId(MEMBER_ID)).thenReturn(Optional.of(mismatched));
+
+    // when & then
+    assertThrows(GeneralException.class, () -> service.reissueToken(OLD_REFRESH));
+  }
+
+  @Nested
+  @DisplayName("정책 검증")
+  class RotationPolicyTest {
 
     @Test
-    @DisplayName("성공적으로 토큰을 재발급한다")
-    void should_reissueTokenSuccessfully() {
-        // given
-        RefreshToken saved = savedRefreshToken(100L);
+    @DisplayName("재발급 시 기존 토큰은 삭제되고 새 토큰만 저장된다")
+    void should_deleteOldAndSaveNew_onReissue() {
+      // given
+      RefreshToken saved = savedRefreshToken(100L);
 
-        doNothing().when(tokenProvider).validateToken(OLD_REFRESH);
-        when(tokenProvider.getMemberIdByToken(OLD_REFRESH)).thenReturn(MEMBER_ID);
-        when(refreshTokenRepository.findByMemberId(MEMBER_ID)).thenReturn(Optional.of(saved));
-        when(tokenProvider.createToken(MEMBER_ID)).thenReturn(newTokenDTO());
-        when(idGenerator.nextId()).thenReturn(999L);
+      doNothing().when(tokenProvider).validateToken(OLD_REFRESH);
+      when(tokenProvider.getMemberIdByToken(OLD_REFRESH)).thenReturn(MEMBER_ID);
+      when(refreshTokenRepository.findByMemberId(MEMBER_ID)).thenReturn(Optional.of(saved));
+      when(tokenProvider.createToken(MEMBER_ID)).thenReturn(newTokenDTO());
+      when(idGenerator.nextId()).thenReturn(1234L);
 
-        // when
-        TokenDTO result = service.reissueToken(OLD_REFRESH);
+      // when
+      service.reissueToken(OLD_REFRESH);
 
-        // then
-        assertEquals(NEW_ACCESS, result.accessToken());
-        assertEquals(NEW_REFRESH, result.refreshToken());
-        verify(refreshTokenRepository).deleteByMemberId(MEMBER_ID);
-        verify(refreshTokenRepository).save(any(RefreshToken.class));
+      // then
+      InOrder inOrder = inOrder(refreshTokenRepository);
+      inOrder.verify(refreshTokenRepository).deleteByMemberId(MEMBER_ID);
+      inOrder.verify(refreshTokenRepository).save(any(RefreshToken.class));
     }
-
-    @Test
-    @DisplayName("토큰 검증에 실패하면 예외를 던진다")
-    void should_throwException_when_tokenInvalidOnValidate() {
-        // given
-        doThrow(new GeneralException(ErrorStatus._INVALID_REFRESH_TOKEN))
-                .when(tokenProvider).validateToken(OLD_REFRESH);
-
-        // when & then
-        GeneralException ex = assertThrows(GeneralException.class,
-                () -> service.reissueToken(OLD_REFRESH));
-
-        assertEquals(ErrorStatus._INVALID_REFRESH_TOKEN, ex.getStatus());
-    }
-
-    @Test
-    @DisplayName("DB에 리프레시 토큰이 없으면 예외를 던진다")
-    void should_throwException_when_refreshTokenNotFoundInDb() {
-        // given
-        doNothing().when(tokenProvider).validateToken(OLD_REFRESH);
-        when(tokenProvider.getMemberIdByToken(OLD_REFRESH)).thenReturn(MEMBER_ID);
-        when(refreshTokenRepository.findByMemberId(MEMBER_ID)).thenReturn(Optional.empty());
-
-        // when & then
-        assertThrows(GeneralException.class, () -> service.reissueToken(OLD_REFRESH));
-    }
-
-    @Test
-    @DisplayName("DB 저장 토큰과 요청 토큰이 다르면 예외를 던진다")
-    void should_throwException_when_refreshTokenMismatch() {
-        // given
-        RefreshToken mismatched = mismatchedRefreshToken(100L);
-
-        doNothing().when(tokenProvider).validateToken(OLD_REFRESH);
-        when(tokenProvider.getMemberIdByToken(OLD_REFRESH)).thenReturn(MEMBER_ID);
-        when(refreshTokenRepository.findByMemberId(MEMBER_ID)).thenReturn(Optional.of(mismatched));
-
-        // when & then
-        assertThrows(GeneralException.class, () -> service.reissueToken(OLD_REFRESH));
-    }
-
-    @Nested
-    @DisplayName("정책 검증")
-    class RotationPolicyTest {
-
-        @Test
-        @DisplayName("재발급 시 기존 토큰은 삭제되고 새 토큰만 저장된다")
-        void should_deleteOldAndSaveNew_onReissue() {
-            // given
-            RefreshToken saved = savedRefreshToken(100L);
-
-            doNothing().when(tokenProvider).validateToken(OLD_REFRESH);
-            when(tokenProvider.getMemberIdByToken(OLD_REFRESH)).thenReturn(MEMBER_ID);
-            when(refreshTokenRepository.findByMemberId(MEMBER_ID)).thenReturn(Optional.of(saved));
-            when(tokenProvider.createToken(MEMBER_ID)).thenReturn(newTokenDTO());
-            when(idGenerator.nextId()).thenReturn(1234L);
-
-            // when
-            service.reissueToken(OLD_REFRESH);
-
-            // then
-            InOrder inOrder = inOrder(refreshTokenRepository);
-            inOrder.verify(refreshTokenRepository).deleteByMemberId(MEMBER_ID);
-            inOrder.verify(refreshTokenRepository).save(any(RefreshToken.class));
-        }
-    }
+  }
 }

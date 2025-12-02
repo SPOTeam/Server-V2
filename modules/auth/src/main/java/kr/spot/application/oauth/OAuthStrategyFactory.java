@@ -19,30 +19,30 @@ import org.springframework.stereotype.Component;
 @Component
 public class OAuthStrategyFactory {
 
-    private final Map<LoginType, OAuthStrategy> strategyMap;
+  private final Map<LoginType, OAuthStrategy> strategyMap;
 
-    @PostConstruct
-    void logRegistered() {
-        log.info("Registered OAuth strategies: {}", strategyMap.keySet());
-    }
+  public OAuthStrategyFactory(List<OAuthStrategy> strategies) {
+    this.strategyMap = Collections.unmodifiableMap(
+        strategies.stream().collect(
+            Collectors.toMap(
+                OAuthStrategy::getType,
+                s -> s,
+                (a, b) -> {
+                  throw new GeneralException(ErrorStatus._INTERNAL_SERVER_ERROR);
+                },
+                () -> new EnumMap<>(LoginType.class)
+            )
+        )
+    );
+  }
 
-    public OAuthStrategyFactory(List<OAuthStrategy> strategies) {
-        this.strategyMap = Collections.unmodifiableMap(
-                strategies.stream().collect(
-                        Collectors.toMap(
-                                OAuthStrategy::getType,
-                                s -> s,
-                                (a, b) -> {
-                                    throw new GeneralException(ErrorStatus._INTERNAL_SERVER_ERROR);
-                                },
-                                () -> new EnumMap<>(LoginType.class)
-                        )
-                )
-        );
-    }
+  @PostConstruct
+  void logRegistered() {
+    log.info("Registered OAuth strategies: {}", strategyMap.keySet());
+  }
 
-    public OAuthStrategy getStrategy(LoginType type) {
-        return Optional.ofNullable(strategyMap.get(type))
-                .orElseThrow(() -> new GeneralException(ErrorStatus._MEMBER_UNSUPPORTED_LOGIN_TYPE));
-    }
+  public OAuthStrategy getStrategy(LoginType type) {
+    return Optional.ofNullable(strategyMap.get(type))
+        .orElseThrow(() -> new GeneralException(ErrorStatus._MEMBER_UNSUPPORTED_LOGIN_TYPE));
+  }
 }

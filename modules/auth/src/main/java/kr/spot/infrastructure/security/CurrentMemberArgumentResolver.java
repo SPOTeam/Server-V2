@@ -15,22 +15,22 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @RequiredArgsConstructor
 public class CurrentMemberArgumentResolver implements HandlerMethodArgumentResolver {
 
-    @Override
-    public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.hasParameterAnnotation(CurrentMember.class)
-                && parameter.getParameterType().equals(Long.class);
-    }
+  @Override
+  public boolean supportsParameter(MethodParameter parameter) {
+    return parameter.hasParameterAnnotation(CurrentMember.class)
+        && parameter.getParameterType().equals(Long.class);
+  }
 
-    @Override
-    public Object resolveArgument(
-            MethodParameter parameter,
-            ModelAndViewContainer mavContainer,
-            NativeWebRequest webRequest,
-            WebDataBinderFactory binderFactory
-    ) {
+  @Override
+  public Object resolveArgument(
+      MethodParameter parameter,
+      ModelAndViewContainer mavContainer,
+      NativeWebRequest webRequest,
+      WebDataBinderFactory binderFactory
+  ) {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String principal = authentication.getPrincipal().toString();
-        return Long.parseLong(principal);
-    }
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String principal = authentication.getPrincipal().toString();
+    return Long.parseLong(principal);
+  }
 }

@@ -17,12 +17,12 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class RefreshToken extends BaseEntity {
 
-    @Id
-    private Long id;
-    private Long memberId;
-    private String token;
+  @Id
+  private Long id;
+  private Long memberId;
+  private String token;
 
-    public static RefreshToken of(Long id, Long memberId, String token) {
-        return new RefreshToken(id, memberId, token);
-    }
+  public static RefreshToken of(Long id, Long memberId, String token) {
+    return new RefreshToken(id, memberId, token);
+  }
 }

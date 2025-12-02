@@ -6,8 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PreferredCategoryRepository extends JpaRepository<PreferredCategory, Long> {
 
-    void deleteAllByMemberId(Long memberId);
+  void deleteAllByMemberId(Long memberId);
 
-    List<PreferredCategory> findAllByMemberId(Long memberId);
-
+  List<PreferredCategory> findAllByMemberId(Long memberId);
 }

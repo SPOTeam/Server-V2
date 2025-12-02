@@ -12,26 +12,25 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class LikePostService {
 
-    private final IdGenerator idGenerator;
+  private final IdGenerator idGenerator;
+  private final PostLikeRepository postLikeRepository;
+  private final PostStatsRepository postStatsRepository;
 
-    private final PostLikeRepository postLikeRepository;
-    private final PostStatsRepository postStatsRepository;
+  public void likePost(Long postId, Long memberId) {
+    int inserted = postLikeRepository.savePostLike(idGenerator.nextId(), postId, memberId);
+    increaseLikeCount(postId, inserted);
+  }
 
-    public void likePost(Long postId, Long memberId) {
-        int inserted = postLikeRepository.savePostLike(idGenerator.nextId(), postId, memberId);
-        increaseLikeCount(postId, inserted);
+  private void increaseLikeCount(Long postId, int inserted) {
+    if (inserted == 1) {
+      postStatsRepository.increaseLike(postId);
     }
+  }
 
-    private void increaseLikeCount(Long postId, int inserted) {
-        if (inserted == 1) {
-            postStatsRepository.increaseLike(postId);
-        }
+  public void unlikePost(Long postId, Long memberId) {
+    long deleted = postLikeRepository.hardDelete(postId, memberId);
+    if (deleted > 0) {
+      postStatsRepository.decreaseLike(postId);
     }
-
-    public void unlikePost(Long postId, Long memberId) {
-        long deleted = postLikeRepository.hardDelete(postId, memberId);
-        if (deleted > 0) {
-            postStatsRepository.decreaseLike(postId);
-        }
-    }
+  }
 }

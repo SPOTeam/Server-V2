@@ -21,15 +21,15 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class StudyStyle extends BaseEntity {
 
-    @Id
-    private Long id;
+  @Id
+  private Long id;
 
-    private Long studyId;
+  private Long studyId;
 
-    @Enumerated(EnumType.STRING)
-    private Style style;
+  @Enumerated(EnumType.STRING)
+  private Style style;
 
-    public static StudyStyle of(Long id, Long studyId, Style style) {
-        return new StudyStyle(id, studyId, style);
-    }
+  public static StudyStyle of(Long id, Long studyId, Style style) {
+    return new StudyStyle(id, studyId, style);
+  }
 }

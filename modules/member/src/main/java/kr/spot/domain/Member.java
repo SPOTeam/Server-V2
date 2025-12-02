@@ -29,41 +29,42 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Member extends BaseEntity {
 
-    @Id
-    private Long id;
+  @Id
+  private Long id;
 
-    @Embedded
-    @AttributeOverride(name = "value",
-            column = @Column(name = "email", nullable = false, unique = true))
-    private Email email;
+  @Embedded
+  @AttributeOverride(name = "value",
+      column = @Column(name = "email", nullable = false, unique = true))
+  private Email email;
 
-    @Column(nullable = false)
-    private String name;
+  @Column(nullable = false)
+  private String name;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private LoginType loginType;
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private LoginType loginType;
 
-    @Column
-    private String profileImageUrl;
+  @Column
+  private String profileImageUrl;
 
-    /* ------------------------------- Method  ------------------------------- */
+  /* ------------------------------- Method  ------------------------------- */
 
-    public static Member of(Long id, Email email, String name, LoginType loginType, String profileImageUrl) {
-        validateEmail(email);
-        validateName(name);
-        return new Member(id, email, name, loginType, profileImageUrl);
+  public static Member of(Long id, Email email, String name, LoginType loginType,
+      String profileImageUrl) {
+    validateEmail(email);
+    validateName(name);
+    return new Member(id, email, name, loginType, profileImageUrl);
+  }
+
+  private static void validateName(String name) {
+    if (isBlank(name)) {
+      throw new GeneralException(ErrorStatus._NAME_CAN_NOT_NULL_OR_EMPTY);
     }
+  }
 
-    private static void validateName(String name) {
-        if (isBlank(name)) {
-            throw new GeneralException(ErrorStatus._NAME_CAN_NOT_NULL_OR_EMPTY);
-        }
+  private static void validateEmail(Email email) {
+    if (email == null) {
+      throw new GeneralException(ErrorStatus._EMAIL_CAN_NOT_NULL_OR_EMPTY);
     }
-
-    private static void validateEmail(Email email) {
-        if (email == null) {
-            throw new GeneralException(ErrorStatus._EMAIL_CAN_NOT_NULL_OR_EMPTY);
-        }
-    }
+  }
 }

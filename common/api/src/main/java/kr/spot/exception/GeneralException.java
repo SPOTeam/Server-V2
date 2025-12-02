@@ -8,10 +8,10 @@ import lombok.Setter;
 @Setter
 public class GeneralException extends RuntimeException {
 
-    private ErrorStatus status;
+  private ErrorStatus status;
 
-    public GeneralException(ErrorStatus status) {
-        super(status.getCode());
-        this.status = status;
-    }
+  public GeneralException(ErrorStatus status) {
+    super(status.getCode());
+    this.status = status;
+  }
 }

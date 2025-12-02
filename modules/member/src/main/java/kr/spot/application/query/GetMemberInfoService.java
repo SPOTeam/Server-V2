@@ -12,10 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class GetMemberInfoService {
 
-    private final MemberRepository memberRepository;
+  private final MemberRepository memberRepository;
 
-    public GetMemberNameResponse getMemberName(Long memberId) {
-        Member member = memberRepository.getMemberById(memberId);
-        return GetMemberNameResponse.from(member.getName());
-    }
+  public GetMemberNameResponse getMemberName(Long memberId) {
+    Member member = memberRepository.getMemberById(memberId);
+    return GetMemberNameResponse.from(member.getName());
+  }
 }

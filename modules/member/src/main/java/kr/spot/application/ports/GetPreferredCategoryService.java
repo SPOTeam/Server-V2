@@ -13,13 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class GetPreferredCategoryService implements GetPreferredCategoryPort {
 
-    private final PreferredCategoryRepository preferredCategoryRepository;
+  private final PreferredCategoryRepository preferredCategoryRepository;
 
-    @Override
-    public List<String> get(Long viewerId) {
-        return preferredCategoryRepository.findAllByMemberId(viewerId)
-                .stream()
-                .map(PreferredCategory::getCategory)
-                .toList();
-    }
+  @Override
+  public List<String> get(Long viewerId) {
+    return preferredCategoryRepository.findAllByMemberId(viewerId)
+        .stream()
+        .map(PreferredCategory::getCategory)
+        .toList();
+  }
 }

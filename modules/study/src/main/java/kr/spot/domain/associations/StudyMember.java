@@ -21,27 +21,25 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class StudyMember extends BaseEntity {
 
-    @Id
-    private Long id;
+  @Id
+  private Long id;
 
-    private Long studyId;
+  private Long studyId;
 
-    private Long memberId;
+  private Long memberId;
 
-    @Enumerated(EnumType.STRING)
-    private StudyMemberStatus studyMemberStatus;
+  @Enumerated(EnumType.STRING)
+  private StudyMemberStatus studyMemberStatus;
 
-    public static StudyMember create(Long studyId, Long memberId) {
-        return new StudyMember(null, studyId, memberId, StudyMemberStatus.OWNER);
-    }
+  public static StudyMember create(Long studyId, Long memberId) {
+    return new StudyMember(null, studyId, memberId, StudyMemberStatus.OWNER);
+  }
 
-    public static StudyMember apply(Long studyId, Long memberId) {
-        return new StudyMember(null, studyId, memberId, StudyMemberStatus.APPLIED);
-    }
+  public static StudyMember apply(Long studyId, Long memberId) {
+    return new StudyMember(null, studyId, memberId, StudyMemberStatus.APPLIED);
+  }
 
-    public void approve() {
-        this.studyMemberStatus = StudyMemberStatus.APPROVED;
-    }
-
-
+  public void approve() {
+    this.studyMemberStatus = StudyMemberStatus.APPROVED;
+  }
 }

@@ -16,18 +16,17 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PostStats extends BaseEntity {
-    
-    @Id
-    private Long postId;
 
-    private Long viewCount;
+  @Id
+  private Long postId;
 
-    private Long likeCount;
+  private Long viewCount;
 
-    private Long commentCount;
+  private Long likeCount;
 
-    public static PostStats of(Long postId) {
-        return new PostStats(postId, 0L, 0L, 0L);
-    }
+  private Long commentCount;
 
+  public static PostStats of(Long postId) {
+    return new PostStats(postId, 0L, 0L, 0L);
+  }
 }

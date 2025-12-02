@@ -7,9 +7,9 @@ import lombok.Getter;
 @Builder
 public class ReasonDTO {
 
-    private Integer httpStatus;
-
-    private final boolean isSuccess;
-    private final String code;
-    private final String message;
+  private final boolean isSuccess;
+  private final String code;
+  private final String message;
+  
+  private Integer httpStatus;
 }

@@ -18,15 +18,14 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PreferredCategory extends BaseEntity {
 
-    @Id
-    private Long id;
+  @Id
+  private Long id;
 
-    private Long memberId;
+  private Long memberId;
 
-    private String category;
+  private String category;
 
-    public static PreferredCategory of(Long id, Long memberId, String category) {
-        return new PreferredCategory(id, memberId, category);
-    }
-
+  public static PreferredCategory of(Long id, Long memberId, String category) {
+    return new PreferredCategory(id, memberId, category);
+  }
 }

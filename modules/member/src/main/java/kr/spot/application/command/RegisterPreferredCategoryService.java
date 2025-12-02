@@ -17,36 +17,36 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RegisterPreferredCategoryService {
 
-    private final IdGenerator idGenerator;
-    private final CategoryCatalogPort categoryCatalogPort;
-    private final PreferredCategoryRepository preferredCategoryRepository;
+  private final IdGenerator idGenerator;
+  private final CategoryCatalogPort categoryCatalogPort;
+  private final PreferredCategoryRepository preferredCategoryRepository;
 
-    public void process(Long memberId, RegisterPreferredCategoryRequest request) {
-        deleteAllPreviousPreferredCategory(memberId);
-        validateIsValidCategoryName(request);
+  public void process(Long memberId, RegisterPreferredCategoryRequest request) {
+    deleteAllPreviousPreferredCategory(memberId);
+    validateIsValidCategoryName(request);
 
-        List<PreferredCategory> list = getPreferredCategoryList(memberId, request);
-        preferredCategoryRepository.saveAll(list);
-    }
+    List<PreferredCategory> list = getPreferredCategoryList(memberId, request);
+    preferredCategoryRepository.saveAll(list);
+  }
 
-    private List<PreferredCategory> getPreferredCategoryList(Long memberId, RegisterPreferredCategoryRequest request) {
-        return request.categories().stream()
-                .map((category) -> PreferredCategory.of(idGenerator.nextId(), memberId, category))
-                .toList();
-    }
+  private List<PreferredCategory> getPreferredCategoryList(Long memberId,
+      RegisterPreferredCategoryRequest request) {
+    return request.categories().stream()
+        .map((category) -> PreferredCategory.of(idGenerator.nextId(), memberId, category))
+        .toList();
+  }
 
-    private void validateIsValidCategoryName(RegisterPreferredCategoryRequest request) {
-        request.categories().forEach(
-                category -> {
-                    if (!categoryCatalogPort.exists(category)) {
-                        throw new GeneralException(ErrorStatus._NO_SUCH_CATEGORY);
-                    }
-                }
-        );
-    }
+  private void validateIsValidCategoryName(RegisterPreferredCategoryRequest request) {
+    request.categories().forEach(
+        category -> {
+          if (!categoryCatalogPort.exists(category)) {
+            throw new GeneralException(ErrorStatus._NO_SUCH_CATEGORY);
+          }
+        }
+    );
+  }
 
-    private void deleteAllPreviousPreferredCategory(Long memberId) {
-        preferredCategoryRepository.deleteAllByMemberId(memberId);
-    }
-
+  private void deleteAllPreviousPreferredCategory(Long memberId) {
+    preferredCategoryRepository.deleteAllByMemberId(memberId);
+  }
 }

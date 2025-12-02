@@ -18,14 +18,14 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class StudyRegion extends BaseEntity {
 
-    @Id
-    private Long id;
+  @Id
+  private Long id;
 
-    private Long studyId;
+  private Long studyId;
 
-    private String regionCode;
+  private String regionCode;
 
-    public static StudyRegion of(Long id, Long studyId, String regionCode) {
-        return new StudyRegion(id, studyId, regionCode);
-    }
+  public static StudyRegion of(Long id, Long studyId, String regionCode) {
+    return new StudyRegion(id, studyId, regionCode);
+  }
 }
