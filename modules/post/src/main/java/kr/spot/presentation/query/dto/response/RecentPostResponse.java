@@ -4,21 +4,22 @@ import java.util.List;
 import kr.spot.domain.enums.PostType;
 
 public record RecentPostResponse(
-        List<RecentPost> recentPosts
+    List<RecentPost> recentPosts
 ) {
 
-    public record RecentPost(
-            Long postId,
-            String title,
-            Long commentCount,
-            PostType postType
-    ) {
-        public static RecentPost of(Long postId, String title, Long commentCount, PostType postType) {
-            return new RecentPost(postId, title, commentCount, postType);
-        }
-    }
+  public static RecentPostResponse of(List<RecentPost> recentPosts) {
+    return new RecentPostResponse(recentPosts);
+  }
 
-    public static RecentPostResponse of(List<RecentPost> recentPosts) {
-        return new RecentPostResponse(recentPosts);
+  public record RecentPost(
+      Long postId,
+      String title,
+      Long commentCount,
+      PostType postType
+  ) {
+
+    public static RecentPost of(Long postId, String title, Long commentCount, PostType postType) {
+      return new RecentPost(postId, title, commentCount, postType);
     }
+  }
 }

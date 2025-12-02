@@ -12,13 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class DbViewAbuseGuard implements ViewAbuseGuard {
 
-    private final IdGenerator idGenerator;
-    private final PostViewHistoryRepository postViewHistoryRepository;
+  private final IdGenerator idGenerator;
+  private final PostViewHistoryRepository postViewHistoryRepository;
 
-    @Override
-    public boolean shouldCount(long postId, long viewerId) {
-        int inserted = postViewHistoryRepository.insertIgnore(
-                idGenerator.nextId(), viewerId, postId);
-        return inserted > 0;
-    }
+  @Override
+  public boolean shouldCount(long postId, long viewerId) {
+    int inserted = postViewHistoryRepository.insertIgnore(
+        idGenerator.nextId(), viewerId, postId);
+    return inserted > 0;
+  }
 }

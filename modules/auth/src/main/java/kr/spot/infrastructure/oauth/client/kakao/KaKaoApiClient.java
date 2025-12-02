@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 @FeignClient(name = "kakaoApiClient", url = "https://kapi.kakao.com")
 public interface KaKaoApiClient {
 
-    @GetMapping("/v2/user/me")
-    KaKaoUser getKaKaoUserInfo(
-            @RequestHeader(HEADER_AUTHORIZATION) String accessToken,
-            @RequestHeader(HEADER_CONTENT_TYPE) String contentType);
+  @GetMapping("/v2/user/me")
+  KaKaoUser getKaKaoUserInfo(
+      @RequestHeader(HEADER_AUTHORIZATION) String accessToken,
+      @RequestHeader(HEADER_CONTENT_TYPE) String contentType);
 }

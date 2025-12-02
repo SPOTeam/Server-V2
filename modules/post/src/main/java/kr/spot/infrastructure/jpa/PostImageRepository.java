@@ -7,9 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PostImageRepository extends JpaRepository<PostImage, Long> {
 
-    void deleteByPostId(Long postId);
+  void deleteByPostId(Long postId);
 
-    default PostImage getPostImageById(Long id) {
-        return findById(id).orElseThrow(() -> new GeneralException(ErrorStatus._POST_NOT_FOUND));
-    }
+  default PostImage getPostImageById(Long id) {
+    return findById(id).orElseThrow(() -> new GeneralException(ErrorStatus._POST_NOT_FOUND));
+  }
 }

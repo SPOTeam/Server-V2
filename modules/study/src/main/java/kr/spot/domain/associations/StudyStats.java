@@ -18,17 +18,16 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class StudyStats extends BaseEntity {
 
-    @Id
-    private Long studyId;
+  @Id
+  private Long studyId;
 
-    private Long viewCount;
+  private Long viewCount;
 
-    private Long likeCount;
+  private Long likeCount;
 
-    private Long commentCount;
+  private Long commentCount;
 
-    public static StudyStats of(Long studyId) {
-        return new StudyStats(studyId, 0L, 0L, 0L);
-    }
+  public static StudyStats of(Long studyId) {
+    return new StudyStats(studyId, 0L, 0L, 0L);
+  }
 }
-

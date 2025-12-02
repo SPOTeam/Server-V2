@@ -14,14 +14,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "naverAuthClient", url = "https://nid.naver.com/oauth2.0")
 public interface NaverAuthClient {
 
-    @GetMapping("/token")
-    NaverOAuthTokenDTO getNaverAccessToken(
-            @RequestParam(GRANT_TYPE) String grantType,
-            @RequestParam(CLIENT_ID) String clientId,
-            @RequestParam(CLIENT_SECRET) String clientSecret,
-            @RequestParam(RESPONSE_TYPE_CODE) String code,
-            @RequestParam(STATE) String state
-    );
-
-
+  @GetMapping("/token")
+  NaverOAuthTokenDTO getNaverAccessToken(
+      @RequestParam(GRANT_TYPE) String grantType,
+      @RequestParam(CLIENT_ID) String clientId,
+      @RequestParam(CLIENT_SECRET) String clientSecret,
+      @RequestParam(RESPONSE_TYPE_CODE) String code,
+      @RequestParam(STATE) String state
+  );
 }

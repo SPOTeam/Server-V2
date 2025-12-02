@@ -12,26 +12,26 @@ import org.junit.jupiter.api.Test;
 
 class EmailTest {
 
-    @Test
-    @DisplayName("정상적으로 이메일을 생성할 수 있다.")
-    void should_create_email_successfully() {
-        // given
-        String emailStr = EMAIL;
+  @Test
+  @DisplayName("정상적으로 이메일을 생성할 수 있다.")
+  void should_create_email_successfully() {
+    // given
+    String emailStr = EMAIL;
 
-        // when
-        Email email = Email.of(emailStr);
+    // when
+    Email email = Email.of(emailStr);
 
-        // then
-        assertNotNull(email);
-        assertEquals(emailStr, email.getValue());
-    }
+    // then
+    assertNotNull(email);
+    assertEquals(emailStr, email.getValue());
+  }
 
-    @Test
-    @DisplayName("잘못된 이메일 형식으로 인해 예외가 발생한다.")
-    void should_throw_exception_for_invalid_email_format() {
-        assertThrows(GeneralException.class, () -> {
-            // when
-            Email.of(INVALID_EMAIL);
-        });
-    }
+  @Test
+  @DisplayName("잘못된 이메일 형식으로 인해 예외가 발생한다.")
+  void should_throw_exception_for_invalid_email_format() {
+    assertThrows(GeneralException.class, () -> {
+      // when
+      Email.of(INVALID_EMAIL);
+    });
+  }
 }

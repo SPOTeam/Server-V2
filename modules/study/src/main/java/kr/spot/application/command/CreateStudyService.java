@@ -24,59 +24,60 @@ import org.springframework.web.multipart.MultipartFile;
 @Transactional
 @RequiredArgsConstructor
 public class CreateStudyService {
-    private static final String FILE_DIR = "studies/images/";
 
-    private final IdGenerator idGenerator;
-    private final FileStoragePort fileStoragePort;
-    private final StudyRepository studyRepository;
+  private static final String FILE_DIR = "studies/images/";
 
-    private final StudyStyleRepository studyStyleRepository;
-    private final StudyRegionRepository studyRegionRepository;
-    private final StudyCategoryRepository studyCategoryRepository;
-    private final StudyStatsRepository studyStatsRepository;
+  private final IdGenerator idGenerator;
+  private final FileStoragePort fileStoragePort;
+  private final StudyRepository studyRepository;
 
-    public void createStudy(CreateStudyRequest request, Long leaderId, MultipartFile imageFile) {
-        long studyId = idGenerator.nextId();
-        String imageUrl = uploadStudyImage(imageFile);
-        Study study = Study.of(studyId, leaderId, request.name(), request.maxMembers(),
-                Fee.of(request.hasFee(), request.amount()), imageUrl, request.description());
-        StudyStats studyStats = StudyStats.of(studyId);
+  private final StudyStyleRepository studyStyleRepository;
+  private final StudyRegionRepository studyRegionRepository;
+  private final StudyCategoryRepository studyCategoryRepository;
+  private final StudyStatsRepository studyStatsRepository;
 
-        studyRepository.save(study);
-        studyStatsRepository.save(studyStats);
+  public void createStudy(CreateStudyRequest request, Long leaderId, MultipartFile imageFile) {
+    long studyId = idGenerator.nextId();
+    String imageUrl = uploadStudyImage(imageFile);
+    Study study = Study.of(studyId, leaderId, request.name(), request.maxMembers(),
+        Fee.of(request.hasFee(), request.amount()), imageUrl, request.description());
+    StudyStats studyStats = StudyStats.of(studyId);
 
-        saveAllStudyCategories(request, studyId);
-        saveAllStudyStyles(request, studyId);
-        saveAllStudyRegions(request, studyId);
+    studyRepository.save(study);
+    studyStatsRepository.save(studyStats);
+
+    saveAllStudyCategories(request, studyId);
+    saveAllStudyStyles(request, studyId);
+    saveAllStudyRegions(request, studyId);
+  }
+
+  private void saveAllStudyCategories(CreateStudyRequest request, long studyId) {
+    var studyCategories = request.categories().stream()
+        .map(cat -> StudyCategory.of(idGenerator.nextId(), studyId, cat))
+        .toList();
+    studyCategoryRepository.saveAll(studyCategories);
+  }
+
+  private void saveAllStudyStyles(CreateStudyRequest request, long studyId) {
+    var studyStyles = request.styles().stream()
+        .map(style -> StudyStyle.of(idGenerator.nextId(), studyId, style))
+        .toList();
+    studyStyleRepository.saveAll(studyStyles);
+  }
+
+  private void saveAllStudyRegions(CreateStudyRequest request, long studyId) {
+    var studyRegions = request.regionCodes().stream()
+        .map(regionCode -> StudyRegion.of(idGenerator.nextId(), studyId, regionCode))
+        .toList();
+    studyRegionRepository.saveAll(studyRegions);
+  }
+
+  private String uploadStudyImage(MultipartFile imageFile) {
+    if (imageFile == null || imageFile.isEmpty()) {
+      return null;
     }
 
-    private void saveAllStudyCategories(CreateStudyRequest request, long studyId) {
-        var studyCategories = request.categories().stream()
-                .map(cat -> StudyCategory.of(idGenerator.nextId(), studyId, cat))
-                .toList();
-        studyCategoryRepository.saveAll(studyCategories);
-    }
-
-    private void saveAllStudyStyles(CreateStudyRequest request, long studyId) {
-        var studyStyles = request.styles().stream()
-                .map(style -> StudyStyle.of(idGenerator.nextId(), studyId, style))
-                .toList();
-        studyStyleRepository.saveAll(studyStyles);
-    }
-
-    private void saveAllStudyRegions(CreateStudyRequest request, long studyId) {
-        var studyRegions = request.regionCodes().stream()
-                .map(regionCode -> StudyRegion.of(idGenerator.nextId(), studyId, regionCode))
-                .toList();
-        studyRegionRepository.saveAll(studyRegions);
-    }
-
-    private String uploadStudyImage(MultipartFile imageFile) {
-        if (imageFile == null || imageFile.isEmpty()) {
-            return null;
-        }
-
-        UploadResult upload = fileStoragePort.upload(imageFile, FILE_DIR);
-        return upload.url();
-    }
+    UploadResult upload = fileStoragePort.upload(imageFile, FILE_DIR);
+    return upload.url();
+  }
 }

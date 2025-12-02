@@ -13,16 +13,16 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RegionInfoService implements RegionInfoPort {
 
-    private final RegionRepository regionRepository;
+  private final RegionRepository regionRepository;
 
-    @Override
-    public boolean exists(String regionCode) {
-        return regionRepository.existsById(regionCode);
-    }
+  @Override
+  public boolean exists(String regionCode) {
+    return regionRepository.existsById(regionCode);
+  }
 
-    @Override
-    public RegionInfo getRegionInfoByCode(String regionCode) {
-        Region region = regionRepository.getRegionById(regionCode);
-        return RegionInfo.of(region.getProvince(), region.getDistrict(), region.getNeighborhood());
-    }
+  @Override
+  public RegionInfo getRegionInfoByCode(String regionCode) {
+    Region region = regionRepository.getRegionById(regionCode);
+    return RegionInfo.of(region.getProvince(), region.getDistrict(), region.getNeighborhood());
+  }
 }

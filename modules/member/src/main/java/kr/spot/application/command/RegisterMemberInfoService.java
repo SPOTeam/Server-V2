@@ -13,12 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RegisterMemberInfoService {
 
-    private final MemberRepository memberRepository;
+  private final MemberRepository memberRepository;
 
-    public void updateMemberName(Long memberId, UpdateMemberNameRequest request) {
-        int updated = memberRepository.updateNameById(memberId, request.name());
-        if (updated == 0) {
-            throw new GeneralException(ErrorStatus._FAIL_TO_UPDATE_NAME);
-        }
+  public void updateMemberName(Long memberId, UpdateMemberNameRequest request) {
+    int updated = memberRepository.updateNameById(memberId, request.name());
+    if (updated == 0) {
+      throw new GeneralException(ErrorStatus._FAIL_TO_UPDATE_NAME);
     }
+  }
 }

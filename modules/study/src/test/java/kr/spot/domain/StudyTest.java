@@ -18,39 +18,45 @@ import org.junit.jupiter.api.Test;
 
 class StudyTest {
 
-    @Test
-    @DisplayName("스터디 객체를 정상적으로 생성할 수 있다")
-    void should_create_study_successfully() {
-        Study study = Study.of(ID, LEADER_ID, NAME, MAX_MEMBERS, Fee.of(HAS_FEE, FEE_AMOUNT), IMAGE_URL, DESCRIPTION);
+  @Test
+  @DisplayName("스터디 객체를 정상적으로 생성할 수 있다")
+  void should_create_study_successfully() {
+    Study study = Study.of(ID, LEADER_ID, NAME, MAX_MEMBERS, Fee.of(HAS_FEE, FEE_AMOUNT), IMAGE_URL,
+        DESCRIPTION);
 
-        assertThat(study).isNotNull();
-        assertThat(study.getId()).isEqualTo(ID);
-    }
+    assertThat(study).isNotNull();
+    assertThat(study.getId()).isEqualTo(ID);
+  }
 
-    @Test
-    @DisplayName("스터디 이름이 null 이거나 공백일 경우 예외가 발생한다")
-    void should_throw_exception_when_name_is_null_or_empty() {
-        assertThatThrownBy(
-                () -> Study.of(ID, LEADER_ID, null, MAX_MEMBERS, Fee.of(HAS_FEE, FEE_AMOUNT), IMAGE_URL, DESCRIPTION))
-                .isInstanceOf(GeneralException.class);
+  @Test
+  @DisplayName("스터디 이름이 null 이거나 공백일 경우 예외가 발생한다")
+  void should_throw_exception_when_name_is_null_or_empty() {
+    assertThatThrownBy(
+        () -> Study.of(ID, LEADER_ID, null, MAX_MEMBERS, Fee.of(HAS_FEE, FEE_AMOUNT), IMAGE_URL,
+            DESCRIPTION))
+        .isInstanceOf(GeneralException.class);
 
-        assertThatThrownBy(
-                () -> Study.of(ID, LEADER_ID, "", MAX_MEMBERS, Fee.of(HAS_FEE, FEE_AMOUNT), IMAGE_URL, DESCRIPTION))
-                .isInstanceOf(GeneralException.class);
+    assertThatThrownBy(
+        () -> Study.of(ID, LEADER_ID, "", MAX_MEMBERS, Fee.of(HAS_FEE, FEE_AMOUNT), IMAGE_URL,
+            DESCRIPTION))
+        .isInstanceOf(GeneralException.class);
 
-        assertThatThrownBy(
-                () -> Study.of(ID, LEADER_ID, "   ", MAX_MEMBERS, Fee.of(HAS_FEE, FEE_AMOUNT), IMAGE_URL, DESCRIPTION))
-                .isInstanceOf(GeneralException.class);
-    }
+    assertThatThrownBy(
+        () -> Study.of(ID, LEADER_ID, "   ", MAX_MEMBERS, Fee.of(HAS_FEE, FEE_AMOUNT), IMAGE_URL,
+            DESCRIPTION))
+        .isInstanceOf(GeneralException.class);
+  }
 
-    @Test
-    @DisplayName("최대 멤버 수가 1 미만일 경우 예외가 발생한다")
-    void should_throw_exception_when_max_members_is_less_than_one() {
-        assertThatThrownBy(() -> Study.of(ID, LEADER_ID, NAME, 0, Fee.of(HAS_FEE, FEE_AMOUNT), IMAGE_URL, DESCRIPTION))
-                .isInstanceOf(GeneralException.class);
+  @Test
+  @DisplayName("최대 멤버 수가 1 미만일 경우 예외가 발생한다")
+  void should_throw_exception_when_max_members_is_less_than_one() {
+    assertThatThrownBy(
+        () -> Study.of(ID, LEADER_ID, NAME, 0, Fee.of(HAS_FEE, FEE_AMOUNT), IMAGE_URL, DESCRIPTION))
+        .isInstanceOf(GeneralException.class);
 
-        assertThatThrownBy(() -> Study.of(ID, LEADER_ID, NAME, -5, Fee.of(HAS_FEE, FEE_AMOUNT), IMAGE_URL, DESCRIPTION))
-                .isInstanceOf(GeneralException.class);
-    }
-
+    assertThatThrownBy(
+        () -> Study.of(ID, LEADER_ID, NAME, -5, Fee.of(HAS_FEE, FEE_AMOUNT), IMAGE_URL,
+            DESCRIPTION))
+        .isInstanceOf(GeneralException.class);
+  }
 }

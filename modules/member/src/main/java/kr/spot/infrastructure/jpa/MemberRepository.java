@@ -13,15 +13,15 @@ import org.springframework.data.repository.query.Param;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-    boolean existsByEmailAndLoginType(Email email, LoginType loginType);
+  boolean existsByEmailAndLoginType(Email email, LoginType loginType);
 
-    Optional<Member> findByEmailAndLoginType(Email email, LoginType loginType);
+  Optional<Member> findByEmailAndLoginType(Email email, LoginType loginType);
 
-    default Member getMemberById(long id) {
-        return findById(id).orElseThrow(() -> new GeneralException(ErrorStatus._MEMBER_NOT_FOUND));
-    }
+  default Member getMemberById(long id) {
+    return findById(id).orElseThrow(() -> new GeneralException(ErrorStatus._MEMBER_NOT_FOUND));
+  }
 
-    @Modifying
-    @Query("UPDATE Member m SET m.name = :name WHERE m.id = :id")
-    int updateNameById(@Param("id") Long id, @Param("name") String name);
+  @Modifying
+  @Query("UPDATE Member m SET m.name = :name WHERE m.id = :id")
+  int updateNameById(@Param("id") Long id, @Param("name") String name);
 }

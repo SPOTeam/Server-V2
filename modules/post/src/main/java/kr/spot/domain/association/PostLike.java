@@ -19,17 +19,18 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "post_like",
-        uniqueConstraints = @UniqueConstraint(name = "uk_post_member", columnNames = {"post_id", "member_id"}))
+    uniqueConstraints = @UniqueConstraint(name = "uk_post_member", columnNames = {"post_id",
+        "member_id"}))
 public class PostLike extends BaseEntity {
 
-    @Id
-    private Long id;
+  @Id
+  private Long id;
 
-    private Long postId;
+  private Long postId;
 
-    private Long memberId;
+  private Long memberId;
 
-    public static PostLike of(Long id, Long postId, Long memberId) {
-        return new PostLike(id, postId, memberId);
-    }
+  public static PostLike of(Long id, Long postId, Long memberId) {
+    return new PostLike(id, postId, memberId);
+  }
 }

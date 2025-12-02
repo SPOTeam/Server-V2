@@ -13,13 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class GetPreferredRegionService implements GetPreferredRegionPort {
 
-    private final PreferredRegionRepository preferredRegionRepository;
+  private final PreferredRegionRepository preferredRegionRepository;
 
-    @Override
-    public List<String> get(Long viewerId) {
-        return preferredRegionRepository.findAllByMemberId(viewerId)
-                .stream()
-                .map(PreferredRegion::getRegionCode)
-                .toList();
-    }
+  @Override
+  public List<String> get(Long viewerId) {
+    return preferredRegionRepository.findAllByMemberId(viewerId)
+        .stream()
+        .map(PreferredRegion::getRegionCode)
+        .toList();
+  }
 }

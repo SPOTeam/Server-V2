@@ -23,40 +23,40 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class StudyApplyCommandController {
 
-    @Operation(summary = "스터디 신청", description = "특정 스터디에 참여 신청을 합니다.")
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "스터디 신청 성공")
-    })
-    @PostMapping("/{studyId}/apply")
-    public ResponseEntity<ApiResponse<Void>> applyStudy(
-            @Parameter(name = "studyId", description = "스터디 ID", in = ParameterIn.PATH) @PathVariable Long studyId,
-            @Parameter(hidden = true) @CurrentMember Long memberId) {
-        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
-    }
+  @Operation(summary = "스터디 신청", description = "특정 스터디에 참여 신청을 합니다.")
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "스터디 신청 성공")
+  })
+  @PostMapping("/{studyId}/apply")
+  public ResponseEntity<ApiResponse<Void>> applyStudy(
+      @Parameter(name = "studyId", description = "스터디 ID", in = ParameterIn.PATH) @PathVariable Long studyId,
+      @Parameter(hidden = true) @CurrentMember Long memberId) {
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
+  }
 
-    @Operation(summary = "스터디 신청 승인/거절", description = "스터디 신청을 승인하거나 거절합니다.")
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "스터디 신청 처리 성공")
-    })
-    @PostMapping("/{studyId}/applications/{applicationId}")
-    public ResponseEntity<ApiResponse<Void>> approveStudyApplication(
-            @Parameter(name = "studyId", description = "스터디 ID", in = ParameterIn.PATH) @PathVariable Long studyId,
-            @Parameter(name = "applicationId", description = "신청 ID", in = ParameterIn.PATH) @PathVariable Long applicationId,
-            @Parameter(hidden = true) @CurrentMember Long memberId,
-            @Parameter(name = "decision", description = "승인(APPROVE) 또는 거절(REJECT)") @RequestParam Decision decision) {
-        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
-    }
+  @Operation(summary = "스터디 신청 승인/거절", description = "스터디 신청을 승인하거나 거절합니다.")
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "스터디 신청 처리 성공")
+  })
+  @PostMapping("/{studyId}/applications/{applicationId}")
+  public ResponseEntity<ApiResponse<Void>> approveStudyApplication(
+      @Parameter(name = "studyId", description = "스터디 ID", in = ParameterIn.PATH) @PathVariable Long studyId,
+      @Parameter(name = "applicationId", description = "신청 ID", in = ParameterIn.PATH) @PathVariable Long applicationId,
+      @Parameter(hidden = true) @CurrentMember Long memberId,
+      @Parameter(name = "decision", description = "승인(APPROVE) 또는 거절(REJECT)") @RequestParam Decision decision) {
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
+  }
 
-    @Operation(summary = "스터디 최종 참가 여부 결정", description = "승인된 스터디에 최종 참가할지 여부를 결정합니다.")
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "스터디 참가 여부 결정 성공")
-    })
-    @PostMapping("/{studyId}/decide")
-    public ResponseEntity<ApiResponse<Void>> decideStudyParticipation(
-            @Parameter(name = "studyId", description = "스터디 ID", in = ParameterIn.PATH) @PathVariable Long studyId,
-            @Parameter(hidden = true) @CurrentMember Long memberId,
-            @Parameter(name = "decision", description = "승인(APPROVE) 또는 거절(REJECT)") @RequestParam Decision decision
-    ) {
-        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
-    }
+  @Operation(summary = "스터디 최종 참가 여부 결정", description = "승인된 스터디에 최종 참가할지 여부를 결정합니다.")
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "스터디 참가 여부 결정 성공")
+  })
+  @PostMapping("/{studyId}/decide")
+  public ResponseEntity<ApiResponse<Void>> decideStudyParticipation(
+      @Parameter(name = "studyId", description = "스터디 ID", in = ParameterIn.PATH) @PathVariable Long studyId,
+      @Parameter(hidden = true) @CurrentMember Long memberId,
+      @Parameter(name = "decision", description = "승인(APPROVE) 또는 거절(REJECT)") @RequestParam Decision decision
+  ) {
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
+  }
 }

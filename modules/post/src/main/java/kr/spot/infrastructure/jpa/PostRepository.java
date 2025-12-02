@@ -15,52 +15,51 @@ import org.springframework.data.repository.query.Param;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select p from Post p where p.id = :id")
-    Optional<Post> findByIdWithLock(long id);
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("select p from Post p where p.id = :id")
+  Optional<Post> findByIdWithLock(long id);
 
-    @Query("select p from Post p where p.postType = :postType order by p.id desc")
-    Optional<Post> findTopByPostTypeOrderByIdDesc(PostType postType);
+  @Query("select p from Post p where p.postType = :postType order by p.id desc")
+  Optional<Post> findTopByPostTypeOrderByIdDesc(PostType postType);
 
-    @Modifying
-    @Query("""
-              update Post p
-                 set p.title = :title,
-                     p.content = :content,
-                     p.postType = :postType,
-                     p.updatedAt = CURRENT_TIMESTAMP
-               where p.id = :postId
-                 and p.writerInfo.writerId = :writerId
-                 and p.status = 'ACTIVE'
-            """)
-    int updatePost(@Param("postId") Long postId,
-                   @Param("title") String title,
-                   @Param("content") String content,
-                   @Param("postType") PostType postType,
-                   @Param("writerId") Long writerId);
+  @Modifying
+  @Query("""
+        update Post p
+           set p.title = :title,
+               p.content = :content,
+               p.postType = :postType,
+               p.updatedAt = CURRENT_TIMESTAMP
+         where p.id = :postId
+           and p.writerInfo.writerId = :writerId
+           and p.status = 'ACTIVE'
+      """)
+  int updatePost(@Param("postId") Long postId,
+      @Param("title") String title,
+      @Param("content") String content,
+      @Param("postType") PostType postType,
+      @Param("writerId") Long writerId);
 
-    @Modifying
-    @Query("""
-              update Post p
-                 set p.status = 'INACTIVE',
-                     p.updatedAt = CURRENT_TIMESTAMP
-               where p.id = :postId
-                 and p.writerInfo.writerId = :writerId
-                 and p.status = 'ACTIVE'
-            """)
-    int deletePost(@Param("postId") Long postId,
-                   @Param("writerId") Long writerId);
+  @Modifying
+  @Query("""
+        update Post p
+           set p.status = 'INACTIVE',
+               p.updatedAt = CURRENT_TIMESTAMP
+         where p.id = :postId
+           and p.writerInfo.writerId = :writerId
+           and p.status = 'ACTIVE'
+      """)
+  int deletePost(@Param("postId") Long postId,
+      @Param("writerId") Long writerId);
 
-    @Query("select p from Post p where p.id in :postIds and p.status = 'ACTIVE'")
-    List<Post> getPostsByIds(@Param("postIds") List<Long> postIds);
+  @Query("select p from Post p where p.id in :postIds and p.status = 'ACTIVE'")
+  List<Post> getPostsByIds(@Param("postIds") List<Long> postIds);
 
-    default Post getPostByIdWithLock(long id) {
-        return findByIdWithLock(id).orElseThrow(() -> new GeneralException(ErrorStatus._POST_NOT_FOUND));
-    }
+  default Post getPostByIdWithLock(long id) {
+    return findByIdWithLock(id).orElseThrow(
+        () -> new GeneralException(ErrorStatus._POST_NOT_FOUND));
+  }
 
-    default Post getPostById(long id) {
-        return findById(id).orElseThrow(() -> new GeneralException(ErrorStatus._POST_NOT_FOUND));
-    }
-
-
+  default Post getPostById(long id) {
+    return findById(id).orElseThrow(() -> new GeneralException(ErrorStatus._POST_NOT_FOUND));
+  }
 }

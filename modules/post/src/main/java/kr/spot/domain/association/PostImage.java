@@ -18,12 +18,12 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PostImage extends BaseEntity {
 
-    @Id
-    private Long postId;
+  @Id
+  private Long postId;
 
-    private String imageUrl;
+  private String imageUrl;
 
-    public static PostImage of(Long postId, String imageUrl) {
-        return new PostImage(postId, imageUrl);
-    }
+  public static PostImage of(Long postId, String imageUrl) {
+    return new PostImage(postId, imageUrl);
+  }
 }

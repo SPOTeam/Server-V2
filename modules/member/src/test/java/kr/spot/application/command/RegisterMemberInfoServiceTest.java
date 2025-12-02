@@ -14,44 +14,44 @@ import org.junit.jupiter.api.Test;
 
 class RegisterMemberInfoServiceTest {
 
-    private MemberRepository memberRepository;
-    private RegisterMemberInfoService sut;
+  private MemberRepository memberRepository;
+  private RegisterMemberInfoService sut;
 
-    @BeforeEach
-    void setUp() {
-        memberRepository = mock(MemberRepository.class);
-        sut = new RegisterMemberInfoService(memberRepository);
-    }
+  @BeforeEach
+  void setUp() {
+    memberRepository = mock(MemberRepository.class);
+    sut = new RegisterMemberInfoService(memberRepository);
+  }
 
-    @Test
-    @DisplayName("회원 이름 업데이트 성공 시 예외가 발생하지 않아야 한다")
-    void should_update_member_name_when_member_exists() {
-        // given
-        Long memberId = 1L;
-        UpdateMemberNameRequest request = new UpdateMemberNameRequest("newName");
+  @Test
+  @DisplayName("회원 이름 업데이트 성공 시 예외가 발생하지 않아야 한다")
+  void should_update_member_name_when_member_exists() {
+    // given
+    Long memberId = 1L;
+    UpdateMemberNameRequest request = new UpdateMemberNameRequest("newName");
 
-        when(memberRepository.updateNameById(memberId, request.name())).thenReturn(1);
+    when(memberRepository.updateNameById(memberId, request.name())).thenReturn(1);
 
-        // when
-        sut.updateMemberName(memberId, request);
+    // when
+    sut.updateMemberName(memberId, request);
 
-        // then
-        verify(memberRepository).updateNameById(memberId, request.name());
-    }
+    // then
+    verify(memberRepository).updateNameById(memberId, request.name());
+  }
 
-    @Test
-    @DisplayName("회원이 존재하지 않으면 GeneralException을 던져야 한다")
-    void should_throw_exception_when_member_does_not_exist() {
-        // given
-        Long memberId = 99L;
-        UpdateMemberNameRequest request = new UpdateMemberNameRequest("newName");
+  @Test
+  @DisplayName("회원이 존재하지 않으면 GeneralException을 던져야 한다")
+  void should_throw_exception_when_member_does_not_exist() {
+    // given
+    Long memberId = 99L;
+    UpdateMemberNameRequest request = new UpdateMemberNameRequest("newName");
 
-        when(memberRepository.updateNameById(memberId, request.name())).thenReturn(0);
+    when(memberRepository.updateNameById(memberId, request.name())).thenReturn(0);
 
-        // when & then
-        assertThatThrownBy(() -> sut.updateMemberName(memberId, request))
-                .isInstanceOf(GeneralException.class);
+    // when & then
+    assertThatThrownBy(() -> sut.updateMemberName(memberId, request))
+        .isInstanceOf(GeneralException.class);
 
-        verify(memberRepository).updateNameById(memberId, request.name());
-    }
+    verify(memberRepository).updateNameById(memberId, request.name());
+  }
 }

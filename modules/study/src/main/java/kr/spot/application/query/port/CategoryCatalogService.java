@@ -9,8 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class CategoryCatalogService implements CategoryCatalogPort {
 
-    @Override
-    public boolean exists(String category) {
-        return Category.contains(category);
-    }
+  @Override
+  public boolean exists(String category) {
+    return Category.contains(category);
+  }
 }

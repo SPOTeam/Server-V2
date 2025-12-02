@@ -16,33 +16,33 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class KakaoOAuthStrategy implements OAuthStrategy {
 
-    private final KaKaoOauth kaKaoOauth;
+  private final KaKaoOauth kaKaoOauth;
 
-    @Override
-    public LoginType getType() {
-        return LoginType.KAKAO;
-    }
+  @Override
+  public LoginType getType() {
+    return LoginType.KAKAO;
+  }
 
-    @Override
-    public String getOauthRedirectURL() {
-        return kaKaoOauth.getOauthRedirectURL();
-    }
+  @Override
+  public String getOauthRedirectURL() {
+    return kaKaoOauth.getOauthRedirectURL();
+  }
 
-    @Override
-    public OAuthProfile getOAuthProfile(String code) {
-        KaKaoOAuthTokenDTO token = kaKaoOauth.requestAccessToken(code);
-        log.info(token.access_token());
-        return requestOAuthProfile(token.access_token());
-    }
+  @Override
+  public OAuthProfile getOAuthProfile(String code) {
+    KaKaoOAuthTokenDTO token = kaKaoOauth.requestAccessToken(code);
+    log.info(token.access_token());
+    return requestOAuthProfile(token.access_token());
+  }
 
-    @Override
-    public OAuthProfile getOAuthProfileForClient(String accessToken) {
-        return requestOAuthProfile(accessToken);
-    }
+  @Override
+  public OAuthProfile getOAuthProfileForClient(String accessToken) {
+    return requestOAuthProfile(accessToken);
+  }
 
-    private OAuthProfile requestOAuthProfile(String accessToken) {
-        KaKaoUser user = kaKaoOauth.requestUserInfo(accessToken);
-        return OAuthProfile.of(getType(), user.kakao_account().email(), user.properties().nickname(),
-                user.properties().profile_image());
-    }
+  private OAuthProfile requestOAuthProfile(String accessToken) {
+    KaKaoUser user = kaKaoOauth.requestUserInfo(accessToken);
+    return OAuthProfile.of(getType(), user.kakao_account().email(), user.properties().nickname(),
+        user.properties().profile_image());
+  }
 }

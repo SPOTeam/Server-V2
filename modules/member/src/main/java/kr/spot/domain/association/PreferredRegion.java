@@ -18,15 +18,14 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PreferredRegion extends BaseEntity {
 
-    @Id
-    private Long id;
+  @Id
+  private Long id;
 
-    private Long memberId;
+  private Long memberId;
 
-    private String regionCode;
+  private String regionCode;
 
-    public static PreferredRegion of(Long id, Long memberId, String regionCode) {
-        return new PreferredRegion(id, memberId, regionCode);
-    }
-
+  public static PreferredRegion of(Long id, Long memberId, String regionCode) {
+    return new PreferredRegion(id, memberId, regionCode);
+  }
 }

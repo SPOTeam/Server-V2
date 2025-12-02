@@ -7,38 +7,40 @@ import lombok.Builder;
 
 @Builder
 public record PostDetailResponse(
-        Long postId,
-        String title,
-        String content,
-        String imageUrl,
-        PostType postType,
-        WriterInfoResponse writer,
-        PostStatsResponse stats,
-        LocalDateTime createdAt,
-        List<CommentResponse> comments,
-        Integer commentCount
+    Long postId,
+    String title,
+    String content,
+    String imageUrl,
+    PostType postType,
+    WriterInfoResponse writer,
+    PostStatsResponse stats,
+    LocalDateTime createdAt,
+    List<CommentResponse> comments,
+    Integer commentCount
 ) {
 
-    public record CommentResponse(
-            Long commentId,
-            String content,
-            WriterInfoResponse writer,
-            LocalDateTime createdAt
-    ) {
-        public static CommentResponse of(Long commentId, String content, WriterInfoResponse writer,
-                                         LocalDateTime createdAt) {
-            return new CommentResponse(commentId, content, writer, createdAt);
-        }
-    }
+  public record CommentResponse(
+      Long commentId,
+      String content,
+      WriterInfoResponse writer,
+      LocalDateTime createdAt
+  ) {
 
-    public record WriterInfoResponse(
-            Long writerId,
-            String nickname,
-            String profileImageUrl
-    ) {
-        public static WriterInfoResponse of(Long writerId, String nickname, String profileImageUrl) {
-            return new WriterInfoResponse(writerId, nickname, profileImageUrl);
-        }
+    public static CommentResponse of(Long commentId, String content, WriterInfoResponse writer,
+        LocalDateTime createdAt) {
+      return new CommentResponse(commentId, content, writer, createdAt);
     }
+  }
+
+  public record WriterInfoResponse(
+      Long writerId,
+      String nickname,
+      String profileImageUrl
+  ) {
+
+    public static WriterInfoResponse of(Long writerId, String nickname, String profileImageUrl) {
+      return new WriterInfoResponse(writerId, nickname, profileImageUrl);
+    }
+  }
 
 }

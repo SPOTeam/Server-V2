@@ -15,30 +15,31 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EnsureMemberFromOAuthService implements EnsureMemberFromOAuthPort {
 
-    private final IdGenerator idGenerator;
-    private final MemberRepository memberRepository;
+  private final IdGenerator idGenerator;
+  private final MemberRepository memberRepository;
 
-    @Override
-    public long ensure(String provider, String email, String nickname, String imageUrl) {
-        LoginType loginType = LoginType.valueOf(provider);
-        if (checkIsExistMember(email, loginType)) {
-            return findMember(email, loginType).getId();
-        }
-        Member save = createAndSaveMember(email, nickname, imageUrl, loginType);
-        return save.getId();
+  @Override
+  public long ensure(String provider, String email, String nickname, String imageUrl) {
+    LoginType loginType = LoginType.valueOf(provider);
+    if (checkIsExistMember(email, loginType)) {
+      return findMember(email, loginType).getId();
     }
+    Member save = createAndSaveMember(email, nickname, imageUrl, loginType);
+    return save.getId();
+  }
 
-    private Member createAndSaveMember(String email, String nickname, String imageUrl, LoginType loginType) {
-        Member member = Member.of(idGenerator.nextId(), Email.of(email), nickname, loginType, imageUrl);
-        return memberRepository.save(member);
-    }
+  private Member createAndSaveMember(String email, String nickname, String imageUrl,
+      LoginType loginType) {
+    Member member = Member.of(idGenerator.nextId(), Email.of(email), nickname, loginType, imageUrl);
+    return memberRepository.save(member);
+  }
 
-    private boolean checkIsExistMember(String email, LoginType loginType) {
-        return memberRepository.existsByEmailAndLoginType(Email.of(email), loginType);
-    }
+  private boolean checkIsExistMember(String email, LoginType loginType) {
+    return memberRepository.existsByEmailAndLoginType(Email.of(email), loginType);
+  }
 
-    private Member findMember(String email, LoginType loginType) {
-        return memberRepository.findByEmailAndLoginType(Email.of(email), loginType)
-                .orElseThrow(() -> new GeneralException(ErrorStatus._MEMBER_NOT_FOUND));
-    }
+  private Member findMember(String email, LoginType loginType) {
+    return memberRepository.findByEmailAndLoginType(Email.of(email), loginType)
+        .orElseThrow(() -> new GeneralException(ErrorStatus._MEMBER_NOT_FOUND));
+  }
 }

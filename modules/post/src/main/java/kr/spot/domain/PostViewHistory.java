@@ -19,16 +19,16 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PostViewHistory extends BaseEntity {
 
-    @Id
-    Long id;
+  @Id
+  Long id;
 
-    Long viewerId;
+  Long viewerId;
 
-    Long postId;
+  Long postId;
 
-    LocalDateTime viewedAt;
+  LocalDateTime viewedAt;
 
-    public static PostViewHistory of(Long id, Long viewerId, Long postId) {
-        return new PostViewHistory(id, viewerId, postId, LocalDateTime.now());
-    }
+  public static PostViewHistory of(Long id, Long viewerId, Long postId) {
+    return new PostViewHistory(id, viewerId, postId, LocalDateTime.now());
+  }
 }
