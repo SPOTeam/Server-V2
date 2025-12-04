@@ -88,6 +88,41 @@ public class GetPostService {
   }
 
   /**
+   * 게시글 목록을 커서 기반 페이지네이션으로 조회합니다.
+   *
+   * @param postType 게시글 유형
+   * @param cursor   이전 페이지의 마지막 게시글 ID (다음 페이지 조회를 위한 커서)
+   * @param viewerId 현재 조회자 ID
+   * @param size     요청 페이지 크기
+   * @return 게시글 목록 및 페이지네이션 정보
+   */
+  public PostListResponse getPostListByCountQuery(PostType postType, Long cursor, Long viewerId,
+      Integer size) {
+    final int pageSize = Math.min(size, MAX_PAGE_SIZE);
+
+    List<Post> rows = postQueryRepository.findPageByIdDesc(postType, cursor, pageSize + 1);
+    boolean hasNext = rows.size() > pageSize;
+    if (hasNext) {
+      rows = rows.subList(0, pageSize);
+    }
+    Long nextCursor = hasNext ? rows.getLast().getId() : null;
+
+    List<Long> ids = rows.stream().map(Post::getId).toList();
+    Map<Long, PostStats> stats = postQueryRepository.findStatsByPostIdsByCountQuery(ids);
+    Set<Long> liked = postQueryRepository.findLikedPostIds(viewerId, ids);
+
+    List<PostList> posts = rows.stream()
+        .map(p -> toPostList(p, stats.get(p.getId()), liked.contains(p.getId())))
+        .toList();
+
+    return PostListResponse.builder()
+        .posts(posts)
+        .hasNext(hasNext)
+        .nextCursor(nextCursor)
+        .build();
+  }
+
+  /**
    * 특정 게시글의 상세 정보를 조회합니다.
    *
    * @param postId   게시글 ID
