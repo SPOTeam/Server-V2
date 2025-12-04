@@ -29,4 +29,8 @@ public class PostStats extends BaseEntity {
   public static PostStats of(Long postId) {
     return new PostStats(postId, 0L, 0L, 0L);
   }
+
+  public static PostStats of(Long postId, Long viewCount, Long likeCount, Long commentCount) {
+    return new PostStats(postId, viewCount, likeCount, commentCount);
+  }
 }
