@@ -45,7 +45,7 @@ public class GetPostService {
   public static final int MAX_CONTENT_LENGTH = 100;
 
   private final PostViewCounter postViewCounter;
-  private final ViewAbuseGuard viewAbuseGuard;
+  private final ViewAbuseGuard redisViewAbuseGuard; // 임시 조치
   private final HotPostStore hotPostStore;
   private final PostRepository postRepository;
   private final PostQueryRepository postQueryRepository;
@@ -187,7 +187,7 @@ public class GetPostService {
   private long getViewDeltaFromCounter(Long postId, Long viewerId) {
     long viewDelta = 0L;
     try {
-      if (viewAbuseGuard.shouldCount(postId, viewerId)) {
+      if (redisViewAbuseGuard.shouldCount(postId, viewerId)) {
         viewDelta = postViewCounter.incrementAndGetDelta(postId); // 델타 증가 및 현재값 반환
       } else {
         viewDelta = postViewCounter.currentDelta(postId); // 델타만 조회
