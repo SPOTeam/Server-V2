@@ -41,8 +41,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
             .requestMatchers(HttpMethod.GET, "/actuator/prometheus").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/oauth/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/test/posts/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/test/posts/**").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/test/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/test/**").permitAll()
             // Swagger & OpenAPI
             .requestMatchers(
                 "/swagger-ui.html",
