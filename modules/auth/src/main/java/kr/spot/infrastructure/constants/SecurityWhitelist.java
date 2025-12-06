@@ -19,7 +19,7 @@ public abstract class SecurityWhitelist {
       "/webjars",
       "/api/oauth",
       "/api/auth",
-      "/actuator/prometheus",
+      "/actuator",
       "/api/test/posts",
       "/api/test/studies"
   };
