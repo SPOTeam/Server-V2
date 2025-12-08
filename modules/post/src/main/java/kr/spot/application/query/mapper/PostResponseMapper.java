@@ -29,7 +29,7 @@ public final class PostResponseMapper {
   }
 
   /* -------- 목록용 -------- */
-  public static PostList toPostList(Post p, PostStats st, PostImage pi, boolean liked) {
+  public static PostList toPostList(Post p, PostStats st, boolean liked) {
     long view = st.getViewCount();
     long like = st.getLikeCount();
     long comment = st.getCommentCount();
@@ -39,7 +39,6 @@ public final class PostResponseMapper {
         p.getTitle(),
         summarize(p.getContent()),
         p.getPostType(),
-        pi == null ? null : pi.getImageUrl(),
         new PostStatsResponse(like, view, comment),
         p.getCreatedAt(),
         liked

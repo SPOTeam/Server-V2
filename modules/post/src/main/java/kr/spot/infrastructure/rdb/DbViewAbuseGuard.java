@@ -4,11 +4,10 @@ import kr.spot.IdGenerator;
 import kr.spot.application.ports.ViewAbuseGuard;
 import kr.spot.infrastructure.jpa.PostViewHistoryRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-@Component
+//@Component
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 @RequiredArgsConstructor
 public class DbViewAbuseGuard implements ViewAbuseGuard {
