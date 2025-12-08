@@ -74,10 +74,12 @@ public class GetPostService {
 
     List<Long> ids = rows.stream().map(Post::getId).toList();
     Map<Long, PostStats> stats = postQueryRepository.findStatsByPostIds(ids);
+    Map<Long, PostImage> images = postQueryRepository.findImagesByPostIds(ids);
     Set<Long> liked = postQueryRepository.findLikedPostIds(viewerId, ids);
 
     List<PostList> posts = rows.stream()
-        .map(p -> toPostList(p, stats.get(p.getId()), liked.contains(p.getId())))
+        .map(p -> toPostList(p, stats.get(p.getId()), images.get(p.getId()),
+            liked.contains(p.getId())))
         .toList();
 
     return PostListResponse.builder()
@@ -109,10 +111,12 @@ public class GetPostService {
 
     List<Long> ids = rows.stream().map(Post::getId).toList();
     Map<Long, PostStats> stats = postQueryRepository.findStatsByPostIdsByCountQuery(ids);
+    Map<Long, PostImage> images = postQueryRepository.findImagesByPostIds(ids);
     Set<Long> liked = postQueryRepository.findLikedPostIds(viewerId, ids);
 
     List<PostList> posts = rows.stream()
-        .map(p -> toPostList(p, stats.get(p.getId()), liked.contains(p.getId())))
+        .map(p -> toPostList(p, stats.get(p.getId()), images.get(p.getId()),
+            liked.contains(p.getId())))
         .toList();
 
     return PostListResponse.builder()
