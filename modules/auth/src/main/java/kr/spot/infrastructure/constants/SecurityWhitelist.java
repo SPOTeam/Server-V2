@@ -20,8 +20,7 @@ public abstract class SecurityWhitelist {
       "/api/oauth",
       "/api/auth",
       "/actuator",
-      "/api/test/posts",
-      "/api/test/studies"
+      "/api/test",
   };
 
   // 정규식으로 매칭되는 경로들
