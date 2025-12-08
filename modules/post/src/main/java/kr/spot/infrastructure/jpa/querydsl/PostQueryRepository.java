@@ -16,6 +16,8 @@ import kr.spot.domain.PostStats;
 import kr.spot.domain.QComment;
 import kr.spot.domain.QPost;
 import kr.spot.domain.QPostStats;
+import kr.spot.domain.association.PostImage;
+import kr.spot.domain.association.QPostImage;
 import kr.spot.domain.association.QPostLike;
 import kr.spot.domain.enums.PostType;
 import lombok.RequiredArgsConstructor;
@@ -62,6 +64,19 @@ public class PostQueryRepository {
         .fetch()
         .stream()
         .collect(Collectors.toMap(PostStats::getPostId, it -> it));
+  }
+
+  public Map<Long, PostImage> findImagesByPostIds(Collection<Long> postIds) {
+    if (postIds.isEmpty()) {
+      return Map.of();
+    }
+    QPostImage pi = QPostImage.postImage;
+    return query
+        .selectFrom(pi)
+        .where(pi.postId.in(postIds))
+        .fetch()
+        .stream()
+        .collect(Collectors.toMap(PostImage::getPostId, it -> it));
   }
 
   public Map<Long, PostStats> findStatsByPostIdsByCountQuery(Collection<Long> postIds) {
