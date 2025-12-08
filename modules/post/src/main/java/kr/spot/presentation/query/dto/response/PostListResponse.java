@@ -17,16 +17,15 @@ public record PostListResponse(
       String title,
       String content,
       PostType postType,
-      String imageUrl,
       PostStatsResponse stats,
       LocalDateTime createdAt,
       Boolean isLiked
   ) {
 
     public static PostList of(Long postId, String title, String content, PostType postType,
-        String imageUrl, PostStatsResponse stats, LocalDateTime createdAt,
+        PostStatsResponse stats, LocalDateTime createdAt,
         Boolean isLiked) {
-      return new PostList(postId, title, content, postType, imageUrl, stats, createdAt, isLiked);
+      return new PostList(postId, title, content, postType, stats, createdAt, isLiked);
     }
   }
 }

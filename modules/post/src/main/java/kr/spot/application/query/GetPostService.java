@@ -45,7 +45,7 @@ public class GetPostService {
   public static final int MAX_CONTENT_LENGTH = 100;
 
   private final PostViewCounter postViewCounter;
-  private final ViewAbuseGuard redisViewAbuseGuard; // 임시 조치
+  private final ViewAbuseGuard viewAbuseGuard;
   private final HotPostStore hotPostStore;
   private final PostRepository postRepository;
   private final PostQueryRepository postQueryRepository;
@@ -53,15 +53,6 @@ public class GetPostService {
   private final PostStatsRepository postStatsRepository;
   private final PostImageRepository postImageRepository;
 
-  /**
-   * 게시글 목록을 커서 기반 페이지네이션으로 조회합니다.
-   *
-   * @param postType 게시글 유형
-   * @param cursor   이전 페이지의 마지막 게시글 ID (다음 페이지 조회를 위한 커서)
-   * @param viewerId 현재 조회자 ID
-   * @param size     요청 페이지 크기
-   * @return 게시글 목록 및 페이지네이션 정보
-   */
   public PostListResponse getPostList(PostType postType, Long cursor, Long viewerId, Integer size) {
     final int pageSize = Math.min(size, MAX_PAGE_SIZE);
 
@@ -74,12 +65,10 @@ public class GetPostService {
 
     List<Long> ids = rows.stream().map(Post::getId).toList();
     Map<Long, PostStats> stats = postQueryRepository.findStatsByPostIds(ids);
-    Map<Long, PostImage> images = postQueryRepository.findImagesByPostIds(ids);
     Set<Long> liked = postQueryRepository.findLikedPostIds(viewerId, ids);
 
     List<PostList> posts = rows.stream()
-        .map(p -> toPostList(p, stats.get(p.getId()), images.get(p.getId()),
-            liked.contains(p.getId())))
+        .map(p -> toPostList(p, stats.get(p.getId()), liked.contains(p.getId())))
         .toList();
 
     return PostListResponse.builder()
@@ -89,50 +78,6 @@ public class GetPostService {
         .build();
   }
 
-  /**
-   * 게시글 목록을 커서 기반 페이지네이션으로 조회합니다.
-   *
-   * @param postType 게시글 유형
-   * @param cursor   이전 페이지의 마지막 게시글 ID (다음 페이지 조회를 위한 커서)
-   * @param viewerId 현재 조회자 ID
-   * @param size     요청 페이지 크기
-   * @return 게시글 목록 및 페이지네이션 정보
-   */
-  public PostListResponse getPostListByCountQuery(PostType postType, Long cursor, Long viewerId,
-      Integer size) {
-    final int pageSize = Math.min(size, MAX_PAGE_SIZE);
-
-    List<Post> rows = postQueryRepository.findPageByIdDesc(postType, cursor, pageSize + 1);
-    boolean hasNext = rows.size() > pageSize;
-    if (hasNext) {
-      rows = rows.subList(0, pageSize);
-    }
-    Long nextCursor = hasNext ? rows.getLast().getId() : null;
-
-    List<Long> ids = rows.stream().map(Post::getId).toList();
-    Map<Long, PostStats> stats = postQueryRepository.findStatsByPostIdsByCountQuery(ids);
-    Map<Long, PostImage> images = postQueryRepository.findImagesByPostIds(ids);
-    Set<Long> liked = postQueryRepository.findLikedPostIds(viewerId, ids);
-
-    List<PostList> posts = rows.stream()
-        .map(p -> toPostList(p, stats.get(p.getId()), images.get(p.getId()),
-            liked.contains(p.getId())))
-        .toList();
-
-    return PostListResponse.builder()
-        .posts(posts)
-        .hasNext(hasNext)
-        .nextCursor(nextCursor)
-        .build();
-  }
-
-  /**
-   * 특정 게시글의 상세 정보를 조회합니다.
-   *
-   * @param postId   게시글 ID
-   * @param viewerId 현재 조회자 ID
-   * @return 게시글 상세 정보 (Post, PostStats, Comments 포함)
-   */
   public PostDetailResponse getPostDetail(Long postId, Long viewerId) {
     Post post = postRepository.getPostById(postId);
     PostStats postStats = postStatsRepository.getPostStatsById(postId);
@@ -143,12 +88,6 @@ public class GetPostService {
     return toPostDetail(post, postStats, postImage, displayView, comments);
   }
 
-
-  /**
-   * 인기 게시글 상위 3개를 조회합니다.
-   *
-   * @return 인기 게시글 3개의 개요 정보
-   */
   public PostOverviewResponse getHotPosts(HotPostSortBy sortBy) {
     List<Long> top3 = hotPostStore.getTop3(sortBy);
     if (top3.isEmpty()) {
@@ -165,11 +104,6 @@ public class GetPostService {
     return PostOverviewResponse.of(hotPosts);
   }
 
-  /**
-   * 게시글 유형별 최신 게시글을 조회합니다.
-   *
-   * @return 게시글 유형별 최신 게시글 정보
-   */
   public RecentPostResponse getRecentPosts() {
     List<Post> latest = postQueryRepository.findLatestOnePerType();
     if (latest.isEmpty()) {
@@ -187,17 +121,15 @@ public class GetPostService {
     return RecentPostResponse.of(items);
   }
 
-
   private long getViewDeltaFromCounter(Long postId, Long viewerId) {
     long viewDelta = 0L;
     try {
-      if (redisViewAbuseGuard.shouldCount(postId, viewerId)) {
+      if (viewAbuseGuard.shouldCount(postId, viewerId)) {
         viewDelta = postViewCounter.incrementAndGetDelta(postId); // 델타 증가 및 현재값 반환
       } else {
         viewDelta = postViewCounter.currentDelta(postId); // 델타만 조회
       }
     } catch (Exception ignore) {
-      // Redis 장애 시에도 조회가 가능하도록 예외 무시: 표시값은 DB 기준
       log.warn("Redis view counter access failed for postId: {}", postId, ignore);
     }
     return viewDelta;

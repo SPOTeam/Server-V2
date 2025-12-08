@@ -70,26 +70,6 @@ public class PostQueryController {
             getPostService.getPostList(postType, cursor, viewerId, size)));
   }
 
-  @Operation(summary = "게시글 리스트 조회", description =
-      "성능 테스트를 위한 API입니다.")
-  @ApiResponses({
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "size 파라미터는 1과 50 사이여야 합니다.", content = @Content(schema = @Schema(implementation = kr.spot.ApiResponse.class))),
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자입니다.", content = @Content(schema = @Schema(implementation = kr.spot.ApiResponse.class)))
-  })
-  @GetMapping("/count-query")
-  public ResponseEntity<ApiResponse<PostListResponse>> getPostListByCountQuery(
-      @CurrentMember @Parameter(hidden = true) Long viewerId,
-      @RequestParam(required = false) Long cursor,
-      @RequestParam(required = false) PostType postType,
-      @RequestParam(defaultValue = "10") @Min(1) @Max(50) Integer size
-  ) {
-    return ResponseEntity.ok(
-        ApiResponse.onSuccess(SuccessStatus._OK,
-            getPostService.getPostListByCountQuery(postType, cursor, viewerId, size)));
-  }
-
-
   @Operation(summary = "BEST 인기글 조회", description = "인기 게시글 3개를 조회합니다.")
   @GetMapping("/hot")
   public ResponseEntity<ApiResponse<PostOverviewResponse>> getHotPosts(
