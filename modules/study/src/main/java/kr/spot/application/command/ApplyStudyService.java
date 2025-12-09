@@ -3,6 +3,7 @@ package kr.spot.application.command;
 import kr.spot.IdGenerator;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.domain.associations.StudyMember;
+import kr.spot.domain.enums.Decision;
 import kr.spot.exception.GeneralException;
 import kr.spot.infrastructure.jpa.StudyRepository;
 import kr.spot.infrastructure.jpa.associations.StudyMemberRepository;
@@ -21,7 +22,7 @@ public class ApplyStudyService {
   private final StudyMemberRepository studyMemberRepository;
 
   public void applyStudy(Long studyId, Long memberId, ApplyStudyRequest request) {
-    validateIsExistMember(studyId);
+    validateIsExistStudy(studyId);
     studyMemberRepository.save(
         StudyMember.apply(
             idGenerator.nextId(),
@@ -31,9 +32,23 @@ public class ApplyStudyService {
         ));
   }
 
-  private void validateIsExistMember(Long studyId) {
+  public void processStudyApplication(Long studyId, Long applicationId, Long memberId,
+      Decision decision) {
+    validateIsStudyLeader(studyId, memberId);
+    StudyMember studyMember = studyMemberRepository.getById(applicationId);
+    studyMember.decide(decision);
+  }
+
+  private void validateIsExistStudy(Long studyId) {
     if (!studyRepository.existsById(studyId)) {
       throw new GeneralException(ErrorStatus._STUDY_NOT_FOUND);
+    }
+  }
+
+  private void validateIsStudyLeader(Long studyId, Long memberId) {
+    if (!studyMemberRepository.existsByStudyIdAndMemberIdAndStudyMemberStatus(
+        studyId, memberId, kr.spot.domain.enums.StudyMemberStatus.OWNER)) {
+      throw new GeneralException(ErrorStatus._ONLY_LEADER_CAN_ACCESS);
     }
   }
 }

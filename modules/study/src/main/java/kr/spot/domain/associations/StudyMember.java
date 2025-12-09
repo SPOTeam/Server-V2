@@ -5,6 +5,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import kr.spot.domain.BaseEntity;
+import kr.spot.domain.enums.Decision;
 import kr.spot.domain.enums.StudyMemberStatus;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -41,7 +42,11 @@ public class StudyMember extends BaseEntity {
     return new StudyMember(id, studyId, memberId, message, StudyMemberStatus.APPLIED);
   }
 
-  public void approve() {
-    this.studyMemberStatus = StudyMemberStatus.APPROVED;
+  public void decide(Decision decision) {
+    if (decision == Decision.APPROVE) {
+      this.studyMemberStatus = StudyMemberStatus.APPROVED;
+    } else if (decision == Decision.REJECT) {
+      this.studyMemberStatus = StudyMemberStatus.REJECTED;
+    }
   }
 }

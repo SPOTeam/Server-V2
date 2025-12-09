@@ -51,6 +51,7 @@ public class StudyApplyCommandController {
       @Parameter(name = "applicationId", description = "신청 ID", in = ParameterIn.PATH) @PathVariable Long applicationId,
       @Parameter(hidden = true) @CurrentMember Long memberId,
       @Parameter(name = "decision", description = "승인(APPROVE) 또는 거절(REJECT)") @RequestParam Decision decision) {
+    applyStudyService.processStudyApplication(studyId, applicationId, memberId, decision);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
   }
 

@@ -39,6 +39,8 @@ public enum ErrorStatus implements BaseErrorCode {
   _NO_SUCH_CATEGORY(400, "STUDY4001", "존재하지 않는 카테고리입니다."),
   _NO_SUCH_STUDY_MEMBER_STATUS(400, "STUDY4002", "존재하지 않는 스터디 멤버 상태입니다."),
   _STUDY_NOT_FOUND(404, "STUDY404", "스터디를 찾을 수 없습니다."),
+  _STUDY_MEMBER_NOT_FOUND(404, "STUDYMEMBER404", "스터디 멤버를 찾을 수 없습니다."),
+  _ONLY_LEADER_CAN_ACCESS(403, "STUDY403", "스터디장만 접근 가능합니다."),
 
   // 게시글 관련
   _POST_NOT_FOUND(404, "POST404", "게시글을 찾을 수 없습니다."),
