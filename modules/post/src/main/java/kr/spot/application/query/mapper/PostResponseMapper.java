@@ -47,14 +47,14 @@ public final class PostResponseMapper {
 
   /* -------- 상세용 -------- */
   public static PostDetailResponse toPostDetail(Post post, PostStats st, PostImage postImage,
-      long displayView,
-      List<Comment> comments) {
+      long displayView, List<Comment> comments, boolean liked) {
     return PostDetailResponse.builder()
         .postId(post.getId())
         .title(post.getTitle())
         .content(post.getContent())
         .imageUrl(postImage.getImageUrl())
         .postType(post.getPostType())
+        .isLiked(liked)
         .writer(PostDetailResponse.WriterInfoResponse.of(
             post.getWriterInfo().getWriterId(),
             post.getWriterInfo().getWriterName(),

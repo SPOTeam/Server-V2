@@ -77,6 +77,22 @@ public class PostQueryRepository {
     );
   }
 
+  public boolean isLiked(Long viewerId, Long postId) {
+    if (viewerId == null) {
+      return false;
+    }
+
+    QPostLike like = QPostLike.postLike;
+
+    Integer fetchOne = query.selectOne()
+        .from(like)
+        .where(like.memberId.eq(viewerId),
+            like.postId.eq(postId))
+        .fetchFirst();
+
+    return fetchOne != null;
+  }
+
   public List<Post> findLatestOnePerType() {
     QPost p = QPost.post;
 
