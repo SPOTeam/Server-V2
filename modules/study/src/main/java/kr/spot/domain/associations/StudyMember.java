@@ -28,15 +28,17 @@ public class StudyMember extends BaseEntity {
 
   private Long memberId;
 
+  private String message;
+
   @Enumerated(EnumType.STRING)
   private StudyMemberStatus studyMemberStatus;
 
-  public static StudyMember create(Long studyId, Long memberId) {
-    return new StudyMember(null, studyId, memberId, StudyMemberStatus.OWNER);
+  public static StudyMember create(Long id, Long studyId, Long memberId) {
+    return new StudyMember(id, studyId, memberId, null, StudyMemberStatus.OWNER);
   }
 
-  public static StudyMember apply(Long studyId, Long memberId) {
-    return new StudyMember(null, studyId, memberId, StudyMemberStatus.APPLIED);
+  public static StudyMember apply(Long id, Long studyId, Long memberId, String message) {
+    return new StudyMember(id, studyId, memberId, message, StudyMemberStatus.APPLIED);
   }
 
   public void approve() {
