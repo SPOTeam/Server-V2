@@ -17,17 +17,11 @@ public class StudyAccessValidator {
   private final StudyRepository studyRepository;
   private final StudyMemberRepository studyMemberRepository;
 
-  /**
-   * 스터디장 권한 검증
-   */
   public void validateStudyLeader(Long studyId, Long memberId) {
     Study study = studyRepository.getStudyById(studyId);
     study.validateIsStudyOwner(memberId);
   }
 
-  /**
-   * 스터디 멤버 권한 검증 (스터디장 또는 멤버)
-   */
   public void validateStudyMember(Long studyId, Long memberId) {
     boolean isMember = studyMemberRepository.existsByStudyIdAndMemberIdAndStudyMemberStatusIn(
         studyId,

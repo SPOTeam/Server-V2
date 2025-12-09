@@ -24,7 +24,8 @@ public class NotificationTarget {
   @Enumerated(EnumType.STRING)
   private NotificationType notificationType;
 
-  public static NotificationTarget of(Long targetMemberId, Long linkStudyId, NotificationType notificationType) {
+  public static NotificationTarget of(Long targetMemberId, Long linkStudyId,
+      NotificationType notificationType) {
     return new NotificationTarget(targetMemberId, linkStudyId, notificationType);
   }
 }
