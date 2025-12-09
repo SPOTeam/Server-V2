@@ -1,5 +1,7 @@
 package kr.spot.application.ports;
 
+import java.util.List;
+import java.util.Map;
 import kr.spot.domain.Member;
 import kr.spot.infrastructure.jpa.MemberRepository;
 import kr.spot.ports.GetMemberInfoPort;
@@ -16,11 +18,18 @@ public class GetMemberInfoService implements GetMemberInfoPort {
   private final MemberRepository memberRepository;
 
   @Override
-  public MemberInfoResponse getMemberInfo(long memberId) {
-    Member member = memberRepository.getMemberById(memberId);
-    return MemberInfoResponse.of(
-        member.getName(),
-        member.getProfileImageUrl()
-    );
+  public Map<Long, MemberInfoResponse> getMemberInfo(List<Long> memberIds) {
+    List<Member> members = memberRepository.findAllById(memberIds);
+
+    return members.stream()
+        .collect(
+            java.util.stream.Collectors.toMap(
+                Member::getId,
+                member -> new MemberInfoResponse(
+                    member.getName(),
+                    member.getProfileImageUrl()
+                )
+            )
+        );
   }
 }

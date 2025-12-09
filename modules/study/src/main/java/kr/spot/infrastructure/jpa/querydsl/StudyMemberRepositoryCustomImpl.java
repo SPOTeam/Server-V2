@@ -5,6 +5,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import kr.spot.domain.QStudy;
 import kr.spot.domain.associations.QStudyMember;
+import kr.spot.domain.associations.StudyMember;
 import kr.spot.domain.enums.StudyMemberStatus;
 import kr.spot.infrastructure.jpa.StudyMemberRepositoryCustom;
 import kr.spot.infrastructure.jpa.querydsl.dto.StudyApplicationInfo;
@@ -40,6 +41,22 @@ public class StudyMemberRepositoryCustomImpl implements StudyMemberRepositoryCus
             studyMember.studyMemberStatus.eq(status)
         )
         .orderBy(studyMember.createdAt.desc())
+        .fetch();
+  }
+
+  @Override
+  public List<StudyMember> findApplicationsByStudyIdAndStatus(Long studyId,
+      StudyMemberStatus status) {
+
+    QStudyMember studyMember = QStudyMember.studyMember;
+
+    return queryFactory
+        .selectFrom(studyMember)
+        .where(
+            studyMember.studyId.eq(studyId),
+            studyMember.studyMemberStatus.eq(status)
+        )
+        .orderBy(studyMember.createdAt.asc())
         .fetch();
   }
 }

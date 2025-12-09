@@ -1,8 +1,10 @@
 package kr.spot.ports;
 
+import java.util.List;
+import java.util.Map;
 import kr.spot.ports.dto.MemberInfoResponse;
 
 public interface GetMemberInfoPort {
 
-  MemberInfoResponse getMemberInfo(long memberId);
+  Map<Long, MemberInfoResponse> getMemberInfo(List<Long> memberIds);
 }

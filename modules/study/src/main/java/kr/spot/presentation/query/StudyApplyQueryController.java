@@ -49,6 +49,7 @@ public class StudyApplyQueryController {
       @Parameter(name = "studyId", description = "스터디 ID", in = ParameterIn.PATH) @PathVariable Long studyId,
       @Parameter(hidden = true) @CurrentMember Long memberId
   ) {
-    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,
+        getStudyApplicationService.getStudyApplications(studyId, memberId)));
   }
 }
