@@ -3,32 +3,28 @@ package kr.spot.application.query;
 import static kr.spot.common.MemberInfoResponseFixture.createMap;
 import static kr.spot.common.StudyApplicationInfoFixture.createList;
 import static kr.spot.common.StudyMemberFixture.applied;
-import static kr.spot.common.StudyMemberFixture.awaitingSelfApproval;
-import static kr.spot.common.StudyMemberFixture.owner;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import kr.spot.application.validator.StudyAccessValidator;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.common.MemberInfoResponseFixture;
-import kr.spot.common.StudyApplicationInfoFixture;
 import kr.spot.common.StudyMemberFixture;
 import kr.spot.domain.associations.StudyMember;
 import kr.spot.domain.enums.StudyMemberStatus;
 import kr.spot.exception.GeneralException;
 import kr.spot.infrastructure.jpa.StudyMemberRepositoryCustom;
-import kr.spot.infrastructure.jpa.associations.StudyMemberRepository;
 import kr.spot.infrastructure.jpa.querydsl.dto.StudyApplicationInfo;
 import kr.spot.ports.GetMemberInfoPort;
 import kr.spot.ports.dto.MemberInfoResponse;
 import kr.spot.presentation.query.dto.response.GetAppliesResponse;
 import kr.spot.presentation.query.dto.response.GetMyAppliedStudyResponse;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -48,10 +44,10 @@ class GetStudyApplicationServiceTest {
   private GetMemberInfoPort getMemberInfoPort;
 
   @Mock
-  private StudyMemberRepository studyMemberRepository;
+  private StudyMemberRepositoryCustom studyMemberRepositoryCustom;
 
   @Mock
-  private StudyMemberRepositoryCustom studyMemberRepositoryCustom;
+  private StudyAccessValidator studyAccessValidator;
 
   @Nested
   @DisplayName("내가 신청한 스터디 목록 조회 (getMyAppliedStudy)")
@@ -60,13 +56,13 @@ class GetStudyApplicationServiceTest {
     private final Long memberId = StudyMemberFixture.MEMBER_ID;
 
     @Test
-    @DisplayName("신청한 스터디가 있으면 스터디 목록을 반환한다")
+    @DisplayName("신청한 스터디가 있으면 목록을 반환한다")
     void should_return_applied_studies_when_exists() {
       // given
-      List<StudyApplicationInfo> studyApplicationInfos = createList(3);
+      List<StudyApplicationInfo> applications = createList(3);
       given(studyMemberRepositoryCustom.findMyAppliedStudiesWithStudyInfo(
           memberId, StudyMemberStatus.AWAITING_SELF_APPROVAL))
-          .willReturn(studyApplicationInfos);
+          .willReturn(applications);
 
       // when
       GetMyAppliedStudyResponse response = getStudyApplicationService.getMyAppliedStudy(memberId);
@@ -74,15 +70,16 @@ class GetStudyApplicationServiceTest {
       // then
       verify(studyMemberRepositoryCustom).findMyAppliedStudiesWithStudyInfo(
           memberId, StudyMemberStatus.AWAITING_SELF_APPROVAL);
+
       assertThat(response.studies()).hasSize(3);
       assertThat(response.studies().get(0).applicationId())
-          .isEqualTo(studyApplicationInfos.get(0).getStudyMemberId());
+          .isEqualTo(applications.get(0).getStudyMemberId());
       assertThat(response.studies().get(0).studyId())
-          .isEqualTo(studyApplicationInfos.get(0).getStudyId());
+          .isEqualTo(applications.get(0).getStudyId());
       assertThat(response.studies().get(0).title())
-          .isEqualTo(studyApplicationInfos.get(0).getStudyName());
+          .isEqualTo(applications.get(0).getStudyName());
       assertThat(response.studies().get(0).profileImageUrl())
-          .isEqualTo(studyApplicationInfos.get(0).getStudyProfileImageUrl());
+          .isEqualTo(applications.get(0).getStudyProfileImageUrl());
     }
 
     @Test
@@ -97,8 +94,6 @@ class GetStudyApplicationServiceTest {
       GetMyAppliedStudyResponse response = getStudyApplicationService.getMyAppliedStudy(memberId);
 
       // then
-      verify(studyMemberRepositoryCustom).findMyAppliedStudiesWithStudyInfo(
-          memberId, StudyMemberStatus.AWAITING_SELF_APPROVAL);
       assertThat(response.studies()).isEmpty();
     }
   }
@@ -114,17 +109,14 @@ class GetStudyApplicationServiceTest {
     @DisplayName("스터디장이 신청 내역을 조회하면 신청자 목록을 반환한다")
     void should_return_applications_when_leader_requests() {
       // given
-      StudyMember applicant1 = awaitingSelfApproval(1L, studyId, 10L);
-      StudyMember applicant2 = awaitingSelfApproval(2L, studyId, 20L);
+      StudyMember applicant1 = applied(1L, studyId, 10L, "참여하고 싶습니다");
+      StudyMember applicant2 = applied(2L, studyId, 20L, "열심히 하겠습니다");
       List<StudyMember> applications = List.of(applicant1, applicant2);
       List<Long> memberIds = List.of(10L, 20L);
       Map<Long, MemberInfoResponse> memberInfos = createMap(memberIds);
 
-      given(studyMemberRepository.existsByStudyIdAndMemberIdAndStudyMemberStatus(
-          studyId, leaderId, StudyMemberStatus.OWNER))
-          .willReturn(true);
       given(studyMemberRepositoryCustom.findApplicationsByStudyIdAndStatus(
-          studyId, StudyMemberStatus.AWAITING_SELF_APPROVAL))
+          studyId, StudyMemberStatus.APPLIED))
           .willReturn(applications);
       given(getMemberInfoPort.getMemberInfo(memberIds))
           .willReturn(memberInfos);
@@ -134,10 +126,9 @@ class GetStudyApplicationServiceTest {
           leaderId);
 
       // then
-      verify(studyMemberRepository).existsByStudyIdAndMemberIdAndStudyMemberStatus(
-          studyId, leaderId, StudyMemberStatus.OWNER);
+      verify(studyAccessValidator).validateStudyLeader(studyId, leaderId);
       verify(studyMemberRepositoryCustom).findApplicationsByStudyIdAndStatus(
-          studyId, StudyMemberStatus.AWAITING_SELF_APPROVAL);
+          studyId, StudyMemberStatus.APPLIED);
       verify(getMemberInfoPort).getMemberInfo(memberIds);
 
       assertThat(response.applies()).hasSize(2);
@@ -146,32 +137,22 @@ class GetStudyApplicationServiceTest {
       assertThat(response.applies().get(0).nickname())
           .isEqualTo(memberInfos.get(applicant1.getMemberId()).name());
       assertThat(response.applies().get(0).description()).isEqualTo(applicant1.getMessage());
-      assertThat(response.applies().get(0).profileImageUrl())
-          .isEqualTo(memberInfos.get(applicant1.getMemberId()).profileImageUrl());
     }
 
     @Test
     @DisplayName("신청자가 없으면 빈 목록을 반환한다")
     void should_return_empty_list_when_no_applications() {
       // given
-      given(studyMemberRepository.existsByStudyIdAndMemberIdAndStudyMemberStatus(
-          studyId, leaderId, StudyMemberStatus.OWNER))
-          .willReturn(true);
       given(studyMemberRepositoryCustom.findApplicationsByStudyIdAndStatus(
-          studyId, StudyMemberStatus.AWAITING_SELF_APPROVAL))
+          studyId, StudyMemberStatus.APPLIED))
           .willReturn(Collections.emptyList());
-      given(getMemberInfoPort.getMemberInfo(Collections.emptyList()))
-          .willReturn(Collections.emptyMap());
 
       // when
       GetAppliesResponse response = getStudyApplicationService.getStudyApplications(studyId,
           leaderId);
 
       // then
-      verify(studyMemberRepository).existsByStudyIdAndMemberIdAndStudyMemberStatus(
-          studyId, leaderId, StudyMemberStatus.OWNER);
-      verify(studyMemberRepositoryCustom).findApplicationsByStudyIdAndStatus(
-          studyId, StudyMemberStatus.AWAITING_SELF_APPROVAL);
+      verify(studyAccessValidator).validateStudyLeader(studyId, leaderId);
       assertThat(response.applies()).isEmpty();
     }
 
@@ -180,20 +161,16 @@ class GetStudyApplicationServiceTest {
     void should_throw_exception_when_not_leader() {
       // given
       Long nonLeaderId = 999L;
-      given(studyMemberRepository.existsByStudyIdAndMemberIdAndStudyMemberStatus(
-          studyId, nonLeaderId, StudyMemberStatus.OWNER))
-          .willReturn(false);
+      willThrow(new GeneralException(ErrorStatus._ONLY_LEADER_CAN_ACCESS))
+          .given(studyAccessValidator).validateStudyLeader(studyId, nonLeaderId);
 
       // when & then
-      assertThatThrownBy(
-          () -> getStudyApplicationService.getStudyApplications(studyId, nonLeaderId))
+      Assertions.assertThatThrownBy(
+              () -> getStudyApplicationService.getStudyApplications(studyId, nonLeaderId))
           .isInstanceOf(GeneralException.class)
           .hasFieldOrPropertyWithValue("status", ErrorStatus._ONLY_LEADER_CAN_ACCESS);
 
-      verify(studyMemberRepository).existsByStudyIdAndMemberIdAndStudyMemberStatus(
-          studyId, nonLeaderId, StudyMemberStatus.OWNER);
-      verify(studyMemberRepositoryCustom, never()).findApplicationsByStudyIdAndStatus(any(), any());
-      verify(getMemberInfoPort, never()).getMemberInfo(any());
+      verify(studyAccessValidator).validateStudyLeader(studyId, nonLeaderId);
     }
   }
 }

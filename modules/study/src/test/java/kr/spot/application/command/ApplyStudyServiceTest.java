@@ -1,232 +1,284 @@
 package kr.spot.application.command;
 
+import static kr.spot.common.ApplyStudyRequestFixture.create;
+import static kr.spot.common.StudyFixture.study;
+import static kr.spot.common.StudyMemberFixture.applied;
+import static kr.spot.common.StudyMemberFixture.awaitingSelfApproval;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
+import java.util.List;
+import kr.spot.IdGenerator;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.common.ApplyStudyRequestFixture;
 import kr.spot.common.StudyFixture;
 import kr.spot.common.StudyMemberFixture;
+import kr.spot.domain.Study;
 import kr.spot.domain.associations.StudyMember;
 import kr.spot.domain.enums.Decision;
 import kr.spot.domain.enums.StudyMemberStatus;
 import kr.spot.exception.GeneralException;
-import kr.spot.fake.FakeIdGenerator;
-import kr.spot.fake.FakeStudyMemberRepository;
-import kr.spot.fake.FakeStudyRepository;
+import kr.spot.infrastructure.jpa.StudyRepository;
+import kr.spot.infrastructure.jpa.associations.StudyMemberRepository;
 import kr.spot.presentation.command.dto.request.ApplyStudyRequest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
+@DisplayName("ApplyStudyService 단위 테스트")
 class ApplyStudyServiceTest {
 
-  private FakeIdGenerator fakeIdGenerator;
-  private FakeStudyRepository fakeStudyRepository;
-  private FakeStudyMemberRepository fakeStudyMemberRepository;
+  @InjectMocks
   private ApplyStudyService applyStudyService;
 
-  @BeforeEach
-  void setUp() {
-    fakeIdGenerator = new FakeIdGenerator(100L);
-    fakeStudyRepository = new FakeStudyRepository();
-    fakeStudyMemberRepository = new FakeStudyMemberRepository();
-    applyStudyService = new ApplyStudyService(
-        fakeIdGenerator,
-        fakeStudyRepository,
-        fakeStudyMemberRepository
-    );
-  }
+  @Mock
+  private IdGenerator idGenerator;
+
+  @Mock
+  private StudyRepository studyRepository;
+
+  @Mock
+  private StudyMemberRepository studyMemberRepository;
 
   @Nested
-  @DisplayName("스터디 신청 테스트")
-  class ApplyStudyTest {
+  @DisplayName("스터디 신청 처리 (processStudyApplication)")
+  class ProcessStudyApplication {
+
+    private final Long applicationId = 1L;
+    private final Long studyId = StudyMemberFixture.STUDY_ID;
+    private final Long leaderId = StudyFixture.LEADER_ID;
 
     @Test
-    @DisplayName("스터디가 존재하면 신청에 성공한다")
-    void should_apply_study_successfully_when_study_exists() {
-      // given
-      Long studyId = StudyFixture.ID;
-      Long memberId = 10L;
-      ApplyStudyRequest request = ApplyStudyRequestFixture.create();
-      fakeStudyRepository.save(StudyFixture.study());
-
-      // when
-      applyStudyService.applyStudy(studyId, memberId, request);
-
-      // then
-      assertThat(fakeStudyMemberRepository.count()).isEqualTo(1);
-      StudyMember savedMember = fakeStudyMemberRepository.findAll().get(0);
-      assertThat(savedMember.getId()).isEqualTo(100L);
-      assertThat(savedMember.getStudyId()).isEqualTo(studyId);
-      assertThat(savedMember.getMemberId()).isEqualTo(memberId);
-      assertThat(savedMember.getMessage()).isEqualTo(ApplyStudyRequestFixture.DEFAULT_MESSAGE);
-      assertThat(savedMember.getStudyMemberStatus()).isEqualTo(StudyMemberStatus.APPLIED);
-    }
-
-    @Test
-    @DisplayName("스터디가 존재하지 않으면 예외가 발생한다")
-    void should_throw_exception_when_study_not_found() {
-      // given
-      Long nonExistentStudyId = 999L;
-      Long memberId = 10L;
-      ApplyStudyRequest request = ApplyStudyRequestFixture.create();
-
-      // when & then
-      assertThatThrownBy(() -> applyStudyService.applyStudy(nonExistentStudyId, memberId, request))
-          .isInstanceOf(GeneralException.class)
-          .hasFieldOrPropertyWithValue("status", ErrorStatus._STUDY_NOT_FOUND);
-    }
-  }
-
-  @Nested
-  @DisplayName("스터디 신청 처리 테스트")
-  class ProcessStudyApplicationTest {
-
-    @Test
-    @DisplayName("스터디장이 신청을 승인하면 상태가 AWAITING_SELF_APPROVAL로 변경된다")
+    @DisplayName("스터디장이 신청을 승인하면 AWAITING_SELF_APPROVAL 상태로 변경된다")
     void should_approve_application_when_leader_approves() {
       // given
-      Long studyId = StudyMemberFixture.STUDY_ID;
-      Long leaderId = StudyMemberFixture.LEADER_ID;
-      Long applicantId = 10L;
-      Long applicationId = 50L;
+      StudyMember application = applied(applicationId, studyId, 100L, "참여하고 싶습니다");
+      Study study = study();
 
-      fakeStudyMemberRepository.save(StudyMemberFixture.owner(1L, studyId, leaderId));
-      StudyMember application = StudyMemberFixture.applied(applicationId, studyId, applicantId,
-          "참여하고 싶습니다");
-      fakeStudyMemberRepository.save(application);
+      given(studyMemberRepository.getStudyMemberById(applicationId)).willReturn(application);
+      given(studyRepository.getStudyById(studyId)).willReturn(study);
 
       // when
-      applyStudyService.processStudyApplication(studyId, applicationId, leaderId, Decision.APPROVE);
+      applyStudyService.processStudyApplication(applicationId, leaderId, Decision.APPROVE);
 
       // then
-      StudyMember processed = fakeStudyMemberRepository.getById(applicationId);
-      assertThat(processed.getStudyMemberStatus()).isEqualTo(StudyMemberStatus.AWAITING_SELF_APPROVAL);
+      assertThat(application.getStudyMemberStatus())
+          .isEqualTo(StudyMemberStatus.AWAITING_SELF_APPROVAL);
     }
 
     @Test
-    @DisplayName("스터디장이 신청을 거절하면 상태가 REJECTED로 변경된다")
+    @DisplayName("스터디장이 신청을 거절하면 REJECTED 상태로 변경된다")
     void should_reject_application_when_leader_rejects() {
       // given
-      Long studyId = StudyMemberFixture.STUDY_ID;
-      Long leaderId = StudyMemberFixture.LEADER_ID;
-      Long applicantId = 10L;
-      Long applicationId = 50L;
+      StudyMember application = applied(applicationId, studyId, 100L, "참여하고 싶습니다");
+      Study study = study();
 
-      fakeStudyMemberRepository.save(StudyMemberFixture.owner(1L, studyId, leaderId));
-      StudyMember application = StudyMemberFixture.applied(applicationId, studyId, applicantId,
-          "참여하고 싶습니다");
-      fakeStudyMemberRepository.save(application);
+      given(studyMemberRepository.getStudyMemberById(applicationId)).willReturn(application);
+      given(studyRepository.getStudyById(studyId)).willReturn(study);
 
       // when
-      applyStudyService.processStudyApplication(studyId, applicationId, leaderId, Decision.REJECT);
+      applyStudyService.processStudyApplication(applicationId, leaderId, Decision.REJECT);
 
       // then
-      StudyMember processed = fakeStudyMemberRepository.getById(applicationId);
-      assertThat(processed.getStudyMemberStatus()).isEqualTo(StudyMemberStatus.REJECTED);
+      assertThat(application.getStudyMemberStatus()).isEqualTo(StudyMemberStatus.REJECTED);
     }
 
     @Test
-    @DisplayName("스터디장이 아닌 사람이 신청을 처리하면 예외가 발생한다")
+    @DisplayName("스터디장이 아닌 사람이 처리하면 예외가 발생한다")
     void should_throw_exception_when_non_leader_processes() {
       // given
-      Long studyId = StudyMemberFixture.STUDY_ID;
-      Long leaderId = StudyMemberFixture.LEADER_ID;
+      StudyMember application = applied(applicationId, studyId, 100L, "참여하고 싶습니다");
+      Study study = study();
       Long nonLeaderId = 999L;
-      Long applicationId = 50L;
 
-      fakeStudyMemberRepository.save(StudyMemberFixture.owner(1L, studyId, leaderId));
+      given(studyMemberRepository.getStudyMemberById(applicationId)).willReturn(application);
+      given(studyRepository.getStudyById(studyId)).willReturn(study);
 
       // when & then
       assertThatThrownBy(
-          () -> applyStudyService.processStudyApplication(studyId, applicationId, nonLeaderId,
+          () -> applyStudyService.processStudyApplication(applicationId, nonLeaderId,
               Decision.APPROVE))
           .isInstanceOf(GeneralException.class)
           .hasFieldOrPropertyWithValue("status", ErrorStatus._ONLY_LEADER_CAN_ACCESS);
     }
 
     @Test
-    @DisplayName("존재하지 않는 신청을 처리하면 예외가 발생한다")
-    void should_throw_exception_when_application_not_found() {
+    @DisplayName("APPLIED 상태가 아닌 신청을 처리하면 예외가 발생한다")
+    void should_throw_exception_when_not_applied_status() {
       // given
-      Long studyId = StudyMemberFixture.STUDY_ID;
-      Long leaderId = StudyMemberFixture.LEADER_ID;
-      Long nonExistentApplicationId = 999L;
+      StudyMember application = awaitingSelfApproval(applicationId, studyId, 100L);
+      Study study = study();
 
-      fakeStudyMemberRepository.save(StudyMemberFixture.owner(1L, studyId, leaderId));
+      given(studyMemberRepository.getStudyMemberById(applicationId)).willReturn(application);
+      given(studyRepository.getStudyById(studyId)).willReturn(study);
 
       // when & then
       assertThatThrownBy(
-          () -> applyStudyService.processStudyApplication(studyId, nonExistentApplicationId,
-              leaderId, Decision.APPROVE))
+          () -> applyStudyService.processStudyApplication(applicationId, leaderId,
+              Decision.APPROVE))
           .isInstanceOf(GeneralException.class)
-          .hasFieldOrPropertyWithValue("status", ErrorStatus._STUDY_MEMBER_NOT_FOUND);
+          .hasFieldOrPropertyWithValue("status", ErrorStatus._NOT_PENDING_APPLICATION);
     }
   }
 
   @Nested
-  @DisplayName("최종 참여 결정 테스트")
-  class DecideFinalParticipationTest {
+  @DisplayName("최종 참가 결정 (decideFinalParticipation)")
+  class DecideFinalParticipation {
+
+    private final Long applicationId = 1L;
+    private final Long studyId = StudyMemberFixture.STUDY_ID;
+    private final Long applicantId = StudyMemberFixture.MEMBER_ID;
 
     @Test
-    @DisplayName("본인이 참여를 승인하면 상태가 APPROVED로 변경된다")
-    void should_approve_finally_when_member_accepts() {
+    @DisplayName("신청자가 최종 승인하면 APPROVED 상태로 변경된다")
+    void should_approve_when_applicant_confirms() {
       // given
-      Long studyId = StudyMemberFixture.STUDY_ID;
-      Long memberId = StudyMemberFixture.MEMBER_ID;
-      Long applicationId = 50L;
+      StudyMember application = awaitingSelfApproval(applicationId, studyId, applicantId);
 
-      StudyMember awaitingMember = StudyMemberFixture.awaitingSelfApproval(applicationId, studyId,
-          memberId);
-      fakeStudyMemberRepository.save(awaitingMember);
+      given(studyMemberRepository.getStudyMemberById(applicationId)).willReturn(application);
 
       // when
-      applyStudyService.decideFinalParticipation(studyId, memberId, Decision.APPROVE);
+      applyStudyService.decideFinalParticipation(applicationId, applicantId, Decision.APPROVE);
 
       // then
-      StudyMember result = fakeStudyMemberRepository.getById(applicationId);
-      assertThat(result.getStudyMemberStatus()).isEqualTo(StudyMemberStatus.APPROVED);
+      assertThat(application.getStudyMemberStatus()).isEqualTo(StudyMemberStatus.APPROVED);
     }
 
     @Test
-    @DisplayName("본인이 참여를 거절하면 상태가 SELF_REJECTED로 변경된다")
-    void should_self_reject_when_member_declines() {
+    @DisplayName("신청자가 최종 거절하면 SELF_REJECTED 상태로 변경된다")
+    void should_self_reject_when_applicant_rejects() {
       // given
-      Long studyId = StudyMemberFixture.STUDY_ID;
-      Long memberId = StudyMemberFixture.MEMBER_ID;
-      Long applicationId = 50L;
+      StudyMember application = awaitingSelfApproval(applicationId, studyId, applicantId);
 
-      StudyMember awaitingMember = StudyMemberFixture.awaitingSelfApproval(applicationId, studyId,
-          memberId);
-      fakeStudyMemberRepository.save(awaitingMember);
+      given(studyMemberRepository.getStudyMemberById(applicationId)).willReturn(application);
 
       // when
-      applyStudyService.decideFinalParticipation(studyId, memberId, Decision.REJECT);
+      applyStudyService.decideFinalParticipation(applicationId, applicantId, Decision.REJECT);
 
       // then
-      StudyMember result = fakeStudyMemberRepository.getById(applicationId);
-      assertThat(result.getStudyMemberStatus()).isEqualTo(StudyMemberStatus.SELF_REJECTED);
+      assertThat(application.getStudyMemberStatus()).isEqualTo(StudyMemberStatus.SELF_REJECTED);
     }
 
     @Test
-    @DisplayName("AWAITING_SELF_APPROVAL 상태가 아닌 경우 예외가 발생한다")
-    void should_throw_exception_when_not_awaiting_self_approval() {
+    @DisplayName("신청자가 아닌 사람이 최종 결정하면 예외가 발생한다")
+    void should_throw_exception_when_non_applicant_decides() {
       // given
-      Long studyId = StudyMemberFixture.STUDY_ID;
-      Long memberId = StudyMemberFixture.MEMBER_ID;
-      Long applicationId = 50L;
+      StudyMember application = awaitingSelfApproval(applicationId, studyId, applicantId);
+      Long otherMemberId = 999L;
 
-      StudyMember appliedMember = StudyMemberFixture.applied(applicationId, studyId, memberId,
-          "참여 희망");
-      fakeStudyMemberRepository.save(appliedMember);
+      given(studyMemberRepository.getStudyMemberById(applicationId)).willReturn(application);
 
       // when & then
       assertThatThrownBy(
-          () -> applyStudyService.decideFinalParticipation(studyId, memberId, Decision.APPROVE))
+          () -> applyStudyService.decideFinalParticipation(applicationId, otherMemberId,
+              Decision.APPROVE))
           .isInstanceOf(GeneralException.class)
-          .hasFieldOrPropertyWithValue("status", ErrorStatus._STUDY_MEMBER_NOT_FOUND);
+          .hasFieldOrPropertyWithValue("status", ErrorStatus._ONLY_APPLICANT_CAN_SELF_APPROVE);
+    }
+
+    @Test
+    @DisplayName("AWAITING_SELF_APPROVAL 상태가 아니면 예외가 발생한다")
+    void should_throw_exception_when_not_awaiting_self_approval() {
+      // given
+      StudyMember application = applied(applicationId, studyId, applicantId, "참여하고 싶습니다");
+
+      given(studyMemberRepository.getStudyMemberById(applicationId)).willReturn(application);
+
+      // when & then
+      assertThatThrownBy(
+          () -> applyStudyService.decideFinalParticipation(applicationId, applicantId,
+              Decision.APPROVE))
+          .isInstanceOf(GeneralException.class)
+          .hasFieldOrPropertyWithValue("status",
+              ErrorStatus._INVALID_STUDY_MEMBER_STATUS_FOR_SELF_APPROVAL);
+    }
+  }
+
+  @Nested
+  @DisplayName("스터디 신청 (applyStudy)")
+  class ApplyStudy {
+
+    private final Long studyId = StudyFixture.ID;
+    private final Long memberId = 100L;
+    private final Long generatedId = 999L;
+
+    @Test
+    @DisplayName("신청 이력이 없으면 신청이 정상적으로 생성된다")
+    void should_create_application_when_not_already_applied() {
+      // given
+      Study study = study();
+      ApplyStudyRequest request = create();
+
+      given(studyRepository.getStudyById(studyId)).willReturn(study);
+      given(studyMemberRepository.existsByStudyIdAndMemberIdAndStudyMemberStatusIn(
+          eq(studyId), eq(memberId), any())).willReturn(false);
+      given(idGenerator.nextId()).willReturn(generatedId);
+
+      // when
+      applyStudyService.applyStudy(studyId, memberId, request);
+
+      // then
+      ArgumentCaptor<StudyMember> captor = ArgumentCaptor.forClass(StudyMember.class);
+      verify(studyMemberRepository).save(captor.capture());
+
+      StudyMember savedApplication = captor.getValue();
+      assertThat(savedApplication.getId()).isEqualTo(generatedId);
+      assertThat(savedApplication.getStudyId()).isEqualTo(studyId);
+      assertThat(savedApplication.getMemberId()).isEqualTo(memberId);
+      assertThat(savedApplication.getMessage()).isEqualTo(ApplyStudyRequestFixture.DEFAULT_MESSAGE);
+      assertThat(savedApplication.getStudyMemberStatus()).isEqualTo(StudyMemberStatus.APPLIED);
+    }
+
+    @Test
+    @DisplayName("이미 신청한 스터디에 다시 신청하면 예외가 발생한다")
+    void should_throw_exception_when_already_applied() {
+      // given
+      Study study = study();
+      ApplyStudyRequest request = create();
+
+      given(studyRepository.getStudyById(studyId)).willReturn(study);
+      given(studyMemberRepository.existsByStudyIdAndMemberIdAndStudyMemberStatusIn(
+          eq(studyId), eq(memberId), any())).willReturn(true);
+
+      // when & then
+      assertThatThrownBy(() -> applyStudyService.applyStudy(studyId, memberId, request))
+          .isInstanceOf(GeneralException.class)
+          .hasFieldOrPropertyWithValue("status", ErrorStatus._STUDY_ALREADY_APPLIED);
+
+      verify(studyMemberRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("APPLIED, AWAITING_SELF_APPROVAL, APPROVED 상태가 있으면 중복 신청으로 간주한다")
+    void should_check_active_application_statuses() {
+      // given
+      Study study = study();
+      ApplyStudyRequest request = create();
+      List<StudyMemberStatus> activeStatuses = List.of(
+          StudyMemberStatus.APPLIED,
+          StudyMemberStatus.AWAITING_SELF_APPROVAL,
+          StudyMemberStatus.APPROVED
+      );
+
+      given(studyRepository.getStudyById(studyId)).willReturn(study);
+      given(studyMemberRepository.existsByStudyIdAndMemberIdAndStudyMemberStatusIn(
+          studyId, memberId, activeStatuses)).willReturn(true);
+
+      // when & then
+      assertThatThrownBy(() -> applyStudyService.applyStudy(studyId, memberId, request))
+          .isInstanceOf(GeneralException.class)
+          .hasFieldOrPropertyWithValue("status", ErrorStatus._STUDY_ALREADY_APPLIED);
     }
   }
 }
