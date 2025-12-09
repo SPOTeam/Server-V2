@@ -1,7 +1,9 @@
 package kr.spot.application.command;
 
+import java.util.List;
 import kr.spot.IdGenerator;
 import kr.spot.code.status.ErrorStatus;
+import kr.spot.domain.Study;
 import kr.spot.domain.associations.StudyMember;
 import kr.spot.domain.enums.Decision;
 import kr.spot.domain.enums.StudyMemberStatus;
@@ -18,48 +20,58 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ApplyStudyService {
 
+  private static final List<StudyMemberStatus> ACTIVE_APPLICATION_STATUSES = List.of(
+      StudyMemberStatus.APPLIED,
+      StudyMemberStatus.AWAITING_SELF_APPROVAL,
+      StudyMemberStatus.APPROVED
+  );
+
   private final IdGenerator idGenerator;
   private final StudyRepository studyRepository;
   private final StudyMemberRepository studyMemberRepository;
 
+  public void processStudyApplication(
+      Long applicationId,
+      Long requesterId,
+      Decision decision
+  ) {
+    StudyMember application = studyMemberRepository.getStudyMemberById(applicationId);
+    Study study = studyRepository.getStudyById(application.getStudyId());
+
+    study.processApplication(application, requesterId, decision);
+  }
+
+  public void decideFinalParticipation(
+      Long applicationId,
+      Long requesterId,
+      Decision decision
+  ) {
+    StudyMember application = studyMemberRepository.getStudyMemberById(applicationId);
+
+    application.decideFinalByApplicant(requesterId, decision);
+  }
+
   public void applyStudy(Long studyId, Long memberId, ApplyStudyRequest request) {
-    validateIsExistStudy(studyId);
-    studyMemberRepository.save(
-        StudyMember.apply(
-            idGenerator.nextId(),
-            studyId,
-            memberId,
-            request.message()
-        ));
+    Study study = studyRepository.getStudyById(studyId);
+    validateIsAlreadyApplied(studyId, memberId);
+
+    StudyMember application = study.receiveApplication(
+        idGenerator.nextId(),
+        memberId,
+        request.message()
+    );
+    studyMemberRepository.save(application);
   }
 
-  public void processStudyApplication(Long studyId, Long applicationId, Long memberId,
-      Decision decision) {
-    validateIsStudyLeader(studyId, memberId);
-    StudyMember studyMember = studyMemberRepository.getById(applicationId);
-    studyMember.decide(decision);
-  }
-
-  public void decideFinalParticipation(Long studyId, Long memberId, Decision decision) {
-    StudyMember studyMember = getAwaitingStudyApplyForFinalDecide(studyId, memberId);
-    studyMember.decideFinal(decision);
-  }
-
-  private void validateIsExistStudy(Long studyId) {
-    if (!studyRepository.existsById(studyId)) {
-      throw new GeneralException(ErrorStatus._STUDY_NOT_FOUND);
+  private void validateIsAlreadyApplied(Long studyId, Long memberId) {
+    if (isAlreadyAppliedThisStudy(studyId, memberId)) {
+      throw new GeneralException(ErrorStatus._STUDY_ALREADY_APPLIED);
     }
   }
 
-  private void validateIsStudyLeader(Long studyId, Long memberId) {
-    if (!studyMemberRepository.existsByStudyIdAndMemberIdAndStudyMemberStatus(
-        studyId, memberId, kr.spot.domain.enums.StudyMemberStatus.OWNER)) {
-      throw new GeneralException(ErrorStatus._ONLY_LEADER_CAN_ACCESS);
-    }
-  }
-
-  private StudyMember getAwaitingStudyApplyForFinalDecide(Long studyId, Long memberId) {
-    return studyMemberRepository.getByStudyIdAndMemberIdAndStudyMemberStatus(
-        studyId, memberId, StudyMemberStatus.AWAITING_SELF_APPROVAL);
+  private boolean isAlreadyAppliedThisStudy(Long studyId, Long memberId) {
+    return studyMemberRepository.existsByStudyIdAndMemberIdAndStudyMemberStatusIn(
+        studyId, memberId, ACTIVE_APPLICATION_STATUSES
+    );
   }
 }

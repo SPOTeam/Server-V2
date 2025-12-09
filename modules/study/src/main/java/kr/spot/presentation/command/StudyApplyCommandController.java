@@ -45,13 +45,12 @@ public class StudyApplyCommandController {
   @ApiResponses({
       @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "스터디 신청 처리 성공")
   })
-  @PostMapping("/{studyId}/applications/{applicationId}")
+  @PostMapping("/applications/{applicationId}")
   public ResponseEntity<ApiResponse<Void>> approveStudyApplication(
-      @Parameter(name = "studyId", description = "스터디 ID", in = ParameterIn.PATH) @PathVariable Long studyId,
       @Parameter(name = "applicationId", description = "신청 ID", in = ParameterIn.PATH) @PathVariable Long applicationId,
       @Parameter(hidden = true) @CurrentMember Long memberId,
       @Parameter(name = "decision", description = "승인(APPROVE) 또는 거절(REJECT)") @RequestParam Decision decision) {
-    applyStudyService.processStudyApplication(studyId, applicationId, memberId, decision);
+    applyStudyService.processStudyApplication(applicationId, memberId, decision);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
   }
 

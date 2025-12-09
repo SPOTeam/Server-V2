@@ -1,6 +1,6 @@
 package kr.spot.infrastructure.jpa.associations;
 
-import java.util.Optional;
+import java.util.List;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.domain.associations.StudyMember;
 import kr.spot.domain.enums.StudyMemberStatus;
@@ -9,21 +9,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> {
 
-  default StudyMember getById(Long id) {
-    return findById(id)
+  default StudyMember getStudyMemberById(Long studyMemberId) {
+    return findById(studyMemberId)
         .orElseThrow(() -> new GeneralException(ErrorStatus._STUDY_MEMBER_NOT_FOUND));
   }
 
-  default StudyMember getByStudyIdAndMemberIdAndStudyMemberStatus(Long studyId, Long memberId,
-      StudyMemberStatus studyMemberStatus) {
-    return findByStudyIdAndMemberIdAndStudyMemberStatus(studyId, memberId, studyMemberStatus)
-        .orElseThrow(() -> new GeneralException(ErrorStatus._STUDY_MEMBER_NOT_FOUND));
-  }
-
-  boolean existsByStudyIdAndMemberIdAndStudyMemberStatus(Long studyId, Long memberId,
-      StudyMemberStatus studyMemberStatus);
-
-  Optional<StudyMember> findByStudyIdAndMemberIdAndStudyMemberStatus(Long studyId, Long memberId,
-      StudyMemberStatus studyMemberStatus);
+  boolean existsByStudyIdAndMemberIdAndStudyMemberStatusIn(Long studyId, Long memberId,
+      List<StudyMemberStatus> studyMemberStatuses);
 
 }

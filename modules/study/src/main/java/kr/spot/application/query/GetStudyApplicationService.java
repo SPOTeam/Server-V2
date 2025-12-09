@@ -2,12 +2,10 @@ package kr.spot.application.query;
 
 import java.util.List;
 import java.util.Map;
-import kr.spot.code.status.ErrorStatus;
+import kr.spot.application.validator.StudyAccessValidator;
 import kr.spot.domain.associations.StudyMember;
 import kr.spot.domain.enums.StudyMemberStatus;
-import kr.spot.exception.GeneralException;
 import kr.spot.infrastructure.jpa.StudyMemberRepositoryCustom;
-import kr.spot.infrastructure.jpa.associations.StudyMemberRepository;
 import kr.spot.infrastructure.jpa.querydsl.dto.StudyApplicationInfo;
 import kr.spot.ports.GetMemberInfoPort;
 import kr.spot.ports.dto.MemberInfoResponse;
@@ -24,63 +22,55 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class GetStudyApplicationService {
 
+
   private final GetMemberInfoPort getMemberInfoPort;
-  private final StudyMemberRepository studyMemberRepository;
   private final StudyMemberRepositoryCustom studyMemberRepositoryCustom;
+  private final StudyAccessValidator studyAccessValidator;
 
   public GetMyAppliedStudyResponse getMyAppliedStudy(Long memberId) {
-    List<StudyApplicationInfo> myAppliedStudiesInfo = getMyAppliedStudiesWithStudyInfo(memberId);
-    return getGetMyAppliedStudyResponse(myAppliedStudiesInfo);
-  }
+    List<StudyApplicationInfo> applications =
+        studyMemberRepositoryCustom.findMyAppliedStudiesWithStudyInfo(
+            memberId,
+            StudyMemberStatus.AWAITING_SELF_APPROVAL
+        );
 
-  public GetAppliesResponse getStudyApplications(Long studyId, Long memberId) {
-    validateIsStudyLeader(studyId, memberId);
-    List<StudyMember> applications = getApplications(studyId);
-    List<Long> memberIds = getApplicantsIds(applications);
-    Map<Long, MemberInfoResponse> memberInfos = getMemberInfoPort.getMemberInfo(memberIds);
-    return GetAppliesResponse.of(getApplies(applications, memberInfos));
-  }
-
-  private GetMyAppliedStudyResponse getGetMyAppliedStudyResponse(
-      List<StudyApplicationInfo> myAppliedStudiesInfo) {
-    return GetMyAppliedStudyResponse.of(myAppliedStudiesInfo.stream()
-        .map(info -> new MyAppliedStudy(
+    return GetMyAppliedStudyResponse.of(
+        applications.stream()
+            .map(info -> new MyAppliedStudy(
                 info.getStudyMemberId(),
                 info.getStudyId(),
                 info.getStudyName(),
                 info.getStudyProfileImageUrl()
-            )
-        ).toList());
+            ))
+            .toList()
+    );
   }
 
-  private List<Long> getApplicantsIds(List<StudyMember> applications) {
-    return applications.stream()
-        .map(StudyMember::getMemberId)
-        .toList();
-  }
+  public GetAppliesResponse getStudyApplications(Long studyId, Long requesterId) {
 
-  private List<StudyMember> getApplications(Long studyId) {
-    return studyMemberRepositoryCustom
-        .findApplicationsByStudyIdAndStatus(studyId, StudyMemberStatus.AWAITING_SELF_APPROVAL);
-  }
+    studyAccessValidator.validateStudyLeader(studyId, requesterId);
 
-  private List<StudyApplicationInfo> getMyAppliedStudiesWithStudyInfo(Long memberId) {
-    return studyMemberRepositoryCustom
-        .findMyAppliedStudiesWithStudyInfo(memberId, StudyMemberStatus.AWAITING_SELF_APPROVAL);
-  }
+    List<StudyMember> applications =
+        studyMemberRepositoryCustom.findApplicationsByStudyIdAndStatus(
+            studyId,
+            StudyMemberStatus.APPLIED
+        );
 
-  private void validateIsStudyLeader(Long studyId, Long memberId) {
-    if (!studyMemberRepository.existsByStudyIdAndMemberIdAndStudyMemberStatus(
-        studyId, memberId, kr.spot.domain.enums.StudyMemberStatus.OWNER)) {
-      throw new GeneralException(ErrorStatus._ONLY_LEADER_CAN_ACCESS);
+    if (applications.isEmpty()) {
+      return GetAppliesResponse.of(List.of());
     }
-  }
 
-  private List<Apply> getApplies(List<StudyMember> applications,
-      Map<Long, MemberInfoResponse> memberInfos) {
-    return applications.stream()
+    List<Long> applicantIds = applications.stream()
+        .map(StudyMember::getMemberId)
+        .distinct()
+        .toList();
+
+    Map<Long, MemberInfoResponse> memberInfoMap =
+        getMemberInfoPort.getMemberInfo(applicantIds);
+
+    List<Apply> applies = applications.stream()
         .map(application -> {
-          MemberInfoResponse memberInfo = memberInfos.get(application.getMemberId());
+          MemberInfoResponse memberInfo = memberInfoMap.get(application.getMemberId());
           return Apply.of(
               application.getId(),
               application.getMemberId(),
@@ -88,6 +78,9 @@ public class GetStudyApplicationService {
               application.getMessage(),
               memberInfo.profileImageUrl()
           );
-        }).toList();
+        })
+        .toList();
+
+    return GetAppliesResponse.of(applies);
   }
 }
