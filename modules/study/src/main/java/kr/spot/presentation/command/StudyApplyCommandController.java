@@ -65,6 +65,7 @@ public class StudyApplyCommandController {
       @Parameter(hidden = true) @CurrentMember Long memberId,
       @Parameter(name = "decision", description = "승인(APPROVE) 또는 거절(REJECT)") @RequestParam Decision decision
   ) {
+    applyStudyService.decideFinalParticipation(studyId, memberId, decision);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
   }
 }

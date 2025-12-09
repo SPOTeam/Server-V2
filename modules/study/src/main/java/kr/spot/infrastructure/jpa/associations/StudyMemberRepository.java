@@ -14,8 +14,16 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
         .orElseThrow(() -> new GeneralException(ErrorStatus._STUDY_MEMBER_NOT_FOUND));
   }
 
+  default StudyMember getByStudyIdAndMemberIdAndStudyMemberStatus(Long studyId, Long memberId,
+      StudyMemberStatus studyMemberStatus) {
+    return findByStudyIdAndMemberIdAndStudyMemberStatus(studyId, memberId, studyMemberStatus)
+        .orElseThrow(() -> new GeneralException(ErrorStatus._STUDY_MEMBER_NOT_FOUND));
+  }
+
   boolean existsByStudyIdAndMemberIdAndStudyMemberStatus(Long studyId, Long memberId,
       StudyMemberStatus studyMemberStatus);
 
-  Optional<StudyMember> findByStudyIdAndMemberId(Long studyId, Long memberId);
+  Optional<StudyMember> findByStudyIdAndMemberIdAndStudyMemberStatus(Long studyId, Long memberId,
+      StudyMemberStatus studyMemberStatus);
+
 }
