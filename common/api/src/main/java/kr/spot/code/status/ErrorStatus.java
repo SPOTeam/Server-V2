@@ -38,6 +38,16 @@ public enum ErrorStatus implements BaseErrorCode {
   _INVALID_FEE_AMOUNT(400, "STUDY4000", "유효하지 않은 스터디 비용입니다."),
   _NO_SUCH_CATEGORY(400, "STUDY4001", "존재하지 않는 카테고리입니다."),
   _NO_SUCH_STUDY_MEMBER_STATUS(400, "STUDY4002", "존재하지 않는 스터디 멤버 상태입니다."),
+  _STUDY_NOT_FOUND(404, "STUDY404", "스터디를 찾을 수 없습니다."),
+  _STUDY_MEMBER_NOT_FOUND(404, "STUDYMEMBER404", "스터디 멤버를 찾을 수 없습니다."),
+  _ONLY_LEADER_CAN_ACCESS(403, "STUDY403", "스터디장만 접근 가능합니다."),
+  _ALREADY_APPLIED_STUDY(400, "STUDY4003", "이미 스터디에 지원한 상태입니다."),
+  _NOT_PENDING_APPLICATION(400, "STUDY4004", "신청 대기 상태가 아닙니다."),
+  _ONLY_APPLICANT_CAN_SELF_APPROVE(403, "STUDY4031", "본인만 신청을 최종 승인할 수 있습니다."),
+  _INVALID_STUDY_MEMBER_STATUS_FOR_SELF_APPROVAL(400, "STUDY4005",
+      "셀프 승인을 위한 유효하지 않은 스터디 멤버 상태입니다."),
+  _STUDY_ALREADY_APPLIED(400, "STUDY4006", "이미 해당 스터디에 지원한 상태입니다."),
+  _STUDY_ACCESS_DENIED(403, "STUDY4032", "스터디에 접근할 권한이 없습니다."),
 
   // 게시글 관련
   _POST_NOT_FOUND(404, "POST404", "게시글을 찾을 수 없습니다."),
@@ -51,7 +61,7 @@ public enum ErrorStatus implements BaseErrorCode {
   _REGION_NOT_FOUND(404, "REGION404", "지역을 찾을 수 없습니다."),
   _NO_SUCH_REGION(400, "REGION4000", "존재하지 않는 지역 코드입니다."),
   ;
-  
+
   private final int httpStatus;
   private final String code;
   private final String message;

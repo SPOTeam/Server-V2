@@ -13,6 +13,7 @@ include 'modules:auth'
 include 'modules:study'
 include 'modules:post'
 include 'modules:region'
+include 'modules:notification'
 
 include 'modules:member-api'
 include 'modules:auth-api'

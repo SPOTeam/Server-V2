@@ -8,7 +8,10 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import kr.spot.code.status.ErrorStatus;
+import kr.spot.domain.associations.StudyMember;
+import kr.spot.domain.enums.Decision;
 import kr.spot.domain.enums.RecruitingStatus;
+import kr.spot.domain.enums.StudyMemberStatus;
 import kr.spot.domain.vo.Fee;
 import kr.spot.exception.GeneralException;
 import lombok.AccessLevel;
@@ -72,5 +75,27 @@ public class Study extends BaseEntity {
     if (maxMembers != null && maxMembers <= 0) {
       throw new GeneralException(ErrorStatus._MAX_MEMBERS_MUST_BE_POSITIVE);
     }
+  }
+
+  public void processApplication(StudyMember application, Long requesterId, Decision decision) {
+    validateIsStudyOwner(requesterId);
+    validateIsValidStatusToProcessApply(application);
+    application.decide(decision);
+  }
+
+  public void validateIsStudyOwner(Long requesterId) {
+    if (!this.leaderId.equals(requesterId)) {
+      throw new GeneralException(ErrorStatus._ONLY_LEADER_CAN_ACCESS);
+    }
+  }
+
+  private void validateIsValidStatusToProcessApply(StudyMember application) {
+    if (application.getStudyMemberStatus() != StudyMemberStatus.APPLIED) {
+      throw new GeneralException(ErrorStatus._NOT_PENDING_APPLICATION);
+    }
+  }
+
+  public StudyMember receiveApplication(Long id, Long memberId, String message) {
+    return StudyMember.apply(id, this.id, memberId, message);
   }
 }

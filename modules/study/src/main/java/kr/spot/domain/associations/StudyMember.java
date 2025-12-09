@@ -4,8 +4,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import kr.spot.code.status.ErrorStatus;
 import kr.spot.domain.BaseEntity;
+import kr.spot.domain.enums.Decision;
 import kr.spot.domain.enums.StudyMemberStatus;
+import kr.spot.exception.GeneralException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,18 +31,40 @@ public class StudyMember extends BaseEntity {
 
   private Long memberId;
 
+  private String message;
+
   @Enumerated(EnumType.STRING)
   private StudyMemberStatus studyMemberStatus;
 
-  public static StudyMember create(Long studyId, Long memberId) {
-    return new StudyMember(null, studyId, memberId, StudyMemberStatus.OWNER);
+  public static StudyMember create(Long id, Long studyId, Long memberId) {
+    return new StudyMember(id, studyId, memberId, null, StudyMemberStatus.OWNER);
   }
 
-  public static StudyMember apply(Long studyId, Long memberId) {
-    return new StudyMember(null, studyId, memberId, StudyMemberStatus.APPLIED);
+  public static StudyMember apply(Long id, Long studyId, Long memberId, String message) {
+    return new StudyMember(id, studyId, memberId, message, StudyMemberStatus.APPLIED);
   }
 
-  public void approve() {
-    this.studyMemberStatus = StudyMemberStatus.APPROVED;
+  public void decide(Decision decision) {
+    if (decision == Decision.APPROVE) {
+      this.studyMemberStatus = StudyMemberStatus.AWAITING_SELF_APPROVAL;
+    } else if (decision == Decision.REJECT) {
+      this.studyMemberStatus = StudyMemberStatus.REJECTED;
+    }
+  }
+
+  public void decideFinalByApplicant(Long requesterId, Decision decision) {
+    if (!this.memberId.equals(requesterId)) {
+      throw new GeneralException(ErrorStatus._ONLY_APPLICANT_CAN_SELF_APPROVE);
+    }
+
+    if (this.studyMemberStatus != StudyMemberStatus.AWAITING_SELF_APPROVAL) {
+      throw new GeneralException(ErrorStatus._INVALID_STUDY_MEMBER_STATUS_FOR_SELF_APPROVAL);
+    }
+
+    if (decision == Decision.APPROVE) {
+      this.studyMemberStatus = StudyMemberStatus.APPROVED;
+    } else if (decision == Decision.REJECT) {
+      this.studyMemberStatus = StudyMemberStatus.SELF_REJECTED;
+    }
   }
 }

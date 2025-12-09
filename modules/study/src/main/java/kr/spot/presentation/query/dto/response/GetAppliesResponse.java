@@ -10,14 +10,15 @@ public record GetAppliesResponse(List<Apply> applies) {
 
   public record Apply(
       Long applicantId,
+      Long memberId,
       String nickname,
       String description,
       String profileImageUrl
   ) {
 
-    public static Apply of(Long applicantId, String nickname, String description,
+    public static Apply of(Long applicantId, Long memberId, String nickname, String description,
         String profileImageUrl) {
-      return new Apply(applicantId, nickname, description, profileImageUrl);
+      return new Apply(applicantId, memberId, nickname, description, profileImageUrl);
     }
   }
 }

@@ -11,13 +11,15 @@ public record GetMyAppliedStudyResponse(
   }
 
   public record MyAppliedStudy(
+      Long applicationId,
       Long studyId,
       String title,
       String profileImageUrl
   ) {
 
-    public static MyAppliedStudy of(Long studyId, String title, String profileImageUrl) {
-      return new MyAppliedStudy(studyId, title, profileImageUrl);
+    public static MyAppliedStudy of(Long applicationId, Long studyId, String title,
+        String profileImageUrl) {
+      return new MyAppliedStudy(applicationId, studyId, title, profileImageUrl);
     }
   }
 }
