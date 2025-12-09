@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class GetMemberInfoService implements GetMemberInfoPort {
+public class GetMembersSpecService implements GetMemberInfoPort {
 
   private final MemberRepository memberRepository;
 
