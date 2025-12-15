@@ -32,4 +32,8 @@ public class WriterInfo {
       throw new GeneralException(ErrorStatus._ONLY_AUTHOR_CAN_MODIFY);
     }
   }
+
+  public boolean isSameWriter(Long memberId) {
+    return Objects.equals(this.writerId, memberId);
+  }
 }

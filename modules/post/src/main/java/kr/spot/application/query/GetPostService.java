@@ -84,9 +84,10 @@ public class GetPostService {
     PostImage postImage = postImageRepository.getPostImageById(postId);
     List<Comment> comments = commentRepository.getCommentsByPostId(postId);
     boolean isLiked = postQueryRepository.isLiked(viewerId, postId);
+    boolean isOwner = post.isWrittenBy(viewerId);
 
     long displayView = postStats.getViewCount() + getViewDeltaFromCounter(postId, viewerId);
-    return toPostDetail(post, postStats, postImage, displayView, comments, isLiked);
+    return toPostDetail(post, postStats, postImage, displayView, comments, isLiked, isOwner);
   }
 
   public PostOverviewResponse getHotPosts(HotPostSortBy sortBy) {

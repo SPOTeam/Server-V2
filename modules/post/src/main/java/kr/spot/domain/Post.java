@@ -62,4 +62,8 @@ public class Post extends BaseEntity {
     validateIsWriter(memberId);
     super.delete();
   }
+
+  public boolean isWrittenBy(Long memberId) {
+    return this.writerInfo.isSameWriter(memberId);
+  }
 }
