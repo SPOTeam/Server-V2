@@ -13,6 +13,7 @@ public record PostDetailResponse(
     String imageUrl,
     PostType postType,
     boolean isLiked,
+    boolean isOwner,
     WriterInfoResponse writer,
     PostStatsResponse stats,
     LocalDateTime createdAt,
