@@ -43,7 +43,7 @@ public class PostFixture {
   }
 
   public static PostImage postImage() {
-    return PostImage.of(POST_ID, IMAGE_URL1);
+    return PostImage.of(POST_ID, POST_ID, IMAGE_URL1);
   }
 
   public static PostStats postStats(Long postId, long count) {
