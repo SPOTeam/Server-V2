@@ -52,7 +52,7 @@ public final class PostResponseMapper {
         .postId(post.getId())
         .title(post.getTitle())
         .content(post.getContent())
-        .imageUrl(postImage.getImageUrl())
+        .imageUrl(postImage != null ? postImage.getImageUrl() : null)
         .postType(post.getPostType())
         .isLiked(liked)
         .isOwner(isOwner)

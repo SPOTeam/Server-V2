@@ -95,7 +95,7 @@ class GetPostServiceTest {
 
     when(postRepository.getPostById(postId)).thenReturn(post);
     when(postStatsRepository.getPostStatsById(postId)).thenReturn(postStats);
-    when(postImageRepository.getPostImageById(postId)).thenReturn(postImage());
+    when(postImageRepository.getPostImageByPostId(postId)).thenReturn(postImage());
 
     // when
     var response = getPostService.getPostDetail(postId, viewerId);
@@ -156,7 +156,7 @@ class GetPostServiceTest {
     when(postRepository.getPostById(postId)).thenReturn(post);
     when(postStatsRepository.getPostStatsById(postId)).thenReturn(postStats);
     when(commentRepository.getCommentsByPostId(postId)).thenReturn(comments());
-    when(postImageRepository.getPostImageById(postId)).thenReturn(postImage());
+    when(postImageRepository.getPostImageByPostId(postId)).thenReturn(postImage());
 
     // when
     var response = getPostService.getPostDetail(postId, viewerId);
@@ -181,7 +181,7 @@ class GetPostServiceTest {
     when(postStatsRepository.getPostStatsById(postId)).thenReturn(postStats);
     when(commentRepository.getCommentsByPostId(postId)).thenReturn(
         java.util.Collections.emptyList());
-    when(postImageRepository.getPostImageById(postId)).thenReturn(postImage());
+    when(postImageRepository.getPostImageByPostId(postId)).thenReturn(postImage());
 
     // when
     var response = getPostService.getPostDetail(postId, viewerId);
@@ -203,7 +203,7 @@ class GetPostServiceTest {
     PostStats stats = postStats(); // 예: DB viewCount = 0L 가정
     when(postRepository.getPostById(postId)).thenReturn(post);
     when(postStatsRepository.getPostStatsById(postId)).thenReturn(stats);
-    when(postImageRepository.getPostImageById(postId)).thenReturn(postImage());
+    when(postImageRepository.getPostImageByPostId(postId)).thenReturn(postImage());
 
     when(viewAbuseGuard.shouldCount(postId, viewerId)).thenReturn(true);
     when(postViewCounter.incrementAndGetDelta(postId)).thenReturn(5L);
@@ -223,7 +223,7 @@ class GetPostServiceTest {
     PostStats stats = postStats(); // DB viewCount = 0L 가정
     when(postRepository.getPostById(postId)).thenReturn(post);
     when(postStatsRepository.getPostStatsById(postId)).thenReturn(stats);
-    when(postImageRepository.getPostImageById(postId)).thenReturn(postImage());
+    when(postImageRepository.getPostImageByPostId(postId)).thenReturn(postImage());
 
     when(viewAbuseGuard.shouldCount(postId, viewerId)).thenReturn(false);
     when(postViewCounter.currentDelta(postId)).thenReturn(7L);
@@ -243,7 +243,7 @@ class GetPostServiceTest {
     PostStats stats = postStats(); // DB viewCount 예: 123L
     when(postRepository.getPostById(postId)).thenReturn(post);
     when(postStatsRepository.getPostStatsById(postId)).thenReturn(stats);
-    when(postImageRepository.getPostImageById(postId)).thenReturn(postImage());
+    when(postImageRepository.getPostImageByPostId(postId)).thenReturn(postImage());
 
     when(viewAbuseGuard.shouldCount(postId, viewerId)).thenReturn(true);
     when(postViewCounter.incrementAndGetDelta(postId)).thenThrow(

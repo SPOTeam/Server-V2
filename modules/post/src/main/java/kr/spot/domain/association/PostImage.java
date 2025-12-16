@@ -12,7 +12,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Entity
-@SQLDelete(sql = "UPDATE post_image SET status = 'INACTIVE' WHERE post_id = ?")
+@SQLDelete(sql = "UPDATE post_image SET status = 'INACTIVE' WHERE id = ?")
 @SQLRestriction("status = 'ACTIVE'")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

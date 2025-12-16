@@ -81,7 +81,7 @@ public class GetPostService {
   public PostDetailResponse getPostDetail(Long postId, Long viewerId) {
     Post post = postRepository.getPostById(postId);
     PostStats postStats = postStatsRepository.getPostStatsById(postId);
-    PostImage postImage = postImageRepository.getPostImageById(postId);
+    PostImage postImage = postImageRepository.getPostImageByPostId(postId);
     List<Comment> comments = commentRepository.getCommentsByPostId(postId);
     boolean isLiked = postQueryRepository.isLiked(viewerId, postId);
     boolean isOwner = post.isWrittenBy(viewerId);
