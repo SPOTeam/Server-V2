@@ -57,8 +57,12 @@ public class Study extends BaseEntity {
   private RecruitingStatus recruitingStatus;
 
   public static Study of(Long id, Long leaderId, String name, Integer maxMembers, Fee fee,
-      String imageUrl,
       String description) {
+    return of(id, leaderId, name, maxMembers, fee, null, description);
+  }
+
+  public static Study of(Long id, Long leaderId, String name, Integer maxMembers, Fee fee,
+      String imageUrl, String description) {
     validateStudyNameIsNotBlank(name);
     validateMaxMembers(maxMembers);
     return new Study(id, leaderId, name, maxMembers, CURRENT_MEMBERS, fee, imageUrl, description,
@@ -97,5 +101,9 @@ public class Study extends BaseEntity {
 
   public StudyMember receiveApplication(Long id, Long memberId, String message) {
     return StudyMember.apply(id, this.id, memberId, message);
+  }
+
+  public void updateImageUrl(String imageUrl) {
+    this.imageUrl = imageUrl;
   }
 }

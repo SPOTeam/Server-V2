@@ -14,10 +14,10 @@ import kr.spot.infrastructure.jpa.associations.StudyMemberRepository;
 import kr.spot.infrastructure.jpa.associations.StudyRegionRepository;
 import kr.spot.infrastructure.jpa.associations.StudyStatsRepository;
 import kr.spot.infrastructure.jpa.associations.StudyStyleRepository;
-import kr.spot.ports.FileStoragePort;
-import kr.spot.ports.dto.UploadResult;
+import kr.spot.application.event.StudyCreatedEvent;
 import kr.spot.presentation.command.dto.request.CreateStudyRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,10 +27,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class CreateStudyService {
 
-  private static final String FILE_DIR = "studies/images/";
-
   private final IdGenerator idGenerator;
-  private final FileStoragePort fileStoragePort;
+  private final ApplicationEventPublisher eventPublisher;
   private final StudyRepository studyRepository;
 
   private final StudyStyleRepository studyStyleRepository;
@@ -41,9 +39,8 @@ public class CreateStudyService {
 
   public void createStudy(CreateStudyRequest request, Long leaderId, MultipartFile imageFile) {
     long studyId = idGenerator.nextId();
-    String imageUrl = uploadStudyImage(imageFile);
     Study study = Study.of(studyId, leaderId, request.name(), request.maxMembers(),
-        Fee.of(request.hasFee(), request.amount()), imageUrl, request.description());
+        Fee.of(request.hasFee(), request.amount()), request.description());
     StudyStats studyStats = StudyStats.of(studyId);
     StudyMember studyMember = StudyMember.create(idGenerator.nextId(), studyId, leaderId);
 
@@ -54,6 +51,8 @@ public class CreateStudyService {
     saveAllStudyCategories(request, studyId);
     saveAllStudyStyles(request, studyId);
     saveAllStudyRegions(request, studyId);
+
+    eventPublisher.publishEvent(StudyCreatedEvent.of(studyId, imageFile));
   }
 
   private void saveAllStudyCategories(CreateStudyRequest request, long studyId) {
@@ -75,14 +74,5 @@ public class CreateStudyService {
         .map(regionCode -> StudyRegion.of(idGenerator.nextId(), studyId, regionCode))
         .toList();
     studyRegionRepository.saveAll(studyRegions);
-  }
-
-  private String uploadStudyImage(MultipartFile imageFile) {
-    if (imageFile == null || imageFile.isEmpty()) {
-      return null;
-    }
-
-    UploadResult upload = fileStoragePort.upload(imageFile, FILE_DIR);
-    return upload.url();
   }
 }
