@@ -6,10 +6,8 @@ import kr.spot.domain.enums.LoginType;
 import kr.spot.presentation.command.dto.TokenDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class OAuthService {
 
