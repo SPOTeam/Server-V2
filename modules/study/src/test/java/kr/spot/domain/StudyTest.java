@@ -46,6 +46,17 @@ class StudyTest {
     }
 
     @Test
+    @DisplayName("imageUrl 없이 스터디 객체를 생성할 수 있다")
+    void should_create_study_without_image_url() {
+      Study study = Study.of(ID, LEADER_ID, NAME, MAX_MEMBERS, Fee.of(HAS_FEE, FEE_AMOUNT),
+          DESCRIPTION);
+
+      assertThat(study).isNotNull();
+      assertThat(study.getId()).isEqualTo(ID);
+      assertThat(study.getImageUrl()).isNull();
+    }
+
+    @Test
     @DisplayName("스터디 이름이 null 이거나 공백일 경우 예외가 발생한다")
     void should_throw_exception_when_name_is_null_or_empty() {
       assertThatThrownBy(
@@ -198,6 +209,40 @@ class StudyTest {
       assertThatThrownBy(() -> study.validateIsStudyOwner(nonLeaderId))
           .isInstanceOf(GeneralException.class)
           .hasFieldOrPropertyWithValue("status", ErrorStatus._ONLY_LEADER_CAN_ACCESS);
+    }
+  }
+
+  @Nested
+  @DisplayName("이미지 URL 업데이트 (updateImageUrl)")
+  class UpdateImageUrl {
+
+    @Test
+    @DisplayName("이미지 URL을 업데이트할 수 있다")
+    void should_update_image_url() {
+      // given
+      Study study = Study.of(ID, LEADER_ID, NAME, MAX_MEMBERS, Fee.of(HAS_FEE, FEE_AMOUNT),
+          DESCRIPTION);
+      String newImageUrl = "http://example.com/new-image.png";
+
+      // when
+      study.updateImageUrl(newImageUrl);
+
+      // then
+      assertThat(study.getImageUrl()).isEqualTo(newImageUrl);
+    }
+
+    @Test
+    @DisplayName("이미지 URL을 null로 업데이트할 수 있다")
+    void should_update_image_url_to_null() {
+      // given
+      Study study = Study.of(ID, LEADER_ID, NAME, MAX_MEMBERS, Fee.of(HAS_FEE, FEE_AMOUNT),
+          IMAGE_URL, DESCRIPTION);
+
+      // when
+      study.updateImageUrl(null);
+
+      // then
+      assertThat(study.getImageUrl()).isNull();
     }
   }
 }
