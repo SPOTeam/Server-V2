@@ -15,56 +15,54 @@ import org.springframework.data.redis.core.ValueOperations;
 
 class RedisViewAbuseGuardTest {
 
-    private static final String GUARD_KEY = "view:guard:%d:%d";
-    public static final Duration TIMEOUT = Duration.ofMinutes(10);
+  public static final Duration TIMEOUT = Duration.ofMinutes(10);
+  private static final String GUARD_KEY = "view:guard:%d:%d";
+  @Mock
+  StringRedisTemplate redis;
 
-    @Mock
-    StringRedisTemplate redis;
+  @Mock
+  ValueOperations<String, String> valueOps;
 
-    @Mock
-    ValueOperations<String, String> valueOps;
+  ViewAbuseGuard guard;
 
-    ViewAbuseGuard guard;
+  @BeforeEach
+  void setUp() {
+    MockitoAnnotations.openMocks(this);
+    when(redis.opsForValue()).thenReturn(valueOps);
+    guard = new RedisViewAbuseGuard(redis);
+  }
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        when(redis.opsForValue()).thenReturn(valueOps);
-        guard = new RedisViewAbuseGuard(redis);
-    }
+  @Test
+  @DisplayName("이전에 조회한 적 없는 사용자는 true를 반환한다.")
+  void should_return_true_for_new_viewer() {
+    // given
+    long postId = 1L;
+    long viewerId = 2L;
+    String key = GUARD_KEY.formatted(postId, viewerId);
 
-    @Test
-    @DisplayName("이전에 조회한 적 없는 사용자는 true를 반환한다.")
-    void should_return_true_for_new_viewer() {
-        // given
-        long postId = 1L;
-        long viewerId = 2L;
-        String key = GUARD_KEY.formatted(postId, viewerId);
+    when(valueOps.setIfAbsent(key, "1", TIMEOUT)).thenReturn(true);
 
-        when(valueOps.setIfAbsent(key, "1", TIMEOUT)).thenReturn(true);
+    // when
+    boolean result = guard.shouldCount(postId, viewerId);
 
-        // when
-        boolean result = guard.shouldCount(postId, viewerId);
+    // then
+    assertThat(result).isTrue();
+  }
 
-        // then
-        assertThat(result).isTrue();
-    }
+  @Test
+  @DisplayName("이전에 조회한 적 있는 사용자는 false를 반환한다.")
+  void should_return_false_for_existing_viewer() {
+    // given
+    long postId = 1L;
+    long viewerId = 2L;
+    String key = GUARD_KEY.formatted(postId, viewerId);
 
-    @Test
-    @DisplayName("이전에 조회한 적 있는 사용자는 false를 반환한다.")
-    void should_return_false_for_existing_viewer() {
-        // given
-        long postId = 1L;
-        long viewerId = 2L;
-        String key = GUARD_KEY.formatted(postId, viewerId);
+    when(valueOps.setIfAbsent(key, "1", TIMEOUT)).thenReturn(false);
 
-        when(valueOps.setIfAbsent(key, "1", TIMEOUT)).thenReturn(false);
+    // when
+    boolean result = guard.shouldCount(postId, viewerId);
 
-        // when
-        boolean result = guard.shouldCount(postId, viewerId);
-
-        // then
-        assertThat(result).isFalse();
-    }
-
+    // then
+    assertThat(result).isFalse();
+  }
 }

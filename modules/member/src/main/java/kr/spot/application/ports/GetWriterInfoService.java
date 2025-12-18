@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class GetWriterInfoService implements GetWriterInfoPort {
 
-    private final MemberRepository memberRepository;
+  private final MemberRepository memberRepository;
 
-    @Override
-    public WriterInfoResponse get(long memberId) {
-        Member member = memberRepository.getMemberById(memberId);
-        return WriterInfoResponse.of(member.getId(), member.getName(), member.getProfileImageUrl());
-    }
+  @Override
+  public WriterInfoResponse get(long memberId) {
+    Member member = memberRepository.getMemberById(memberId);
+    return WriterInfoResponse.of(member.getId(), member.getName(), member.getProfileImageUrl());
+  }
 }

@@ -30,51 +30,54 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    public static final String USER = "user";
-    private final TokenProvider tokenProvider;
+  public static final String USER = "user";
+  
+  private final TokenProvider tokenProvider;
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+  @Override
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+      FilterChain filterChain)
+      throws ServletException, IOException {
 
-        if (isPermitAllRequest(request)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        authenticateRequest(request);
-        filterChain.doFilter(request, response);
+    if (isPermitAllRequest(request)) {
+      filterChain.doFilter(request, response);
+      return;
     }
 
-    private void authenticateRequest(HttpServletRequest request) {
-        long memberId = tokenProvider.getMemberIdByToken(extractToken(request));
+    authenticateRequest(request);
+    filterChain.doFilter(request, response);
+  }
 
-        var authority = new SimpleGrantedAuthority(ROLE_PREFIX + USER);
-        var authentication = new UsernamePasswordAuthenticationToken(memberId, null, List.of(authority));
-        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+  private void authenticateRequest(HttpServletRequest request) {
+    long memberId = tokenProvider.getMemberIdByToken(extractToken(request));
+
+    var authority = new SimpleGrantedAuthority(ROLE_PREFIX + USER);
+    var authentication = new UsernamePasswordAuthenticationToken(memberId, null,
+        List.of(authority));
+    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+  }
+
+  private String extractToken(HttpServletRequest request) {
+    String bearer = request.getHeader(AUTHORIZATION_HEADER);
+    if (!StringUtils.hasText(bearer)) {
+      throw new GeneralException(ErrorStatus._NO_AUTHORIZED);
     }
-
-    private String extractToken(HttpServletRequest request) {
-        String bearer = request.getHeader(AUTHORIZATION_HEADER);
-        if (!StringUtils.hasText(bearer)) {
-            throw new GeneralException(ErrorStatus._NO_AUTHORIZED);
-        }
-        if (!bearer.startsWith(BEARER_PREFIX)) {
-            throw new GeneralException(ErrorStatus._INVALID_JWT);
-        }
-        String token = bearer.substring(BEARER_PREFIX.length());
-        if (!StringUtils.hasText(token)) {
-            throw new GeneralException(ErrorStatus._EMPTY_JWT);
-        }
-        return token;
+    if (!bearer.startsWith(BEARER_PREFIX)) {
+      throw new GeneralException(ErrorStatus._INVALID_JWT);
     }
-
-
-    private boolean isPermitAllRequest(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        return Stream.of(SecurityWhitelist.EXACT_MATCH).anyMatch(uri::equals)
-                || Stream.of(SecurityWhitelist.PREFIX_MATCH).anyMatch(uri::startsWith)
-                || Stream.of(SecurityWhitelist.REGEX_MATCH).anyMatch(uri::matches);
+    String token = bearer.substring(BEARER_PREFIX.length());
+    if (!StringUtils.hasText(token)) {
+      throw new GeneralException(ErrorStatus._EMPTY_JWT);
     }
+    return token;
+  }
+
+
+  private boolean isPermitAllRequest(HttpServletRequest request) {
+    String uri = request.getRequestURI();
+    return Stream.of(SecurityWhitelist.EXACT_MATCH).anyMatch(uri::equals)
+        || Stream.of(SecurityWhitelist.PREFIX_MATCH).anyMatch(uri::startsWith)
+        || Stream.of(SecurityWhitelist.REGEX_MATCH).anyMatch(uri::matches);
+  }
 }

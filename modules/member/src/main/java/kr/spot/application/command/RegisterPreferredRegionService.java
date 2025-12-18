@@ -17,36 +17,36 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RegisterPreferredRegionService {
 
-    private final IdGenerator idGenerator;
-    private final RegionInfoPort regionInfoPort;
-    private final PreferredRegionRepository preferredRegionRepository;
+  private final IdGenerator idGenerator;
+  private final RegionInfoPort regionInfoPort;
+  private final PreferredRegionRepository preferredRegionRepository;
 
-    public void process(Long memberId, RegisterPreferredRegionRequest request) {
-        deleteAllPreviousPreferredRegions(memberId);
-        validateIsValidRegionCode(request);
+  public void process(Long memberId, RegisterPreferredRegionRequest request) {
+    deleteAllPreviousPreferredRegions(memberId);
+    validateIsValidRegionCode(request);
 
-        List<PreferredRegion> list = getPreferredCategoryList(memberId, request);
-        preferredRegionRepository.saveAll(list);
-    }
+    List<PreferredRegion> list = getPreferredCategoryList(memberId, request);
+    preferredRegionRepository.saveAll(list);
+  }
 
-    private List<PreferredRegion> getPreferredCategoryList(Long memberId, RegisterPreferredRegionRequest request) {
-        return request.regionCodes().stream()
-                .map((regionCode) -> PreferredRegion.of(idGenerator.nextId(), memberId, regionCode))
-                .toList();
-    }
+  private List<PreferredRegion> getPreferredCategoryList(Long memberId,
+      RegisterPreferredRegionRequest request) {
+    return request.regionCodes().stream()
+        .map((regionCode) -> PreferredRegion.of(idGenerator.nextId(), memberId, regionCode))
+        .toList();
+  }
 
-    private void validateIsValidRegionCode(RegisterPreferredRegionRequest request) {
-        request.regionCodes().forEach(
-                regionCode -> {
-                    if (!regionInfoPort.exists(regionCode)) {
-                        throw new GeneralException(ErrorStatus._NO_SUCH_REGION);
-                    }
-                }
-        );
-    }
+  private void validateIsValidRegionCode(RegisterPreferredRegionRequest request) {
+    request.regionCodes().forEach(
+        regionCode -> {
+          if (!regionInfoPort.exists(regionCode)) {
+            throw new GeneralException(ErrorStatus._NO_SUCH_REGION);
+          }
+        }
+    );
+  }
 
-    private void deleteAllPreviousPreferredRegions(Long memberId) {
-        preferredRegionRepository.deleteAllByMemberId(memberId);
-    }
-
+  private void deleteAllPreviousPreferredRegions(Long memberId) {
+    preferredRegionRepository.deleteAllByMemberId(memberId);
+  }
 }

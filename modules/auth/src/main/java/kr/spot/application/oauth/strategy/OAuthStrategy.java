@@ -6,9 +6,11 @@ import kr.spot.domain.enums.LoginType;
 
 public interface OAuthStrategy {
 
-    LoginType getType();
+  LoginType getType();
 
-    String getOauthRedirectURL();
+  String getOauthRedirectURL();
 
-    OAuthProfile getOAuthProfile(String code); // 전략별 구현에서 Member 객체 생성
+  OAuthProfile getOAuthProfile(String code);
+
+  OAuthProfile getOAuthProfileForClient(String accessToken);
 }

@@ -18,18 +18,16 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Region extends BaseEntity {
 
-    @Id
-    private String code;
+  @Id
+  private String code;
 
-    private String province;
+  private String province;
 
-    private String district;
+  private String district;
 
-    private String neighborhood;
+  private String neighborhood;
 
-    public static Region of(String code, String province, String district, String neighborhood) {
-        return new Region(code, province, district, neighborhood);
-    }
-
-
+  public static Region of(String code, String province, String district, String neighborhood) {
+    return new Region(code, province, district, neighborhood);
+  }
 }

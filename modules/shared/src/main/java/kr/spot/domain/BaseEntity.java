@@ -18,17 +18,17 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
-    @Setter(AccessLevel.PROTECTED)
-    @CreatedDate
-    private LocalDateTime createdAt;
+  @Setter(AccessLevel.PROTECTED)
+  @CreatedDate
+  private LocalDateTime createdAt;
 
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
+  @LastModifiedDate
+  private LocalDateTime updatedAt;
 
-    @Enumerated(EnumType.STRING)
-    private Status status = Status.ACTIVE;
+  @Enumerated(EnumType.STRING)
+  private Status status = Status.ACTIVE;
 
-    public void delete() {
-        this.status = Status.INACTIVE;
-    }
+  public void delete() {
+    this.status = Status.INACTIVE;
+  }
 }

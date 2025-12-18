@@ -22,72 +22,87 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class PostQueryRepository {
 
-    private final JPAQueryFactory query;
+  private final JPAQueryFactory query;
 
-    public List<Post> findPageByIdDesc(PostType postType, Long cursor, int limit) {
-        QPost post = QPost.post;
+  public List<Post> findPageByIdDesc(PostType postType, Long cursor, int limit) {
+    QPost post = QPost.post;
 
-        return query
-                .selectFrom(post)
-                .where(
-                        ltCursor(cursor, post),
-                        eqType(postType, post)
-                )
-                .orderBy(post.id.desc())
-                .limit(limit)
-                .fetch();
+    return query
+        .selectFrom(post)
+        .where(
+            ltCursor(cursor, post),
+            eqType(postType, post)
+        )
+        .orderBy(post.id.desc())
+        .limit(limit)
+        .fetch();
+  }
+
+  private BooleanExpression ltCursor(Long cursor, QPost post) {
+    return (cursor == null) ? null : post.id.lt(cursor);
+  }
+
+  private BooleanExpression eqType(PostType postType, QPost post) {
+    return (postType == null) ? null : post.postType.eq(postType);
+  }
+
+
+  public Map<Long, PostStats> findStatsByPostIds(Collection<Long> postIds) {
+    if (postIds.isEmpty()) {
+      return Map.of();
+    }
+    QPostStats ps = QPostStats.postStats;
+
+    return query
+        .selectFrom(ps)
+        .where(ps.postId.in(postIds))
+        .fetch()
+        .stream()
+        .collect(Collectors.toMap(PostStats::getPostId, it -> it));
+  }
+
+  public Set<Long> findLikedPostIds(Long viewerId, Collection<Long> postIds) {
+    if (viewerId == null || postIds.isEmpty()) {
+      return Set.of();
     }
 
-    private BooleanExpression ltCursor(Long cursor, QPost post) {
-        return (cursor == null) ? null : post.id.lt(cursor);
+    QPostLike like = QPostLike.postLike;
+
+    return new HashSet<>(
+        query.select(like.postId)
+            .from(like)
+            .where(like.memberId.eq(viewerId),
+                like.postId.in(postIds))
+            .fetch()
+    );
+  }
+
+  public boolean isLiked(Long viewerId, Long postId) {
+    if (viewerId == null) {
+      return false;
     }
 
-    private BooleanExpression eqType(PostType postType, QPost post) {
-        return (postType == null) ? null : post.postType.eq(postType);
-    }
+    QPostLike like = QPostLike.postLike;
 
+    Integer fetchOne = query.selectOne()
+        .from(like)
+        .where(like.memberId.eq(viewerId),
+            like.postId.eq(postId))
+        .fetchFirst();
 
-    public Map<Long, PostStats> findStatsByPostIds(Collection<Long> postIds) {
-        if (postIds.isEmpty()) {
-            return Map.of();
-        }
-        QPostStats ps = QPostStats.postStats;
+    return fetchOne != null;
+  }
 
-        return query
-                .selectFrom(ps)
-                .where(ps.postId.in(postIds))
-                .fetch()
-                .stream()
-                .collect(Collectors.toMap(PostStats::getPostId, it -> it));
-    }
+  public List<Post> findLatestOnePerType() {
+    QPost p = QPost.post;
 
-    public Set<Long> findLikedPostIds(Long viewerId, Collection<Long> postIds) {
-        if (viewerId == null || postIds.isEmpty()) {
-            return Set.of();
-        }
-
-        QPostLike like = QPostLike.postLike;
-
-        return new HashSet<>(
-                query.select(like.postId)
-                        .from(like)
-                        .where(like.memberId.eq(viewerId),
-                                like.postId.in(postIds))
-                        .fetch()
-        );
-    }
-
-    public List<Post> findLatestOnePerType() {
-        QPost p = QPost.post;
-        
-        return query.selectFrom(p)
-                .where(p.id.in(
-                        JPAExpressions
-                                .select(p.id.max())
-                                .from(p)
-                                .groupBy(p.postType)
-                ))
-                .fetch();
-    }
-
+    return query.selectFrom(p)
+        .where(p.id.in(
+            JPAExpressions
+                .select(p.id.max())
+                .from(p)
+                .groupBy(p.postType)
+        ))
+        .fetch();
+  }
 }

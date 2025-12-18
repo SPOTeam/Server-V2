@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "kakaoAuthClient", url = "https://kauth.kakao.com")
 public interface KaKaoAuthClient {
 
-    @PostMapping(value = "/oauth/token")
-    KaKaoOAuthTokenDTO getKaKaoAccessToken(
-            @RequestHeader(HEADER_CONTENT_TYPE) String contentType,
-            @RequestParam(GRANT_TYPE) String grant_type,
-            @RequestParam(REDIRECT_URI) String redirectUri,
-            @RequestParam(CLIENT_ID) String client_id,
-            @RequestParam(RESPONSE_TYPE_CODE) String code);
+  @PostMapping(value = "/oauth/token")
+  KaKaoOAuthTokenDTO getKaKaoAccessToken(
+      @RequestHeader(HEADER_CONTENT_TYPE) String contentType,
+      @RequestParam(GRANT_TYPE) String grant_type,
+      @RequestParam(REDIRECT_URI) String redirectUri,
+      @RequestParam(CLIENT_ID) String client_id,
+      @RequestParam(RESPONSE_TYPE_CODE) String code);
 }

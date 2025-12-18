@@ -29,46 +29,43 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class NaverOauth {
 
-    @Value("${spring.oauth2.naver.client-id}")
-    private String NAVER_CLIENT_ID;
+  private final NaverAuthClient naverAuthClient;
+  private final NaverApiClient naverApiClient;
 
-    @Value("${spring.oauth2.naver.client-secret}")
-    private String NAVER_CLIENT_SECRET;
+  @Value("${spring.oauth2.naver.client-id}")
+  private String NAVER_CLIENT_ID;
+  @Value("${spring.oauth2.naver.client-secret}")
+  private String NAVER_CLIENT_SECRET;
+  @Value("${spring.oauth2.naver.callback-url}")
+  private String NAVER_CALLBACK_LOGIN_URL;
+  @Value("${spring.oauth2.naver.url}")
+  private String NAVER_SNS_URL;
 
-    @Value("${spring.oauth2.naver.callback-url}")
-    private String NAVER_CALLBACK_LOGIN_URL;
+  public String getOauthRedirectURL() {
+    Map<String, Object> params = new HashMap<>();
+    params.put(CLIENT_ID, NAVER_CLIENT_ID);
+    params.put(REDIRECT_URI, NAVER_CALLBACK_LOGIN_URL);
+    params.put(RESPONSE_TYPE, RESPONSE_TYPE_CODE);
+    params.put(STATE, STATE_STRING);
 
-    @Value("${spring.oauth2.naver.url}")
-    private String NAVER_SNS_URL;
+    String parameterString = params.entrySet().stream()
+        .map(x -> x.getKey() + KEY_VALUE_DELIMITER + x.getValue())
+        .collect(Collectors.joining(QUERY_DELIMITER));
 
-    private final NaverAuthClient naverAuthClient;
-    private final NaverApiClient naverApiClient;
+    return NAVER_SNS_URL + QUERY_PREFIX + parameterString;
+  }
 
-    public String getOauthRedirectURL() {
-        Map<String, Object> params = new HashMap<>();
-        params.put(CLIENT_ID, NAVER_CLIENT_ID);
-        params.put(REDIRECT_URI, NAVER_CALLBACK_LOGIN_URL);
-        params.put(RESPONSE_TYPE, RESPONSE_TYPE_CODE);
-        params.put(STATE, STATE_STRING);
+  public NaverOAuthTokenDTO requestAccessToken(String code) {
+    return naverAuthClient.getNaverAccessToken(
+        GRANT_TYPE_AUTHORIZATION_CODE, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET, code,
+        NAVER_CALLBACK_LOGIN_URL);
+  }
 
-        String parameterString = params.entrySet().stream()
-                .map(x -> x.getKey() + KEY_VALUE_DELIMITER + x.getValue())
-                .collect(Collectors.joining(QUERY_DELIMITER));
+  public NaverUser requestUserInfo(String accessToken) {
+    return naverApiClient.getNaverUserInfo(getAccessToken(accessToken));
+  }
 
-        return NAVER_SNS_URL + QUERY_PREFIX + parameterString;
-    }
-
-    public NaverOAuthTokenDTO requestAccessToken(String code) {
-        return naverAuthClient.getNaverAccessToken(
-                GRANT_TYPE_AUTHORIZATION_CODE, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET, code, NAVER_CALLBACK_LOGIN_URL);
-    }
-
-
-    public NaverUser requestUserInfo(NaverOAuthTokenDTO naverOAuthTokenDTO) {
-        return naverApiClient.getNaverUserInfo(getAccessToken(naverOAuthTokenDTO));
-    }
-
-    private static String getAccessToken(NaverOAuthTokenDTO naverOAuthTokenDTO) {
-        return BEARER_PREFIX + naverOAuthTokenDTO.access_token();
-    }
+  private String getAccessToken(String accessToken) {
+    return BEARER_PREFIX + accessToken;
+  }
 }

@@ -31,108 +31,111 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+
 @ExtendWith(MockitoExtension.class)
 class ManagePostServiceTest {
 
-    @Mock
-    IdGenerator idGenerator;
+  @Mock
+  IdGenerator idGenerator;
 
-    @Mock
-    GetWriterInfoPort getWriterInfoPort;
+  @Mock
+  GetWriterInfoPort getWriterInfoPort;
 
-    @Mock
-    FileStoragePort fileStoragePort;
+  @Mock
+  FileStoragePort fileStoragePort;
 
-    @Mock
-    PostRepository postRepository;
+  @Mock
+  PostRepository postRepository;
 
-    @Mock
-    PostStatsRepository postStatsRepository;
+  @Mock
+  PostStatsRepository postStatsRepository;
 
-    @Mock
-    PostLikeRepository postLikeRepository;
+  @Mock
+  PostLikeRepository postLikeRepository;
 
-    @Mock
-    PostImageRepository postImageRepository;
+  @Mock
+  PostImageRepository postImageRepository;
 
-    ManagePostService managePostService;
-    LikePostService likePostService;
+  ManagePostService managePostService;
+  LikePostService likePostService;
 
-    @BeforeEach
-    void setUp() {
-        managePostService = new ManagePostService(idGenerator, getWriterInfoPort, fileStoragePort, postRepository,
-                postStatsRepository, postImageRepository);
-        likePostService = new LikePostService(idGenerator, postLikeRepository, postStatsRepository);
-    }
+  @BeforeEach
+  void setUp() {
+    managePostService = new ManagePostService(idGenerator, getWriterInfoPort, fileStoragePort,
+        postRepository,
+        postStatsRepository, postImageRepository);
+    likePostService = new LikePostService(idGenerator, postLikeRepository, postStatsRepository);
+  }
 
-    @Test
-    @DisplayName("게시글을 정상적으로 생성할 수 있다.")
-    void should_create_post_successfully() {
-        // given
-        WriterInfo writerInfo = writerInfo();
+  @Test
+  @DisplayName("게시글을 정상적으로 생성할 수 있다.")
+  void should_create_post_successfully() {
+    // given
+    WriterInfo writerInfo = writerInfo();
 
-        // when
-        Post post = Post.of(POST_ID, writerInfo, TITLE, CONTENT, PostType.FREE_TALK);
+    // when
+    Post post = Post.of(POST_ID, writerInfo, TITLE, CONTENT, PostType.FREE_TALK);
 
-        // then
-        assertThat(post).isNotNull();
-        assertThat(post.getId()).isEqualTo(POST_ID);
-        assertThat(post.getTitle()).isEqualTo(TITLE);
-        assertThat(post.getContent()).isEqualTo(CONTENT);
-        assertThat(post.getPostType()).isEqualTo(PostType.FREE_TALK);
-    }
+    // then
+    assertThat(post).isNotNull();
+    assertThat(post.getId()).isEqualTo(POST_ID);
+    assertThat(post.getTitle()).isEqualTo(TITLE);
+    assertThat(post.getContent()).isEqualTo(CONTENT);
+    assertThat(post.getPostType()).isEqualTo(PostType.FREE_TALK);
+  }
 
-    @Test
-    @Disabled
-    @DisplayName("게시글 작성자가 아닌 경우 게시글 수정에 실패한다.")
-    void should_fail_to_update_post_when_not_writer() {
-        // given
-        WriterInfo writerInfo = writerInfo();
-        Post post = Post.of(POST_ID, writerInfo, TITLE, CONTENT, PostType.FREE_TALK);
+  @Test
+  @Disabled
+  @DisplayName("게시글 작성자가 아닌 경우 게시글 수정에 실패한다.")
+  void should_fail_to_update_post_when_not_writer() {
+    // given
+    WriterInfo writerInfo = writerInfo();
+    Post post = Post.of(POST_ID, writerInfo, TITLE, CONTENT, PostType.FREE_TALK);
 
-        when(postRepository.getPostByIdWithLock(POST_ID)).thenReturn(post);
+    when(postRepository.getPostByIdWithLock(POST_ID)).thenReturn(post);
 
-        // when & then
-        assertThatThrownBy(() ->
-                managePostService.updatePost(POST_ID, PostFixture.updatePostRequest(), OTHER_WRITER_ID, null)
-        ).isInstanceOf(GeneralException.class);
-    }
+    // when & then
+    assertThatThrownBy(() ->
+        managePostService.updatePost(POST_ID, PostFixture.updatePostRequest(), OTHER_WRITER_ID,
+            null)
+    ).isInstanceOf(GeneralException.class);
+  }
 
-    @Test
-    @Disabled
-    @DisplayName("게시글 작성자가 아닌 경우 게시글 삭제에 실패한다.")
-    void should_fail_to_delete_post_when_not_writer() {
-        // given
-        WriterInfo writerInfo = writerInfo();
-        Post post = Post.of(POST_ID, writerInfo, TITLE, CONTENT, PostType.FREE_TALK);
+  @Test
+  @Disabled
+  @DisplayName("게시글 작성자가 아닌 경우 게시글 삭제에 실패한다.")
+  void should_fail_to_delete_post_when_not_writer() {
+    // given
+    WriterInfo writerInfo = writerInfo();
+    Post post = Post.of(POST_ID, writerInfo, TITLE, CONTENT, PostType.FREE_TALK);
 
-        when(postRepository.getPostByIdWithLock(POST_ID)).thenReturn(post);
+    when(postRepository.getPostByIdWithLock(POST_ID)).thenReturn(post);
 
-        // when & then
-        assertThatThrownBy(() ->
-                managePostService.deletePost(POST_ID, OTHER_WRITER_ID)
-        ).isInstanceOf(GeneralException.class);
-    }
+    // when & then
+    assertThatThrownBy(() ->
+        managePostService.deletePost(POST_ID, OTHER_WRITER_ID)
+    ).isInstanceOf(GeneralException.class);
+  }
 
-    @Test
-    @DisplayName("이미 좋아요를 누른 게시글에 대해 다시 좋아요를 누를 경우 정상적으로 처리된다.")
-    void should_process_successfully_when_liking_already_liked_post() {
-        // given
-        when(postLikeRepository.savePostLike(anyLong(), anyLong(), anyLong()))
-                .thenReturn(0);
+  @Test
+  @DisplayName("이미 좋아요를 누른 게시글에 대해 다시 좋아요를 누를 경우 정상적으로 처리된다.")
+  void should_process_successfully_when_liking_already_liked_post() {
+    // given
+    when(postLikeRepository.savePostLike(anyLong(), anyLong(), anyLong()))
+        .thenReturn(0);
 
-        // when & then
-        likePostService.likePost(POST_ID, WRITER_ID);
-    }
+    // when & then
+    likePostService.likePost(POST_ID, WRITER_ID);
+  }
 
 
-    @Test
-    @DisplayName("좋아요를 누르지 않은 게시글에 대해 좋아요 취소를 할 경우 정상적으로 처리된다.")
-    void should_process_successfully_when_unliking_not_liked_post() {
-        // given
-        when(postLikeRepository.hardDelete(POST_ID, WRITER_ID)).thenReturn(0);
+  @Test
+  @DisplayName("좋아요를 누르지 않은 게시글에 대해 좋아요 취소를 할 경우 정상적으로 처리된다.")
+  void should_process_successfully_when_unliking_not_liked_post() {
+    // given
+    when(postLikeRepository.hardDelete(POST_ID, WRITER_ID)).thenReturn(0);
 
-        // when & then
-        likePostService.unlikePost(POST_ID, WRITER_ID);
-    }
+    // when & then
+    likePostService.unlikePost(POST_ID, WRITER_ID);
+  }
 }

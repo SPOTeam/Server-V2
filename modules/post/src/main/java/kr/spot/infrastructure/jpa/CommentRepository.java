@@ -10,11 +10,11 @@ import org.springframework.data.repository.query.Param;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    @Query("select c from Comment c where c.postId = :postId and c.status = 'ACTIVE' order by c.createdAt asc")
-    List<Comment> getCommentsByPostId(@Param("postId") Long postId);
+  @Query("select c from Comment c where c.postId = :postId and c.status = 'ACTIVE' order by c.createdAt asc")
+  List<Comment> getCommentsByPostId(@Param("postId") Long postId);
 
-    default Comment getById(Long id) {
-        return findById(id)
-                .orElseThrow(() -> new GeneralException(ErrorStatus._COMMENT_NOT_FOUND));
-    }
+  default Comment getById(Long id) {
+    return findById(id)
+        .orElseThrow(() -> new GeneralException(ErrorStatus._COMMENT_NOT_FOUND));
+  }
 }

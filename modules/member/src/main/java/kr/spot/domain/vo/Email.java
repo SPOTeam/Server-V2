@@ -20,15 +20,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Email {
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$");
+  private static final Pattern EMAIL_PATTERN = Pattern.compile(
+      "^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$");
 
-    @Column(nullable = false, name = "email")
-    private String value;
+  @Column(nullable = false, name = "email")
+  private String value;
 
-    public static Email of(String value) {
-        if (isBlank(value) || !EMAIL_PATTERN.matcher(value).matches()) {
-            throw new GeneralException(ErrorStatus._INVALID_EMAIL_FORMAT);
-        }
-        return new Email(value);
+  public static Email of(String value) {
+    if (isBlank(value) || !EMAIL_PATTERN.matcher(value).matches()) {
+      throw new GeneralException(ErrorStatus._INVALID_EMAIL_FORMAT);
     }
+    return new Email(value);
+  }
 }

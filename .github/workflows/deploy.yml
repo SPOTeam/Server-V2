@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - develop
     types:
       - closed
 
@@ -24,6 +25,10 @@ jobs:
         with:
           java-version: '21'
           distribution: "adopt"
+
+      - name: Set Sentry auth token
+        run: |
+          echo "export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}" >> $GITHUB_ENV
 
       - name: Make application.yml
         run: |
