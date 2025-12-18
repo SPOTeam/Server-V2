@@ -71,6 +71,7 @@ public class PostViewFlushJob {
 
   private void processKey(byte[] keyBytes, BatchResult result) {
     String key = new String(keyBytes, StandardCharsets.UTF_8);
+    long delta = 0;
 
     try {
       // 1. GETDEL - 원자적으로 값을 읽고 삭제
@@ -80,7 +81,7 @@ public class PostViewFlushJob {
       }
 
       // 2. 값 파싱 및 검증
-      long delta = parseLong(valueStr);
+      delta = parseLong(valueStr);
       if (delta <= 0) {
         log.warn("유효하지 않은 값 무시: key={}, value={}", key, valueStr);
         return;
@@ -100,18 +101,19 @@ public class PostViewFlushJob {
     } catch (Exception e) {
       result.recordFailure();
       log.error("처리 실패: key={}", key, e);
-      // GETDEL 이후 실패 시 값 복구 시도
-      restoreValueOnFailure(key, e);
+      // GETDEL 이후 실패 시 값 복구하여 다음 배치에서 재시도
+      if (delta > 0) {
+        restoreValue(key, delta);
+      }
     }
   }
 
-  private void restoreValueOnFailure(String key, Exception originalException) {
+  private void restoreValue(String key, long delta) {
     try {
-      // 실패 시 Redis에 다시 기록하여 다음 배치에서 재시도
-      // 원래 값은 이미 삭제되었으므로, 로그로 추적 가능하도록 함
-      log.warn("DB 반영 실패로 인한 데이터 손실 가능: key={}", key, originalException);
+      redis.opsForValue().increment(key, delta);
+      log.warn("DB 반영 실패, Redis에 값 복구 완료: key={}, delta={}", key, delta);
     } catch (Exception e) {
-      log.error("복구 시도 중 추가 오류: key={}", key, e);
+      log.error("복구 실패, 데이터 손실: key={}, delta={}", key, delta, e);
     }
   }
 
