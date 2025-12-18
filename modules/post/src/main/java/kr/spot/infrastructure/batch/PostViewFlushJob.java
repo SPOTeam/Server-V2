@@ -1,6 +1,7 @@
 package kr.spot.infrastructure.batch;
 
-import kr.spot.infrastructure.jpa.PostStatsRepository;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.Cursor;
@@ -9,70 +10,152 @@ import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class PostViewFlushJob {
 
-  public static final String KEY_PREFIX = "view:post:*";
+  private static final String KEY_PREFIX = "view:post:";
+  private static final String KEY_PATTERN = KEY_PREFIX + "*";
+  private static final String LOCK_KEY = "lock:view-flush";
 
   private final StringRedisTemplate redis;
-  private final PostStatsRepository postStatsRepository;
+  private final PostViewFlusher postViewFlusher;
 
-  @Transactional
   @Scheduled(cron = "0 * * * * *")
   public void flush() {
-    log.info("PostViewFlushJob started");
+    if (!tryAcquireLock()) {
+      log.debug("다른 인스턴스에서 실행 중");
+      return;
+    }
+    try {
+      executeBatch();
+    } finally {
+      releaseLock();
+    }
+  }
+
+  private void executeBatch() {
+    log.info("PostViewFlushJob 시작");
+    long startTime = System.currentTimeMillis();
+
+    BatchResult result = processAllKeys();
+
+    long duration = System.currentTimeMillis() - startTime;
+    log.info("PostViewFlushJob 완료: 성공 {}건, 실패 {}건, {}ms",
+        result.successCount, result.failureCount, duration);
+  }
+
+  private BatchResult processAllKeys() {
+    BatchResult result = new BatchResult();
     ScanOptions options = ScanOptions.scanOptions()
-        .match(KEY_PREFIX)
+        .match(KEY_PATTERN)
         .count(500)
         .build();
 
-    // 같은 커넥션 안에서 SCAN → GET → DEL까지 처리
-    redis.execute((RedisCallback<Object>) (connection) -> {
+    redis.execute((RedisCallback<Void>) connection -> {
       try (Cursor<byte[]> cursor = connection.scan(options)) {
         while (cursor.hasNext()) {
-          byte[] k = cursor.next();
-
-          // 값 읽기 (동일 커넥션)
-          byte[] v = connection.stringCommands().get(k);
-          long delta = parseLongSafe(v);
-          if (delta <= 0) {
-            continue;
-          }
-
-          Long postId = parsePostIdFromKey(k);
-
-          // DB에 원자적 합산
-          postStatsRepository.increaseViewBy(postId, delta);
-
-          // 처리 완료 후 키 삭제
-          connection.keyCommands().del(k);
+          byte[] keyBytes = cursor.next();
+          processKey(keyBytes, result);
         }
       } catch (Exception e) {
-        // 실패 시 키를 남겨두면 다음 주기에 재시도 가능
-        // 필요 시 로그 추가
+        log.error("SCAN 처리 중 오류", e);
       }
       return null;
     });
+
+    return result;
   }
 
-  private long parseLongSafe(byte[] v) {
-    if (v == null || v.length == 0) {
-      return 0L;
-    }
+  private void processKey(byte[] keyBytes, BatchResult result) {
+    String key = new String(keyBytes, StandardCharsets.UTF_8);
+    long delta = 0;
+
     try {
-      return Long.parseLong(new String(v, java.nio.charset.StandardCharsets.UTF_8));
+      // 1. GETDEL - 원자적으로 값을 읽고 삭제
+      String valueStr = redis.opsForValue().getAndDelete(key);
+      if (valueStr == null) {
+        return;
+      }
+
+      // 2. 값 파싱 및 검증
+      delta = parseLong(valueStr);
+      if (delta <= 0) {
+        log.warn("유효하지 않은 값 무시: key={}, value={}", key, valueStr);
+        return;
+      }
+
+      Long postId = extractPostIdFromKey(key);
+      if (postId == null) {
+        log.error("postId 추출 실패, 값 손실: key={}, delta={}", key, delta);
+        return;
+      }
+
+      // 3. DB 업데이트 (별도 트랜잭션)
+      postViewFlusher.updateViewCount(postId, delta);
+      result.recordSuccess();
+      log.debug("처리 완료: postId={}, delta={}", postId, delta);
+
+    } catch (Exception e) {
+      result.recordFailure();
+      log.error("처리 실패: key={}", key, e);
+      // GETDEL 이후 실패 시 값 복구하여 다음 배치에서 재시도
+      if (delta > 0) {
+        restoreValue(key, delta);
+      }
+    }
+  }
+
+  private void restoreValue(String key, long delta) {
+    try {
+      redis.opsForValue().increment(key, delta);
+      log.warn("DB 반영 실패, Redis에 값 복구 완료: key={}, delta={}", key, delta);
+    } catch (Exception e) {
+      log.error("복구 실패, 데이터 손실: key={}, delta={}", key, delta, e);
+    }
+  }
+
+  private boolean tryAcquireLock() {
+    Boolean acquired = redis.opsForValue()
+        .setIfAbsent(LOCK_KEY, "1", 55, TimeUnit.SECONDS);
+    return Boolean.TRUE.equals(acquired);
+  }
+
+  private void releaseLock() {
+    redis.delete(LOCK_KEY);
+  }
+
+  private long parseLong(String value) {
+    try {
+      return Long.parseLong(value);
     } catch (NumberFormatException e) {
+      log.warn("Long 파싱 실패: {}", value);
       return 0L;
     }
   }
 
-  private Long parsePostIdFromKey(byte[] keyBytes) {
-    String key = new String(keyBytes, java.nio.charset.StandardCharsets.UTF_8);
-    // "view:post:{postId}"
-    return Long.valueOf(key.substring("view:post:".length()));
+  private Long extractPostIdFromKey(String key) {
+    try {
+      return Long.parseLong(key.substring(KEY_PREFIX.length()));
+    } catch (Exception e) {
+      log.error("postId 추출 실패: {}", key, e);
+      return null;
+    }
+  }
+
+  private static class BatchResult {
+
+    int successCount = 0;
+    int failureCount = 0;
+
+    void recordSuccess() {
+      successCount++;
+    }
+
+    void recordFailure() {
+      failureCount++;
+    }
   }
 }
