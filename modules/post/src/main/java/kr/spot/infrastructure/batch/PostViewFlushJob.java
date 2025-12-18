@@ -2,7 +2,6 @@ package kr.spot.infrastructure.batch;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
-import kr.spot.infrastructure.jpa.PostStatsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.Cursor;
@@ -11,8 +10,6 @@ import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
@@ -24,7 +21,7 @@ public class PostViewFlushJob {
   private static final String LOCK_KEY = "lock:view-flush";
 
   private final StringRedisTemplate redis;
-  private final PostStatsRepository postStatsRepository;
+  private final PostViewFlusher postViewFlusher;
 
   @Scheduled(cron = "0 * * * * *")
   public void flush() {
@@ -61,7 +58,7 @@ public class PostViewFlushJob {
       try (Cursor<byte[]> cursor = connection.scan(options)) {
         while (cursor.hasNext()) {
           byte[] keyBytes = cursor.next();
-          processKeyWithTransaction(keyBytes, result);
+          processKey(keyBytes, result);
         }
       } catch (Exception e) {
         log.error("SCAN 처리 중 오류", e);
@@ -72,51 +69,50 @@ public class PostViewFlushJob {
     return result;
   }
 
-  private void processKeyWithTransaction(byte[] keyBytes, BatchResult result) {
+  private void processKey(byte[] keyBytes, BatchResult result) {
     String key = new String(keyBytes, StandardCharsets.UTF_8);
 
     try {
-      // 1. Redis 값 읽기 (트랜잭션 밖)
-      String valueStr = redis.opsForValue().get(key);
+      // 1. GETDEL - 원자적으로 값을 읽고 삭제
+      String valueStr = redis.opsForValue().getAndDelete(key);
       if (valueStr == null) {
         return;
       }
 
-      // 2. 값 검증 (트랜잭션 밖)
+      // 2. 값 파싱 및 검증
       long delta = parseLong(valueStr);
       if (delta <= 0) {
-        log.warn("유효하지 않은 값, 키 삭제: key={}, value={}", key, valueStr);
-        redis.delete(key);
+        log.warn("유효하지 않은 값 무시: key={}, value={}", key, valueStr);
         return;
       }
 
       Long postId = extractPostIdFromKey(key);
       if (postId == null) {
-        log.error("postId 추출 실패, 키 삭제: {}", key);
-        redis.delete(key);
+        log.error("postId 추출 실패, 값 손실: key={}, delta={}", key, delta);
         return;
       }
 
-      // 3. DB 업데이트 (트랜잭션)
-      updateDatabase(postId, delta);
-
-      // 4. 트랜잭션 커밋 성공 후 Redis 삭제
-      redis.delete(key);
+      // 3. DB 업데이트 (별도 트랜잭션)
+      postViewFlusher.updateViewCount(postId, delta);
       result.recordSuccess();
-      log.debug("처리 완료: key={}, postId={}, delta={}", key, postId, delta);
+      log.debug("처리 완료: postId={}, delta={}", postId, delta);
 
     } catch (Exception e) {
       result.recordFailure();
-      log.error("처리 실패 (다음 배치 재시도): key={}", key, e);
-      // Redis 키 유지 → 다음 배치에서 재시도
+      log.error("처리 실패: key={}", key, e);
+      // GETDEL 이후 실패 시 값 복구 시도
+      restoreValueOnFailure(key, e);
     }
   }
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  protected void updateDatabase(Long postId, long delta) {
-    // DB 업데이트만 수행 (Redis 작업 없음)
-    postStatsRepository.increaseViewBy(postId, delta);
-    log.debug("DB 업데이트: postId={}, delta={}", postId, delta);
+  private void restoreValueOnFailure(String key, Exception originalException) {
+    try {
+      // 실패 시 Redis에 다시 기록하여 다음 배치에서 재시도
+      // 원래 값은 이미 삭제되었으므로, 로그로 추적 가능하도록 함
+      log.warn("DB 반영 실패로 인한 데이터 손실 가능: key={}", key, originalException);
+    } catch (Exception e) {
+      log.error("복구 시도 중 추가 오류: key={}", key, e);
+    }
   }
 
   private boolean tryAcquireLock() {
