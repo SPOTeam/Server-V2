@@ -19,8 +19,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
 import kr.spot.application.ports.HotPostStore;
-import kr.spot.application.ports.PostViewCounter;
-import kr.spot.application.ports.ViewAbuseGuard;
+import kr.spot.view.ViewAbuseGuard;
+import kr.spot.view.ViewCounter;
+import kr.spot.view.ViewableType;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.common.PostFixture;
 import kr.spot.domain.Post;
@@ -49,7 +50,7 @@ class GetPostServiceTest {
   private static final String KEY = "popular:top3:total";
 
   @Mock
-  PostViewCounter postViewCounter;
+  ViewCounter viewCounter;
 
   @Mock
   ViewAbuseGuard viewAbuseGuard;
@@ -76,7 +77,7 @@ class GetPostServiceTest {
 
   @BeforeEach
   void setUp() {
-    getPostService = new GetPostService(postViewCounter, viewAbuseGuard, hotPostStore,
+    getPostService = new GetPostService(viewCounter, viewAbuseGuard, hotPostStore,
         postRepository,
         postQueryRepository,
         commentRepository,
@@ -196,22 +197,22 @@ class GetPostServiceTest {
   // ---------------- 추가: 뷰 델타/가드/장애 케이스 ----------------
 
   @Test
-  @DisplayName("어뷰징 가드 통과 시: incrementAndGetDelta를 호출해 DB viewCount + 델타로 노출")
+  @DisplayName("어뷰징 가드 통과 시: incrementAndGet을 호출해 DB viewCount + 델타로 노출")
   void should_add_delta_when_guard_allows() {
     long postId = 1L, viewerId = 10L;
     Post post = post();
-    PostStats stats = postStats(); // 예: DB viewCount = 0L 가정
+    PostStats stats = postStats();
     when(postRepository.getPostById(postId)).thenReturn(post);
     when(postStatsRepository.getPostStatsById(postId)).thenReturn(stats);
     when(postImageRepository.getPostImageByPostId(postId)).thenReturn(postImage());
 
-    when(viewAbuseGuard.shouldCount(postId, viewerId)).thenReturn(true);
-    when(postViewCounter.incrementAndGetDelta(postId)).thenReturn(5L);
+    when(viewAbuseGuard.shouldCount(ViewableType.POST, postId, viewerId)).thenReturn(true);
+    when(viewCounter.incrementAndGet(ViewableType.POST, postId)).thenReturn(5L);
 
     var res = getPostService.getPostDetail(postId, viewerId);
 
-    verify(viewAbuseGuard).shouldCount(postId, viewerId);
-    verify(postViewCounter).incrementAndGetDelta(postId);
+    verify(viewAbuseGuard).shouldCount(ViewableType.POST, postId, viewerId);
+    verify(viewCounter).incrementAndGet(ViewableType.POST, postId);
     assertThat(res.stats().viewCount()).isEqualTo(stats.getViewCount() + 5L);
   }
 
@@ -220,18 +221,18 @@ class GetPostServiceTest {
   void should_use_current_delta_when_guard_blocks() {
     long postId = 1L, viewerId = 10L;
     Post post = post();
-    PostStats stats = postStats(); // DB viewCount = 0L 가정
+    PostStats stats = postStats();
     when(postRepository.getPostById(postId)).thenReturn(post);
     when(postStatsRepository.getPostStatsById(postId)).thenReturn(stats);
     when(postImageRepository.getPostImageByPostId(postId)).thenReturn(postImage());
 
-    when(viewAbuseGuard.shouldCount(postId, viewerId)).thenReturn(false);
-    when(postViewCounter.currentDelta(postId)).thenReturn(7L);
+    when(viewAbuseGuard.shouldCount(ViewableType.POST, postId, viewerId)).thenReturn(false);
+    when(viewCounter.currentDelta(ViewableType.POST, postId)).thenReturn(7L);
 
     var res = getPostService.getPostDetail(postId, viewerId);
 
-    verify(viewAbuseGuard).shouldCount(postId, viewerId);
-    verify(postViewCounter).currentDelta(postId);
+    verify(viewAbuseGuard).shouldCount(ViewableType.POST, postId, viewerId);
+    verify(viewCounter).currentDelta(ViewableType.POST, postId);
     assertThat(res.stats().viewCount()).isEqualTo(stats.getViewCount() + 7L);
   }
 
@@ -240,20 +241,20 @@ class GetPostServiceTest {
   void should_fallback_to_db_count_when_redis_fails() {
     long postId = 1L, viewerId = 10L;
     Post post = post();
-    PostStats stats = postStats(); // DB viewCount 예: 123L
+    PostStats stats = postStats();
     when(postRepository.getPostById(postId)).thenReturn(post);
     when(postStatsRepository.getPostStatsById(postId)).thenReturn(stats);
     when(postImageRepository.getPostImageByPostId(postId)).thenReturn(postImage());
 
-    when(viewAbuseGuard.shouldCount(postId, viewerId)).thenReturn(true);
-    when(postViewCounter.incrementAndGetDelta(postId)).thenThrow(
+    when(viewAbuseGuard.shouldCount(ViewableType.POST, postId, viewerId)).thenReturn(true);
+    when(viewCounter.incrementAndGet(ViewableType.POST, postId)).thenThrow(
         new RuntimeException("Redis down"));
 
     var res = getPostService.getPostDetail(postId, viewerId);
 
-    verify(viewAbuseGuard).shouldCount(postId, viewerId);
-    verify(postViewCounter).incrementAndGetDelta(postId);
-    assertThat(res.stats().viewCount()).isEqualTo(stats.getViewCount()); // 델타 미반영
+    verify(viewAbuseGuard).shouldCount(ViewableType.POST, postId, viewerId);
+    verify(viewCounter).incrementAndGet(ViewableType.POST, postId);
+    assertThat(res.stats().viewCount()).isEqualTo(stats.getViewCount());
   }
 
   // ---------------- getPostList ----------------

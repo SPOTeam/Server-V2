@@ -6,6 +6,7 @@ include 'app:config'
 include 'common:snowflake'
 include 'common:api'
 include 'common:bucket'
+include 'common:view'
 
 include 'modules:shared'
 include 'modules:member'
