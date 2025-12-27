@@ -1,8 +1,8 @@
-package kr.spot.application.query;
+package kr.spot.study.application.query;
 
-import static kr.spot.common.MemberInfoResponseFixture.createMap;
-import static kr.spot.common.StudyApplicationInfoFixture.createList;
-import static kr.spot.common.StudyMemberFixture.applied;
+import static kr.spot.study.common.MemberInfoResponseFixture.createMap;
+import static kr.spot.study.common.StudyApplicationInfoFixture.createList;
+import static kr.spot.study.common.StudyMemberFixture.applied;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
@@ -12,12 +12,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import kr.spot.code.status.ErrorStatus;
-import kr.spot.common.StudyMemberFixture;
 import kr.spot.exception.GeneralException;
 import kr.spot.ports.GetMemberInfoPort;
 import kr.spot.ports.dto.MemberInfoResponse;
-import kr.spot.study.application.query.GetStudyApplicationService;
 import kr.spot.study.application.validator.StudyAccessValidator;
+import kr.spot.study.common.StudyMemberFixture;
 import kr.spot.study.domain.associations.StudyMember;
 import kr.spot.study.domain.enums.StudyMemberStatus;
 import kr.spot.study.infrastructure.jpa.StudyMemberRepositoryCustom;

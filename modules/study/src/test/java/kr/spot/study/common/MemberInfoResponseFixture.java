@@ -1,4 +1,4 @@
-package kr.spot.common;
+package kr.spot.study.common;
 
 import java.util.List;
 import java.util.Map;

@@ -1,11 +1,11 @@
-package kr.spot.application.event;
+package kr.spot.study.application.event;
 
-import static kr.spot.common.StudyFixture.DESCRIPTION;
-import static kr.spot.common.StudyFixture.FEE_AMOUNT;
-import static kr.spot.common.StudyFixture.HAS_FEE;
-import static kr.spot.common.StudyFixture.LEADER_ID;
-import static kr.spot.common.StudyFixture.MAX_MEMBERS;
-import static kr.spot.common.StudyFixture.NAME;
+import static kr.spot.study.common.StudyFixture.DESCRIPTION;
+import static kr.spot.study.common.StudyFixture.FEE_AMOUNT;
+import static kr.spot.study.common.StudyFixture.HAS_FEE;
+import static kr.spot.study.common.StudyFixture.LEADER_ID;
+import static kr.spot.study.common.StudyFixture.MAX_MEMBERS;
+import static kr.spot.study.common.StudyFixture.NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -15,8 +15,6 @@ import static org.mockito.Mockito.when;
 
 import kr.spot.ports.FileStoragePort;
 import kr.spot.ports.dto.UploadResult;
-import kr.spot.study.application.event.StudyCreatedEvent;
-import kr.spot.study.application.event.StudyImageUploadListener;
 import kr.spot.study.domain.Study;
 import kr.spot.study.domain.vo.Fee;
 import kr.spot.study.infrastructure.jpa.StudyRepository;

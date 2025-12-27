@@ -1,4 +1,4 @@
-package kr.spot.common;
+package kr.spot.study.common;
 
 import kr.spot.study.domain.associations.StudyMember;
 import kr.spot.study.domain.enums.Decision;

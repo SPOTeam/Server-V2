@@ -1,21 +1,20 @@
-package kr.spot.domain;
+package kr.spot.study.domain;
 
-import static kr.spot.common.StudyFixture.DESCRIPTION;
-import static kr.spot.common.StudyFixture.FEE_AMOUNT;
-import static kr.spot.common.StudyFixture.HAS_FEE;
-import static kr.spot.common.StudyFixture.ID;
-import static kr.spot.common.StudyFixture.IMAGE_URL;
-import static kr.spot.common.StudyFixture.LEADER_ID;
-import static kr.spot.common.StudyFixture.MAX_MEMBERS;
-import static kr.spot.common.StudyFixture.NAME;
-import static kr.spot.common.StudyFixture.study;
-import static kr.spot.common.StudyMemberFixture.applied;
+import static kr.spot.study.common.StudyFixture.DESCRIPTION;
+import static kr.spot.study.common.StudyFixture.FEE_AMOUNT;
+import static kr.spot.study.common.StudyFixture.HAS_FEE;
+import static kr.spot.study.common.StudyFixture.ID;
+import static kr.spot.study.common.StudyFixture.IMAGE_URL;
+import static kr.spot.study.common.StudyFixture.LEADER_ID;
+import static kr.spot.study.common.StudyFixture.MAX_MEMBERS;
+import static kr.spot.study.common.StudyFixture.NAME;
+import static kr.spot.study.common.StudyFixture.study;
+import static kr.spot.study.common.StudyMemberFixture.applied;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
-import kr.spot.study.domain.Study;
 import kr.spot.study.domain.associations.StudyMember;
 import kr.spot.study.domain.enums.Decision;
 import kr.spot.study.domain.enums.RecruitingStatus;

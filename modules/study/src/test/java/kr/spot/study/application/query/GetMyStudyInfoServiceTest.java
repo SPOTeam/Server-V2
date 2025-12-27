@@ -1,6 +1,6 @@
-package kr.spot.application.query;
+package kr.spot.study.application.query;
 
-import static kr.spot.common.StudyFixture.createStudies;
+import static kr.spot.study.common.StudyFixture.createStudies;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.List;
 import kr.spot.ports.GetPreferredCategoryPort;
 import kr.spot.ports.GetPreferredRegionPort;
-import kr.spot.study.application.query.GetMyStudyInfoService;
 import kr.spot.study.domain.Study;
 import kr.spot.study.domain.enums.Category;
 import kr.spot.study.domain.enums.FeeCategory;

@@ -1,4 +1,4 @@
-package kr.spot.application.command;
+package kr.spot.study.application.command;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Set;
 import kr.spot.IdGenerator;
-import kr.spot.study.application.command.CreateStudyService;
 import kr.spot.study.application.event.StudyCreatedEvent;
 import kr.spot.study.domain.Study;
 import kr.spot.study.domain.enums.Category;

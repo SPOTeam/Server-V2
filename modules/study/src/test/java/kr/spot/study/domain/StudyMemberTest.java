@@ -1,12 +1,12 @@
-package kr.spot.domain;
+package kr.spot.study.domain;
 
-import static kr.spot.common.StudyMemberFixture.ID;
-import static kr.spot.common.StudyMemberFixture.MEMBER_ID;
-import static kr.spot.common.StudyMemberFixture.MESSAGE;
-import static kr.spot.common.StudyMemberFixture.STUDY_ID;
-import static kr.spot.common.StudyMemberFixture.applied;
-import static kr.spot.common.StudyMemberFixture.awaitingSelfApproval;
-import static kr.spot.common.StudyMemberFixture.owner;
+import static kr.spot.study.common.StudyMemberFixture.ID;
+import static kr.spot.study.common.StudyMemberFixture.MEMBER_ID;
+import static kr.spot.study.common.StudyMemberFixture.MESSAGE;
+import static kr.spot.study.common.StudyMemberFixture.STUDY_ID;
+import static kr.spot.study.common.StudyMemberFixture.applied;
+import static kr.spot.study.common.StudyMemberFixture.awaitingSelfApproval;
+import static kr.spot.study.common.StudyMemberFixture.owner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
