@@ -10,8 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import kr.spot.application.ports.HotPostStore;
-import kr.spot.application.ports.PostViewCounter;
-import kr.spot.application.ports.ViewAbuseGuard;
+import kr.spot.view.ViewAbuseGuard;
+import kr.spot.view.ViewCounter;
+import kr.spot.view.ViewableType;
 import kr.spot.domain.Comment;
 import kr.spot.domain.Post;
 import kr.spot.domain.PostStats;
@@ -44,7 +45,7 @@ public class GetPostService {
   public static final int MAX_PAGE_SIZE = 50;
   public static final int MAX_CONTENT_LENGTH = 100;
 
-  private final PostViewCounter postViewCounter;
+  private final ViewCounter viewCounter;
   private final ViewAbuseGuard viewAbuseGuard;
   private final HotPostStore hotPostStore;
   private final PostRepository postRepository;
@@ -126,10 +127,10 @@ public class GetPostService {
   private long getViewDeltaFromCounter(Long postId, Long viewerId) {
     long viewDelta = 0L;
     try {
-      if (viewAbuseGuard.shouldCount(postId, viewerId)) {
-        viewDelta = postViewCounter.incrementAndGetDelta(postId); // 델타 증가 및 현재값 반환
+      if (viewAbuseGuard.shouldCount(ViewableType.POST, postId, viewerId)) {
+        viewDelta = viewCounter.incrementAndGet(ViewableType.POST, postId);
       } else {
-        viewDelta = postViewCounter.currentDelta(postId); // 델타만 조회
+        viewDelta = viewCounter.currentDelta(ViewableType.POST, postId);
       }
     } catch (Exception ignore) {
       log.warn("Redis view counter access failed for postId: {}", postId, ignore);
