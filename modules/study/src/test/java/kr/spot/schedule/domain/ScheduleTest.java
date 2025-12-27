@@ -10,6 +10,7 @@ import static kr.spot.schedule.common.ScheduleFixture.schedule;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.time.LocalDateTime;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
 import org.junit.jupiter.api.DisplayName;
@@ -87,6 +88,107 @@ class ScheduleTest {
       assertThatThrownBy(() -> schedule.delete(otherStudyId))
           .isInstanceOf(GeneralException.class)
           .hasFieldOrPropertyWithValue("status", ErrorStatus._SCHEDULE_ACCESS_DENIED);
+    }
+  }
+
+  @Nested
+  @DisplayName("진행 중 여부 확인 (isOngoing)")
+  class IsOngoing {
+
+    @Test
+    @DisplayName("현재 시간이 일정 시간 범위 내에 있으면 true를 반환한다")
+    void should_return_true_when_now_is_within_schedule() {
+      // given
+      Schedule schedule = schedule();
+      LocalDateTime duringSchedule = START_AT.plusMinutes(30);
+
+      // when
+      boolean result = schedule.isOngoing(duringSchedule);
+
+      // then
+      assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("현재 시간이 일정 시작 시간과 같으면 true를 반환한다")
+    void should_return_true_when_now_equals_start_time() {
+      // given
+      Schedule schedule = schedule();
+
+      // when
+      boolean result = schedule.isOngoing(START_AT);
+
+      // then
+      assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("현재 시간이 일정 종료 시간과 같으면 true를 반환한다")
+    void should_return_true_when_now_equals_end_time() {
+      // given
+      Schedule schedule = schedule();
+
+      // when
+      boolean result = schedule.isOngoing(END_AT);
+
+      // then
+      assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("현재 시간이 일정 시작 전이면 false를 반환한다")
+    void should_return_false_when_now_is_before_schedule() {
+      // given
+      Schedule schedule = schedule();
+      LocalDateTime beforeSchedule = START_AT.minusMinutes(1);
+
+      // when
+      boolean result = schedule.isOngoing(beforeSchedule);
+
+      // then
+      assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("현재 시간이 일정 종료 후이면 false를 반환한다")
+    void should_return_false_when_now_is_after_schedule() {
+      // given
+      Schedule schedule = schedule();
+      LocalDateTime afterSchedule = END_AT.plusMinutes(1);
+
+      // when
+      boolean result = schedule.isOngoing(afterSchedule);
+
+      // then
+      assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("시작 시간이 null이면 false를 반환한다")
+    void should_return_false_when_start_time_is_null() {
+      // given
+      Schedule schedule = Schedule.of(ID, STUDY_ID, TITLE, LOCATION_MEMO, null, END_AT);
+      LocalDateTime now = LocalDateTime.now();
+
+      // when
+      boolean result = schedule.isOngoing(now);
+
+      // then
+      assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("종료 시간이 null이면 false를 반환한다")
+    void should_return_false_when_end_time_is_null() {
+      // given
+      Schedule schedule = Schedule.of(ID, STUDY_ID, TITLE, LOCATION_MEMO, START_AT, null);
+      LocalDateTime now = LocalDateTime.now();
+
+      // when
+      boolean result = schedule.isOngoing(now);
+
+      // then
+      assertThat(result).isFalse();
     }
   }
 }

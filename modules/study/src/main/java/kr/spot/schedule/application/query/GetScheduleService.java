@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class GetScheduleService {
 
-  private static final int UPCOMING_LIMIT = 5;
+  private static final int UPCOMING_LIMIT = 2;
 
   private final ScheduleQueryRepository scheduleQueryRepository;
 
