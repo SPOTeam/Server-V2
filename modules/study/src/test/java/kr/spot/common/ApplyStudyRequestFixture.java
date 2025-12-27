@@ -1,6 +1,6 @@
 package kr.spot.common;
 
-import kr.spot.presentation.command.dto.request.ApplyStudyRequest;
+import kr.spot.study.presentation.command.dto.request.ApplyStudyRequest;
 
 public class ApplyStudyRequestFixture {
 

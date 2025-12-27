@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
+import kr.spot.study.domain.vo.Fee;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

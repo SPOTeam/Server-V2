@@ -13,11 +13,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import kr.spot.domain.Study;
-import kr.spot.domain.vo.Fee;
-import kr.spot.infrastructure.jpa.StudyRepository;
 import kr.spot.ports.FileStoragePort;
 import kr.spot.ports.dto.UploadResult;
+import kr.spot.study.application.event.StudyCreatedEvent;
+import kr.spot.study.application.event.StudyImageUploadListener;
+import kr.spot.study.domain.Study;
+import kr.spot.study.domain.vo.Fee;
+import kr.spot.study.infrastructure.jpa.StudyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

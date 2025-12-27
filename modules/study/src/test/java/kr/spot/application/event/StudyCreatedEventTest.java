@@ -2,6 +2,7 @@ package kr.spot.application.event;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import kr.spot.study.application.event.StudyCreatedEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

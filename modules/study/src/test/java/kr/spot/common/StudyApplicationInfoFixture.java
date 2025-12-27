@@ -2,7 +2,7 @@ package kr.spot.common;
 
 import java.util.List;
 import java.util.stream.LongStream;
-import kr.spot.infrastructure.jpa.querydsl.dto.StudyApplicationInfo;
+import kr.spot.study.infrastructure.jpa.querydsl.dto.StudyApplicationInfo;
 
 public class StudyApplicationInfoFixture {
 

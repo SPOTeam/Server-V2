@@ -11,10 +11,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import kr.spot.code.status.ErrorStatus;
-import kr.spot.domain.associations.StudyMember;
-import kr.spot.domain.enums.Decision;
-import kr.spot.domain.enums.StudyMemberStatus;
 import kr.spot.exception.GeneralException;
+import kr.spot.study.domain.associations.StudyMember;
+import kr.spot.study.domain.enums.Decision;
+import kr.spot.study.domain.enums.StudyMemberStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

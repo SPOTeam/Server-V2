@@ -1,7 +1,7 @@
 package kr.spot.common;
 
-import kr.spot.domain.associations.StudyMember;
-import kr.spot.domain.enums.StudyMemberStatus;
+import kr.spot.study.domain.associations.StudyMember;
+import kr.spot.study.domain.enums.Decision;
 
 public class StudyMemberFixture {
 
@@ -29,7 +29,7 @@ public class StudyMemberFixture {
 
   public static StudyMember awaitingSelfApproval(Long id, Long studyId, Long memberId) {
     StudyMember studyMember = StudyMember.apply(id, studyId, memberId, MESSAGE);
-    studyMember.decide(kr.spot.domain.enums.Decision.APPROVE);
+    studyMember.decide(Decision.APPROVE);
     return studyMember;
   }
 

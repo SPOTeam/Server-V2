@@ -2,8 +2,8 @@ package kr.spot.common;
 
 import java.util.List;
 import java.util.stream.LongStream;
-import kr.spot.domain.Study;
-import kr.spot.domain.vo.Fee;
+import kr.spot.study.domain.Study;
+import kr.spot.study.domain.vo.Fee;
 
 public class StudyFixture {
 
