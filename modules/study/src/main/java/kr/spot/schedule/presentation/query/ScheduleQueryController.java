@@ -51,7 +51,7 @@ public class ScheduleQueryController {
   @GetMapping("/weekly")
   public ResponseEntity<ApiResponse<GetScheduleListResponse>> getWeeklySchedules(
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
-      @Parameter(description = "조회 기준 날짜 (해당 주 전체 조회)", example = "2025-01-15")
+      @Parameter(description = "조회 기준 날짜 (해당 주 전체 조회), ISO 8601 표준 방식으로 입력해주세요. ", example = "2025-01-15")
       @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
     GetScheduleListResponse response = getScheduleService.getWeeklySchedules(studyId, date);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
