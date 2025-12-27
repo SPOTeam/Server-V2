@@ -9,6 +9,7 @@ dependencies {
     implementation project(":common:snowflake")
     implementation project(":common:bucket")
     implementation project(":common:view")
+    implementation project(":infra:view-redis")
 
     implementation project(":modules:shared")
     implementation project(":modules:member-api")

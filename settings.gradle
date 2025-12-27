@@ -22,3 +22,4 @@ include 'modules:study-api'
 include 'modules:region-api'
 
 include 'infra:bucket-s3'
+include 'infra:view-redis'
