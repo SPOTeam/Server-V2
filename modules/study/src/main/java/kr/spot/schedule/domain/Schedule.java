@@ -4,7 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import java.time.LocalDateTime;
+import kr.spot.code.status.ErrorStatus;
 import kr.spot.domain.BaseEntity;
+import kr.spot.exception.GeneralException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,5 +41,16 @@ public class Schedule extends BaseEntity {
   ) {
     return new Schedule(id, studyId, title, locationMemo, startAt, endAt
     );
+  }
+
+  public void delete(long studyId) {
+    validateIsValidAccess(studyId);
+    super.delete();
+  }
+
+  private void validateIsValidAccess(long studyId) {
+    if (studyId != this.studyId) {
+      throw new GeneralException(ErrorStatus._SCHEDULE_ACCESS_DENIED);
+    }
   }
 }
