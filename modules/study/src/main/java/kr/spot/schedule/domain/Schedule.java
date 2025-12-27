@@ -48,6 +48,13 @@ public class Schedule extends BaseEntity {
     super.delete();
   }
 
+  public boolean isOngoing(LocalDateTime now) {
+    if (startAt == null || endAt == null) {
+      return false;
+    }
+    return !now.isBefore(startAt) && !now.isAfter(endAt);
+  }
+
   private void validateIsValidAccess(long studyId) {
     if (studyId != this.studyId) {
       throw new GeneralException(ErrorStatus._SCHEDULE_ACCESS_DENIED);
