@@ -8,6 +8,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import kr.spot.code.status.ErrorStatus;
+import kr.spot.domain.BaseEntity;
 import kr.spot.exception.GeneralException;
 import kr.spot.study.domain.associations.StudyMember;
 import kr.spot.study.domain.enums.Decision;
