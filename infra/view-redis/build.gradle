@@ -1,0 +1,15 @@
+plugins {
+    id "io.spring.dependency-management"
+    id "java"
+}
+
+dependencies {
+    implementation project(":common:view")
+
+    // Spring Boot Starters
+    implementation "org.springframework.boot:spring-boot-starter-data-redis"
+
+    // Testing
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
