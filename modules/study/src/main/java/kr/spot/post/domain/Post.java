@@ -75,6 +75,10 @@ public class Post extends BaseEntity {
     return pinnedAt != null;
   }
 
+  public void validateBelongsToStudy(long studyId) {
+    validateStudyId(studyId);
+  }
+
   private void validateStudyId(long studyId) {
     if (this.studyId != studyId) {
       throw new GeneralException(ErrorStatus._INVALID_STUDY_ACCESS);
