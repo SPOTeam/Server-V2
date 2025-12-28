@@ -56,6 +56,15 @@ public class PostCommandController {
   public ResponseEntity<ApiResponse<Void>> pinPost(
       @PathVariable Long studyId,
       @PathVariable Long postId) {
-    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._CREATED));
+    managePostService.pinPost(studyId, postId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
+  }
+
+  @DeleteMapping("/{postId}/pin")
+  public ResponseEntity<ApiResponse<Void>> unpinPost(
+      @PathVariable Long studyId,
+      @PathVariable Long postId) {
+    managePostService.unpinPost(studyId, postId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
   }
 }

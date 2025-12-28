@@ -41,7 +41,12 @@ public class ManagePostService {
 
   public void pinPost(long studyId, long postId) {
     Post post = postRepository.getById(postId);
+    post.pin(studyId);
+  }
 
+  public void unpinPost(long studyId, long postId) {
+    Post post = postRepository.getById(postId);
+    post.unpin(studyId);
   }
 
   private WriterInfo getWriterInfo(long writerId) {

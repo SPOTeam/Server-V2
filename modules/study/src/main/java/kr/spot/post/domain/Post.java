@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import java.time.LocalDateTime;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.domain.BaseEntity;
 import kr.spot.exception.GeneralException;
@@ -37,13 +38,13 @@ public class Post extends BaseEntity {
   @Column(nullable = false)
   private String content;
 
-  private boolean isPinned;
+  private LocalDateTime pinnedAt;
 
   private boolean isPrivate;
 
   public static Post of(Long id, Long studyId, WriterInfo writerInfo, String title, String content,
       boolean isPrivate) {
-    return new Post(id, studyId, writerInfo, title, content, false, isPrivate);
+    return new Post(id, studyId, writerInfo, title, content, null, isPrivate);
   }
 
   public void update(String title, String content, boolean isPrivate, long memberId, long studyId) {
@@ -58,6 +59,20 @@ public class Post extends BaseEntity {
     validateStudyId(studyId);
     writerInfo.validateIsOwnMember(memberId);
     super.delete();
+  }
+
+  public void pin(long studyId) {
+    validateStudyId(studyId);
+    this.pinnedAt = LocalDateTime.now();
+  }
+
+  public void unpin(long studyId) {
+    validateStudyId(studyId);
+    this.pinnedAt = null;
+  }
+
+  public boolean isPinned() {
+    return pinnedAt != null;
   }
 
   private void validateStudyId(long studyId) {
