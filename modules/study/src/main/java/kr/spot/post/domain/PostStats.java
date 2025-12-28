@@ -1,4 +1,4 @@
-package kr.spot.post;
+package kr.spot.post.domain;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

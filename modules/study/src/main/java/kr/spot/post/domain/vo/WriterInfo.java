@@ -1,4 +1,4 @@
-package kr.spot.post.vo;
+package kr.spot.post.domain.vo;
 
 import jakarta.persistence.Embeddable;
 import java.util.Objects;

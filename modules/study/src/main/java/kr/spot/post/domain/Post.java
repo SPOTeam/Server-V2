@@ -1,11 +1,11 @@
-package kr.spot.post;
+package kr.spot.post.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import kr.spot.domain.BaseEntity;
-import kr.spot.post.vo.WriterInfo;
+import kr.spot.post.domain.vo.WriterInfo;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
