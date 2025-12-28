@@ -9,6 +9,7 @@ import kr.spot.post.domain.vo.WriterInfo;
 import kr.spot.post.infrastructure.jpa.PostRepository;
 import kr.spot.post.infrastructure.jpa.PostStatsRepository;
 import kr.spot.post.presentation.command.dto.ManagePostRequest;
+import kr.spot.study.application.validator.StudyAccessValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,29 +23,35 @@ public class ManagePostService {
   private final GetWriterInfoPort getWriterInfoPort;
   private final PostRepository postRepository;
   private final PostStatsRepository postStatsRepository;
+  private final StudyAccessValidator studyAccessValidator;
 
   public void createPost(long studyId, long writerId, ManagePostRequest request) {
+    studyAccessValidator.validateStudyMember(studyId, writerId);
     WriterInfo writerInfo = getWriterInfo(writerId);
     Post post = createAndSavePost(request, studyId, writerInfo);
     initializeAndSavePostStats(post);
   }
 
   public void updatePost(long studyId, long postId, ManagePostRequest request, long writerId) {
+    studyAccessValidator.validateStudyMember(studyId, writerId);
     Post post = postRepository.getById(postId);
     post.update(request.title(), request.content(), request.isPrivate(), writerId, studyId);
   }
 
   public void deletePost(long studyId, long postId, long writerId) {
+    studyAccessValidator.validateStudyMember(studyId, writerId);
     Post post = postRepository.getById(postId);
     post.delete(writerId, studyId);
   }
 
-  public void pinPost(long studyId, long postId) {
+  public void pinPost(long studyId, long postId, long memberId) {
+    studyAccessValidator.validateStudyMember(studyId, memberId);
     Post post = postRepository.getById(postId);
     post.pin(studyId);
   }
 
-  public void unpinPost(long studyId, long postId) {
+  public void unpinPost(long studyId, long postId, long memberId) {
+    studyAccessValidator.validateStudyMember(studyId, memberId);
     Post post = postRepository.getById(postId);
     post.unpin(studyId);
   }

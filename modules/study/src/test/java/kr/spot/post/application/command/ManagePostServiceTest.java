@@ -16,6 +16,9 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+
 import kr.spot.IdGenerator;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
@@ -26,6 +29,7 @@ import kr.spot.post.domain.PostStats;
 import kr.spot.post.infrastructure.jpa.PostRepository;
 import kr.spot.post.infrastructure.jpa.PostStatsRepository;
 import kr.spot.post.presentation.command.dto.ManagePostRequest;
+import kr.spot.study.application.validator.StudyAccessValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -51,6 +55,9 @@ class ManagePostServiceTest {
   @Mock
   PostStatsRepository postStatsRepository;
 
+  @Mock
+  StudyAccessValidator studyAccessValidator;
+
   @Captor
   ArgumentCaptor<Post> postCaptor;
 
@@ -62,7 +69,7 @@ class ManagePostServiceTest {
   @BeforeEach
   void setUp() {
     managePostService = new ManagePostService(
-        idGenerator, getWriterInfoPort, postRepository, postStatsRepository);
+        idGenerator, getWriterInfoPort, postRepository, postStatsRepository, studyAccessValidator);
   }
 
   @Nested
@@ -276,11 +283,27 @@ class ManagePostServiceTest {
       when(postRepository.getById(postId)).thenReturn(post);
 
       // when
-      managePostService.pinPost(STUDY_ID, postId);
+      managePostService.pinPost(STUDY_ID, postId, WRITER_ID);
 
       // then
       assertThat(post.isPinned()).isTrue();
       assertThat(post.getPinnedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("스터디 멤버가 아닌 사람이 핀하려고 하면 예외가 발생한다")
+    void should_throw_exception_when_not_study_member_pins() {
+      // given
+      long postId = 1L;
+      long nonMemberId = 999L;
+
+      doThrow(new GeneralException(ErrorStatus._STUDY_ACCESS_DENIED))
+          .when(studyAccessValidator).validateStudyMember(STUDY_ID, nonMemberId);
+
+      // when & then
+      assertThatThrownBy(() -> managePostService.pinPost(STUDY_ID, postId, nonMemberId))
+          .isInstanceOf(GeneralException.class)
+          .hasFieldOrPropertyWithValue("status", ErrorStatus._STUDY_ACCESS_DENIED);
     }
 
     @Test
@@ -294,7 +317,7 @@ class ManagePostServiceTest {
       when(postRepository.getById(postId)).thenReturn(post);
 
       // when & then
-      assertThatThrownBy(() -> managePostService.pinPost(otherStudyId, postId))
+      assertThatThrownBy(() -> managePostService.pinPost(otherStudyId, postId, WRITER_ID))
           .isInstanceOf(GeneralException.class)
           .hasFieldOrPropertyWithValue("status", ErrorStatus._INVALID_STUDY_ACCESS);
     }
@@ -309,7 +332,7 @@ class ManagePostServiceTest {
           .thenThrow(new GeneralException(ErrorStatus._POST_NOT_FOUND));
 
       // when & then
-      assertThatThrownBy(() -> managePostService.pinPost(STUDY_ID, postId))
+      assertThatThrownBy(() -> managePostService.pinPost(STUDY_ID, postId, WRITER_ID))
           .isInstanceOf(GeneralException.class)
           .hasFieldOrPropertyWithValue("status", ErrorStatus._POST_NOT_FOUND);
     }
@@ -331,11 +354,27 @@ class ManagePostServiceTest {
       when(postRepository.getById(postId)).thenReturn(post);
 
       // when
-      managePostService.unpinPost(STUDY_ID, postId);
+      managePostService.unpinPost(STUDY_ID, postId, WRITER_ID);
 
       // then
       assertThat(post.isPinned()).isFalse();
       assertThat(post.getPinnedAt()).isNull();
+    }
+
+    @Test
+    @DisplayName("스터디 멤버가 아닌 사람이 언핀하려고 하면 예외가 발생한다")
+    void should_throw_exception_when_not_study_member_unpins() {
+      // given
+      long postId = 1L;
+      long nonMemberId = 999L;
+
+      doThrow(new GeneralException(ErrorStatus._STUDY_ACCESS_DENIED))
+          .when(studyAccessValidator).validateStudyMember(STUDY_ID, nonMemberId);
+
+      // when & then
+      assertThatThrownBy(() -> managePostService.unpinPost(STUDY_ID, postId, nonMemberId))
+          .isInstanceOf(GeneralException.class)
+          .hasFieldOrPropertyWithValue("status", ErrorStatus._STUDY_ACCESS_DENIED);
     }
 
     @Test
@@ -350,7 +389,7 @@ class ManagePostServiceTest {
       when(postRepository.getById(postId)).thenReturn(post);
 
       // when & then
-      assertThatThrownBy(() -> managePostService.unpinPost(otherStudyId, postId))
+      assertThatThrownBy(() -> managePostService.unpinPost(otherStudyId, postId, WRITER_ID))
           .isInstanceOf(GeneralException.class)
           .hasFieldOrPropertyWithValue("status", ErrorStatus._INVALID_STUDY_ACCESS);
     }
@@ -365,7 +404,7 @@ class ManagePostServiceTest {
           .thenThrow(new GeneralException(ErrorStatus._POST_NOT_FOUND));
 
       // when & then
-      assertThatThrownBy(() -> managePostService.unpinPost(STUDY_ID, postId))
+      assertThatThrownBy(() -> managePostService.unpinPost(STUDY_ID, postId, WRITER_ID))
           .isInstanceOf(GeneralException.class)
           .hasFieldOrPropertyWithValue("status", ErrorStatus._POST_NOT_FOUND);
     }

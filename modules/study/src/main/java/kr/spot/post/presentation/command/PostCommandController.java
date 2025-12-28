@@ -87,8 +87,9 @@ public class PostCommandController {
   @PostMapping("/{postId}/pin")
   public ResponseEntity<ApiResponse<Void>> pinPost(
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
-      @Parameter(description = "게시글 ID", required = true) @PathVariable Long postId) {
-    managePostService.pinPost(studyId, postId);
+      @Parameter(description = "게시글 ID", required = true) @PathVariable Long postId,
+      @CurrentMember @Parameter(hidden = true) Long memberId) {
+    managePostService.pinPost(studyId, postId, memberId);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
   }
 
@@ -102,8 +103,9 @@ public class PostCommandController {
   @DeleteMapping("/{postId}/pin")
   public ResponseEntity<ApiResponse<Void>> unpinPost(
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
-      @Parameter(description = "게시글 ID", required = true) @PathVariable Long postId) {
-    managePostService.unpinPost(studyId, postId);
+      @Parameter(description = "게시글 ID", required = true) @PathVariable Long postId,
+      @CurrentMember @Parameter(hidden = true) Long memberId) {
+    managePostService.unpinPost(studyId, postId, memberId);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
   }
 }
