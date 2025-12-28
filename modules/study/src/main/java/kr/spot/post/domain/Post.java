@@ -4,7 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import kr.spot.code.status.ErrorStatus;
 import kr.spot.domain.BaseEntity;
+import kr.spot.exception.GeneralException;
 import kr.spot.post.domain.vo.WriterInfo;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -24,6 +26,8 @@ public class Post extends BaseEntity {
   @Id
   private Long id;
 
+  private Long studyId;
+
   @Embedded
   private WriterInfo writerInfo;
 
@@ -37,8 +41,28 @@ public class Post extends BaseEntity {
 
   private boolean isPrivate;
 
-  public static Post of(Long id, WriterInfo writerInfo, String title, String content,
-      boolean isPinned, boolean isPrivate) {
-    return new Post(id, writerInfo, title, content, isPinned, isPrivate);
+  public static Post of(Long id, Long studyId, WriterInfo writerInfo, String title, String content,
+      boolean isPrivate) {
+    return new Post(id, studyId, writerInfo, title, content, false, isPrivate);
+  }
+
+  public void update(String title, String content, boolean isPrivate, long memberId, long studyId) {
+    validateStudyId(studyId);
+    writerInfo.validateIsOwnMember(memberId);
+    this.title = title;
+    this.content = content;
+    this.isPrivate = isPrivate;
+  }
+
+  public void delete(long memberId, long studyId) {
+    validateStudyId(studyId);
+    writerInfo.validateIsOwnMember(memberId);
+    super.delete();
+  }
+
+  private void validateStudyId(long studyId) {
+    if (this.studyId != studyId) {
+      throw new GeneralException(ErrorStatus._INVALID_STUDY_ACCESS);
+    }
   }
 }
