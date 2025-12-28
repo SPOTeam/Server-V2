@@ -38,7 +38,7 @@ public class PostCommandController {
   @PostMapping
   public ResponseEntity<ApiResponse<Void>> createPost(
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
-      @CurrentMember Long writerId,
+      @CurrentMember @Parameter(hidden = true) Long writerId,
       @RequestBody ManagePostRequest request) {
     managePostService.createPost(studyId, writerId, request);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._CREATED));
@@ -55,7 +55,7 @@ public class PostCommandController {
   public ResponseEntity<ApiResponse<Void>> updatePost(
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
       @Parameter(description = "게시글 ID", required = true) @PathVariable Long postId,
-      @CurrentMember Long writerId,
+      @CurrentMember @Parameter(hidden = true) Long writerId,
       @RequestBody ManagePostRequest request) {
     managePostService.updatePost(studyId, postId, request, writerId);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
@@ -72,7 +72,7 @@ public class PostCommandController {
   public ResponseEntity<ApiResponse<Void>> deletePost(
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
       @Parameter(description = "게시글 ID", required = true) @PathVariable Long postId,
-      @CurrentMember Long writerId) {
+      @CurrentMember @Parameter(hidden = true) Long writerId) {
     managePostService.deletePost(studyId, postId, writerId);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
   }
