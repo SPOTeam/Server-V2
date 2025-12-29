@@ -40,7 +40,7 @@ public class GetPostService {
 
   public PostDetailResponse getPostDetail(long studyId, long postId, long viewerId) {
     Post post = findAndValidatePost(studyId, postId);
-    accessValidator.validateStudyMember(studyId, viewerId);
+    post.validatePublicAccess(accessValidator.isStudyMember(studyId, viewerId));
 
     PostStats stats = postQueryRepository.findStatsByPostId(postId);
     List<Comment> comments = postQueryRepository.findCommentsByPostId(postId);

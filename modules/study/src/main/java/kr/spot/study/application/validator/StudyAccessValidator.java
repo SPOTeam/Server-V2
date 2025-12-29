@@ -23,12 +23,8 @@ public class StudyAccessValidator {
   }
 
   public void validateStudyMember(Long studyId, Long memberId) {
-    boolean isMember = studyMemberRepository.existsByStudyIdAndMemberIdAndStudyMemberStatusIn(
-        studyId,
-        memberId,
-        List.of(StudyMemberStatus.OWNER, StudyMemberStatus.APPROVED)
-    );
-
+    boolean isMember = isStudyMember(studyId, memberId);
+    
     if (!isMember) {
       throw new GeneralException(ErrorStatus._STUDY_ACCESS_DENIED);
     }

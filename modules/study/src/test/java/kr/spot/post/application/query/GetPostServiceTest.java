@@ -121,6 +121,7 @@ class GetPostServiceTest {
       Post post = privatePost(postId, STUDY_ID);
 
       when(postRepository.getById(postId)).thenReturn(post);
+      when(accessValidator.isStudyMember(STUDY_ID, WRITER_ID)).thenReturn(false);
 
       // when & then
       assertThatThrownBy(() -> getPostService.getPostDetail(STUDY_ID, postId, WRITER_ID))
@@ -155,7 +156,8 @@ class GetPostServiceTest {
       when(postRepository.getById(postId)).thenReturn(post);
       when(postQueryRepository.findStatsByPostId(postId)).thenReturn(stats);
       when(postQueryRepository.findCommentsByPostId(postId)).thenReturn(List.of());
-      when(viewAbuseGuard.shouldCount(ViewableType.STUDY_BOARD, postId, viewerId)).thenReturn(false);
+      when(viewAbuseGuard.shouldCount(ViewableType.STUDY_BOARD, postId, viewerId)).thenReturn(
+          false);
       when(viewCounter.currentDelta(ViewableType.STUDY_BOARD, postId)).thenReturn(5L);
 
       // when
@@ -229,7 +231,8 @@ class GetPostServiceTest {
       when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), anyInt()))
           .thenReturn(List.of(normal1, normal2));
       when(postQueryRepository.findStatsByPostIds(any()))
-          .thenReturn(Map.of(1L, postStats(1L), 2L, postStats(2L), 3L, postStats(3L), 4L, postStats(4L)));
+          .thenReturn(
+              Map.of(1L, postStats(1L), 2L, postStats(2L), 3L, postStats(3L), 4L, postStats(4L)));
 
       // when
       PostListResponse response = getPostService.getPostList(STUDY_ID, null, WRITER_ID, 10);
@@ -377,7 +380,8 @@ class GetPostServiceTest {
       // given
       when(accessValidator.isStudyMember(STUDY_ID, WRITER_ID)).thenReturn(true);
       when(postQueryRepository.findPinnedPosts(STUDY_ID)).thenReturn(List.of());
-      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), eq(51))) // MAX_PAGE_SIZE + 1
+      when(
+          postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), eq(51))) // MAX_PAGE_SIZE + 1
           .thenReturn(List.of());
       when(postQueryRepository.findStatsByPostIds(any())).thenReturn(Map.of());
 
@@ -399,7 +403,8 @@ class GetPostServiceTest {
 
       when(accessValidator.isStudyMember(STUDY_ID, WRITER_ID)).thenReturn(true);
       when(postQueryRepository.findPinnedPosts(STUDY_ID)).thenReturn(List.of(pinned));
-      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), eq(3))) // size(3) - pinned(1) + 1
+      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null),
+          eq(3))) // size(3) - pinned(1) + 1
           .thenReturn(List.of(normal1, normal2, normal3));
       when(postQueryRepository.findStatsByPostIds(any()))
           .thenReturn(Map.of(10L, postStats(10L), 5L, postStats(5L), 4L, postStats(4L)));

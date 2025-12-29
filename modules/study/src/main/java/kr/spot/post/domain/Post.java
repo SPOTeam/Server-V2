@@ -83,8 +83,8 @@ public class Post extends BaseEntity {
     validateStudyId(studyId);
   }
 
-  public void validatePublicAccess() {
-    if (this.isPrivate) {
+  public void validatePublicAccess(boolean isStudyMember) {
+    if (this.isPrivate && !isStudyMember) {
       throw new GeneralException(ErrorStatus._PRIVATE_POST_ACCESS_DENIED);
     }
   }
