@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.spot.ApiResponse;
 import kr.spot.annotations.CurrentMember;
 import kr.spot.code.status.SuccessStatus;
+import kr.spot.post.application.command.LikePostService;
 import kr.spot.post.application.command.ManagePostService;
 import kr.spot.post.presentation.command.dto.ManagePostRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostCommandController {
 
   private final ManagePostService managePostService;
+  private final LikePostService likePostService;
 
   @Operation(summary = "스터디 게시글 생성", description = "스터디에 새로운 게시글을 작성합니다.")
   @ApiResponses({
@@ -106,6 +108,38 @@ public class PostCommandController {
       @Parameter(description = "게시글 ID", required = true) @PathVariable Long postId,
       @CurrentMember @Parameter(hidden = true) Long memberId) {
     managePostService.unpinPost(studyId, postId, memberId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
+  }
+
+  @Operation(summary = "스터디 게시글 좋아요", description = "스터디 게시글에 좋아요를 추가합니다.")
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "좋아요 성공"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자입니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "`STUDY403`: 해당 스터디에 대한 접근 권한이 없습니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "`POST404`: 게시글을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+  })
+  @PostMapping("/{postId}/like")
+  public ResponseEntity<ApiResponse<Void>> likePost(
+      @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
+      @Parameter(description = "게시글 ID", required = true) @PathVariable Long postId,
+      @CurrentMember @Parameter(hidden = true) Long memberId) {
+    likePostService.likePost(studyId, postId, memberId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
+  }
+
+  @Operation(summary = "스터디 게시글 좋아요 취소", description = "스터디 게시글의 좋아요를 취소합니다.")
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "좋아요 취소 성공"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자입니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "`STUDY403`: 해당 스터디에 대한 접근 권한이 없습니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "`POST404`: 게시글을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+  })
+  @DeleteMapping("/{postId}/like")
+  public ResponseEntity<ApiResponse<Void>> unlikePost(
+      @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
+      @Parameter(description = "게시글 ID", required = true) @PathVariable Long postId,
+      @CurrentMember @Parameter(hidden = true) Long memberId) {
+    likePostService.unlikePost(studyId, postId, memberId);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
   }
 }

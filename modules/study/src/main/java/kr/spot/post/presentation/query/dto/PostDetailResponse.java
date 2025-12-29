@@ -11,6 +11,7 @@ public record PostDetailResponse(
     String content,
     boolean isPinned,
     boolean isOwner,
+    boolean isLiked,
     WriterInfoResponse writer,
     PostStatsResponse stats,
     LocalDateTime createdAt,
