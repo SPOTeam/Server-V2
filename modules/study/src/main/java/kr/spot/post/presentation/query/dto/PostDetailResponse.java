@@ -1,8 +1,7 @@
-package kr.spot.presentation.query.dto.response;
+package kr.spot.post.presentation.query.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import kr.spot.domain.enums.PostType;
 import lombok.Builder;
 
 @Builder
@@ -10,27 +9,30 @@ public record PostDetailResponse(
     Long postId,
     String title,
     String content,
-    String imageUrl,
-    PostType postType,
-    boolean isLiked,
+    boolean isPinned,
     boolean isOwner,
     WriterInfoResponse writer,
     PostStatsResponse stats,
     LocalDateTime createdAt,
-    List<CommentResponse> comments,
-    Integer commentCount
+    List<CommentResponse> comments
 ) {
 
   public record CommentResponse(
       Long commentId,
       String content,
+      boolean isOwner,
       WriterInfoResponse writer,
       LocalDateTime createdAt
   ) {
 
-    public static CommentResponse of(Long commentId, String content, WriterInfoResponse writer,
-        LocalDateTime createdAt) {
-      return new CommentResponse(commentId, content, writer, createdAt);
+    public static CommentResponse of(
+        Long commentId,
+        String content,
+        boolean isOwner,
+        WriterInfoResponse writer,
+        LocalDateTime createdAt
+    ) {
+      return new CommentResponse(commentId, content, isOwner, writer, createdAt);
     }
   }
 

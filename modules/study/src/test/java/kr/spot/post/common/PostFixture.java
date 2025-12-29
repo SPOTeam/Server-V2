@@ -1,6 +1,7 @@
 package kr.spot.post.common;
 
 import kr.spot.post.domain.Post;
+import kr.spot.post.domain.PostStats;
 import kr.spot.post.domain.vo.WriterInfo;
 import kr.spot.post.presentation.command.dto.ManagePostRequest;
 
@@ -33,6 +34,38 @@ public class PostFixture {
 
   public static Post post(Long id, Long studyId, Long writerId) {
     return Post.of(id, studyId, writerInfo(writerId), TITLE, CONTENT, IS_PRIVATE);
+  }
+
+  public static Post privatePost(Long id, Long studyId) {
+    return Post.of(id, studyId, writerInfo(), TITLE, CONTENT, true);
+  }
+
+  public static Post privatePost(Long id, Long studyId, Long writerId) {
+    return Post.of(id, studyId, writerInfo(writerId), TITLE, CONTENT, true);
+  }
+
+  public static Post pinnedPost(Long id, Long studyId) {
+    Post post = Post.of(id, studyId, writerInfo(), TITLE, CONTENT, IS_PRIVATE);
+    post.pin(studyId);
+    return post;
+  }
+
+  public static Post pinnedPost(Long id, Long studyId, Long writerId) {
+    Post post = Post.of(id, studyId, writerInfo(writerId), TITLE, CONTENT, IS_PRIVATE);
+    post.pin(studyId);
+    return post;
+  }
+
+  public static Post postWithContent(Long id, Long studyId, String content) {
+    return Post.of(id, studyId, writerInfo(), TITLE, content, IS_PRIVATE);
+  }
+
+  public static PostStats postStats(Long postId) {
+    return PostStats.of(postId);
+  }
+
+  public static PostStats postStats(Long postId, Long viewCount, Long likeCount, Long commentCount) {
+    return PostStats.of(postId, viewCount, likeCount, commentCount);
   }
 
   public static ManagePostRequest managePostRequest() {
