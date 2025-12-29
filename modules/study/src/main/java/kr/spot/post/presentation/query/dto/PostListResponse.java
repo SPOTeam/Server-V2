@@ -16,6 +16,7 @@ public record PostListResponse(
       String title,
       String content,
       boolean isPinned,
+      boolean isLiked,
       PostStatsResponse stats,
       WriterInfoResponse writer,
       LocalDateTime createdAt
@@ -26,11 +27,12 @@ public record PostListResponse(
         String title,
         String content,
         boolean isPinned,
+        boolean isLiked,
         PostStatsResponse stats,
         WriterInfoResponse writer,
         LocalDateTime createdAt
     ) {
-      return new PostItem(postId, title, content, isPinned, stats, writer, createdAt);
+      return new PostItem(postId, title, content, isPinned, isLiked, stats, writer, createdAt);
     }
   }
 

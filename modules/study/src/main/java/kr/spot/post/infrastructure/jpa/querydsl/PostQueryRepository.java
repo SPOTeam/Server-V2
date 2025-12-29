@@ -3,15 +3,18 @@ package kr.spot.post.infrastructure.jpa.querydsl;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import kr.spot.post.domain.Comment;
 import kr.spot.post.domain.Post;
 import kr.spot.post.domain.PostStats;
 import kr.spot.post.domain.QComment;
 import kr.spot.post.domain.QPost;
+import kr.spot.post.domain.QPostLike;
 import kr.spot.post.domain.QPostStats;
-import kr.spot.post.domain.Comment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -24,6 +27,7 @@ public class PostQueryRepository {
   private final QPost post = QPost.post;
   private final QPostStats postStats = QPostStats.postStats;
   private final QComment comment = QComment.comment;
+  private final QPostLike postLike = QPostLike.postLike;
 
   public List<Post> findPinnedPosts(long studyId) {
     return query
@@ -79,5 +83,28 @@ public class PostQueryRepository {
         .where(comment.postId.eq(postId))
         .orderBy(comment.createdAt.asc())
         .fetch();
+  }
+
+  public Set<Long> findLikedPostIds(Long viewerId, Collection<Long> postIds) {
+    if (viewerId == null || postIds.isEmpty()) {
+      return Set.of();
+    }
+    return new HashSet<>(
+        query.select(postLike.postId)
+            .from(postLike)
+            .where(postLike.memberId.eq(viewerId), postLike.postId.in(postIds))
+            .fetch()
+    );
+  }
+
+  public boolean isLiked(Long viewerId, Long postId) {
+    if (viewerId == null) {
+      return false;
+    }
+    Integer result = query.selectOne()
+        .from(postLike)
+        .where(postLike.memberId.eq(viewerId), postLike.postId.eq(postId))
+        .fetchFirst();
+    return result != null;
   }
 }

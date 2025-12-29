@@ -7,6 +7,7 @@ import static kr.spot.post.application.query.mapper.PostResponseMapper.toPostIte
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import kr.spot.post.domain.Comment;
 import kr.spot.post.domain.Post;
 import kr.spot.post.domain.PostStats;
@@ -45,8 +46,9 @@ public class GetPostService {
     PostStats stats = postQueryRepository.findStatsByPostId(postId);
     List<Comment> comments = postQueryRepository.findCommentsByPostId(postId);
     long displayViewCount = calculateDisplayViewCount(stats, postId, viewerId);
+    boolean isLiked = postQueryRepository.isLiked(viewerId, postId);
 
-    return toDetailResponse(post, stats, displayViewCount, comments, viewerId);
+    return toDetailResponse(post, stats, displayViewCount, comments, viewerId, isLiked);
   }
 
   public PostListResponse getPostList(long studyId, Long cursor, long viewerId, int size) {
@@ -59,8 +61,9 @@ public class GetPostService {
 
     List<Post> allPosts = mergePosts(pinnedPosts, paginationResult.posts());
     Map<Long, PostStats> statsMap = fetchStatsForPosts(allPosts);
+    Set<Long> likedPostIds = fetchLikedPostIds(allPosts, viewerId);
 
-    List<PostItem> postItems = mapToPostItems(allPosts, statsMap, isStudyMember);
+    List<PostItem> postItems = mapToPostItems(allPosts, statsMap, isStudyMember, likedPostIds);
 
     return buildListResponse(postItems, paginationResult);
   }
@@ -106,11 +109,16 @@ public class GetPostService {
     return postQueryRepository.findStatsByPostIds(postIds);
   }
 
+  private Set<Long> fetchLikedPostIds(List<Post> posts, long viewerId) {
+    List<Long> postIds = posts.stream().map(Post::getId).toList();
+    return postQueryRepository.findLikedPostIds(viewerId, postIds);
+  }
+
   private List<PostItem> mapToPostItems(List<Post> posts, Map<Long, PostStats> statsMap,
-      boolean isStudyMember) {
+      boolean isStudyMember, Set<Long> likedPostIds) {
     return posts.stream()
         .map(post -> toPostItem(post, statsMap.get(post.getId()), DEFAULT_MAX_CONTENT_LENGTH,
-            isStudyMember))
+            isStudyMember, likedPostIds.contains(post.getId())))
         .toList();
   }
 

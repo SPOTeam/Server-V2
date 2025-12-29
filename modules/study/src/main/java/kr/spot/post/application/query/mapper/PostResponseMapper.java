@@ -24,7 +24,8 @@ public final class PostResponseMapper {
       PostStats stats,
       long displayViewCount,
       List<Comment> comments,
-      long viewerId
+      long viewerId,
+      boolean isLiked
   ) {
     return PostDetailResponse.builder()
         .postId(post.getId())
@@ -32,6 +33,7 @@ public final class PostResponseMapper {
         .content(post.getContent())
         .isPinned(post.isPinned())
         .isOwner(post.isOwnedBy(viewerId))
+        .isLiked(isLiked)
         .writer(toDetailWriterInfoResponse(post.getWriterInfo()))
         .stats(toStatsResponse(stats, displayViewCount))
         .createdAt(post.getCreatedAt())
@@ -39,31 +41,35 @@ public final class PostResponseMapper {
         .build();
   }
 
-  public static PostItem toPostItem(Post post, PostStats stats, int maxContentLength, boolean isStudyMember) {
+  public static PostItem toPostItem(Post post, PostStats stats, int maxContentLength,
+      boolean isStudyMember, boolean isLiked) {
     if (post.isPrivate() && !isStudyMember) {
-      return toMaskedPostItem(post, stats);
+      return toMaskedPostItem(post, stats, isLiked);
     }
-    return toPublicPostItem(post, stats, maxContentLength);
+    return toPublicPostItem(post, stats, maxContentLength, isLiked);
   }
 
-  private static PostItem toPublicPostItem(Post post, PostStats stats, int maxContentLength) {
+  private static PostItem toPublicPostItem(Post post, PostStats stats, int maxContentLength,
+      boolean isLiked) {
     return PostItem.of(
         post.getId(),
         post.getTitle(),
         summarize(post.getContent(), maxContentLength),
         post.isPinned(),
+        isLiked,
         toStatsResponse(stats),
         toWriterInfoResponse(post.getWriterInfo()),
         post.getCreatedAt()
     );
   }
 
-  private static PostItem toMaskedPostItem(Post post, PostStats stats) {
+  private static PostItem toMaskedPostItem(Post post, PostStats stats, boolean isLiked) {
     return PostItem.of(
         post.getId(),
         PRIVATE_POST_MESSAGE,
         PRIVATE_POST_MESSAGE,
         post.isPinned(),
+        isLiked,
         toStatsResponse(stats),
         toWriterInfoResponse(post.getWriterInfo()),
         post.getCreatedAt()
