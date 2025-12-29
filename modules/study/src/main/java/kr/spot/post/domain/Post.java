@@ -75,8 +75,18 @@ public class Post extends BaseEntity {
     return pinnedAt != null;
   }
 
+  public boolean isOwnedBy(long memberId) {
+    return writerInfo.isSameWriter(memberId);
+  }
+
   public void validateBelongsToStudy(long studyId) {
     validateStudyId(studyId);
+  }
+
+  public void validatePublicAccess() {
+    if (this.isPrivate) {
+      throw new GeneralException(ErrorStatus._PRIVATE_POST_ACCESS_DENIED);
+    }
   }
 
   private void validateStudyId(long studyId) {

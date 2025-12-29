@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "댓글")
+@Tag(name = "스터디 게시글 - 댓글")
 @RestController("studyCommentCommandController")
 @RequestMapping("/api/studies/{studyId}/posts")
 @RequiredArgsConstructor

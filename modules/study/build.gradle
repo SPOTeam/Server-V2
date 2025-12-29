@@ -8,6 +8,7 @@ dependencies {
     implementation project(":common:api")
     implementation project(":common:snowflake")
     implementation project(":common:bucket")
+    implementation project(":common:view")
 
     implementation project(":modules:shared")
     implementation project(":modules:auth-api")

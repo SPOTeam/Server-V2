@@ -33,4 +33,12 @@ public class StudyAccessValidator {
       throw new GeneralException(ErrorStatus._STUDY_ACCESS_DENIED);
     }
   }
+
+  public boolean isStudyMember(Long studyId, Long memberId) {
+    return studyMemberRepository.existsByStudyIdAndMemberIdAndStudyMemberStatusIn(
+        studyId,
+        memberId,
+        List.of(StudyMemberStatus.OWNER, StudyMemberStatus.APPROVED)
+    );
+  }
 }
