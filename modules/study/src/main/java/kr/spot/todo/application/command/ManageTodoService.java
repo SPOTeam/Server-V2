@@ -30,17 +30,17 @@ public class ManageTodoService {
 
   public void updateTodo(long studyId, long todoId, long memberId, UpdateTodoRequest request) {
     Todo todo = todoRepository.getById(todoId);
-    todo.update(request.content(), request.dueDate(), memberId);
+    todo.update(studyId, request.content(), request.dueDate(), memberId);
   }
 
   public void completeTodo(long studyId, long todoId, long memberId) {
     Todo todo = todoRepository.getById(todoId);
-    todo.complete(memberId);
+    todo.complete(studyId, memberId);
   }
 
   public void uncompleteTodo(long studyId, long todoId, long memberId) {
     Todo todo = todoRepository.getById(todoId);
-    todo.uncomplete(memberId);
+    todo.uncomplete(studyId, memberId);
   }
 
   public void deleteTodo(long studyId, long todoId, long memberId) {
