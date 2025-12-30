@@ -11,10 +11,4 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     return findById(reviewId).orElseThrow(
         () -> new GeneralException(ErrorStatus._REVIEW_NOT_FOUND));
   }
-
-  default void validateExists(long reviewId) {
-    if (!existsById(reviewId)) {
-      throw new GeneralException(ErrorStatus._REVIEW_NOT_FOUND);
-    }
-  }
 }

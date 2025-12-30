@@ -47,7 +47,7 @@ public class ManageReviewService {
     studyAccessValidator.validateStudyMember(studyId, memberId);
 
     Review review = reviewRepository.getById(reviewId);
-    review.validateIsOwnMember(memberId);
+    review.getWriterInfo().validateIsOwnMember(memberId);
 
     reviewRepository.delete(review);
   }

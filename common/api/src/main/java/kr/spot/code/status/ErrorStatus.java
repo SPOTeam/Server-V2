@@ -77,6 +77,7 @@ public enum ErrorStatus implements BaseErrorCode {
   _REVIEW_ACCESS_DENIED(403, "REVIEW403", "해당 스터디에 속하는 회고가 아닙니다."),
   _ALREADY_REACTED(400, "REVIEW4000", "이미 반응을 누른 회고입니다."),
   _REACTION_NOT_FOUND(404, "REVIEW4040", "반응을 찾을 수 없습니다."),
+
   ;
 
   private final int httpStatus;
