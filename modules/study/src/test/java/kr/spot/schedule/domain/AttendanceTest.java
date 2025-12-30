@@ -5,6 +5,7 @@ import static kr.spot.schedule.common.AttendanceFixture.SCHEDULE_ID;
 import static kr.spot.schedule.common.AttendanceFixture.memberInfo;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDateTime;
 import kr.spot.schedule.domain.enums.AttendanceStatus;
 import kr.spot.schedule.domain.vo.MemberInfo;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +32,6 @@ class AttendanceTest {
       assertThat(attendance.getScheduleId()).isEqualTo(SCHEDULE_ID);
       assertThat(attendance.getMemberInfo()).isEqualTo(member);
       assertThat(attendance.getAttendanceStatus()).isEqualTo(AttendanceStatus.UNDECIDED);
-      assertThat(attendance.getAttendedAt()).isNotNull();
     }
   }
 
@@ -70,13 +70,13 @@ class AttendanceTest {
     void should_updateAttendedAt_when_markAttendance() {
       // given
       Attendance attendance = Attendance.of(ATTENDANCE_ID, SCHEDULE_ID, memberInfo());
-      var originalTime = attendance.getAttendedAt();
+      LocalDateTime testPoint = LocalDateTime.now();
 
       // when
       attendance.markAttendance(AttendanceStatus.PRESENT);
 
       // then
-      assertThat(attendance.getAttendedAt()).isAfterOrEqualTo(originalTime);
+      assertThat(attendance.getAttendedAt()).isAfterOrEqualTo(testPoint);
     }
   }
 }
