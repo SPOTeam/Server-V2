@@ -46,7 +46,7 @@ public class StudyMember extends BaseEntity {
 
   public void decide(Decision decision) {
     if (decision == Decision.APPROVE) {
-      this.studyMemberStatus = StudyMemberStatus.AWAITING_SELF_APPROVAL;
+      this.studyMemberStatus = StudyMemberStatus.APPROVED;
     } else if (decision == Decision.REJECT) {
       this.studyMemberStatus = StudyMemberStatus.REJECTED;
     }

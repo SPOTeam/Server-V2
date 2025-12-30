@@ -39,8 +39,11 @@ public class ApplyStudyService {
     Study study = studyRepository.getStudyById(application.getStudyId());
 
     study.processApplication(application, requesterId, decision);
+
+    // 알림 전송 로직 추가
   }
 
+  @Deprecated(forRemoval = true)
   public void decideFinalParticipation(
       Long applicationId,
       Long requesterId,

@@ -54,7 +54,9 @@ public class StudyApplyCommandController {
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
   }
 
-  @Operation(summary = "스터디 최종 참가 여부 결정", description = "승인된 스터디에 최종 참가할지 여부를 결정합니다.")
+  // 비활성화
+  @Deprecated
+  @Operation(summary = "[사용 X] 스터디 최종 참가 여부 결정", description = "승인된 스터디에 최종 참가할지 여부를 결정합니다.")
   @ApiResponses({
       @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "스터디 참가 여부 결정 성공")
   })
