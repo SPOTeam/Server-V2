@@ -3,6 +3,7 @@ package kr.spot.study.application.command;
 import java.util.List;
 import kr.spot.IdGenerator;
 import kr.spot.code.status.ErrorStatus;
+import kr.spot.event.StudyApplicationProcessedEvent;
 import kr.spot.exception.GeneralException;
 import kr.spot.study.domain.Study;
 import kr.spot.study.domain.associations.StudyMember;
@@ -12,6 +13,7 @@ import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
 import kr.spot.study.presentation.command.dto.request.ApplyStudyRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,7 @@ public class ApplyStudyService {
   );
 
   private final IdGenerator idGenerator;
+  private final ApplicationEventPublisher eventPublisher;
   private final StudyRepository studyRepository;
   private final StudyMemberRepository studyMemberRepository;
 
@@ -40,7 +43,16 @@ public class ApplyStudyService {
 
     study.processApplication(application, requesterId, decision);
 
-    // 알림 전송 로직 추가
+    eventPublisher.publishEvent(
+        StudyApplicationProcessedEvent.of(
+            study.getId(),
+            application.getMemberId(),
+            requesterId,
+            decision.name(),
+            study.getName(),
+            study.getImageUrl()
+        )
+    );
   }
 
   @Deprecated(forRemoval = true)
