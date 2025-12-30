@@ -21,6 +21,7 @@ import kr.spot.domain.vo.WriterInfo;
 import kr.spot.infrastructure.jpa.PostImageRepository;
 import kr.spot.infrastructure.jpa.PostRepository;
 import kr.spot.infrastructure.jpa.PostStatsRepository;
+import kr.spot.infrastructure.jpa.ReportRepository;
 import kr.spot.ports.FileStoragePort;
 import kr.spot.ports.GetWriterInfoPort;
 import kr.spot.ports.dto.UploadResult;
@@ -59,6 +60,9 @@ class ManagePostServiceImageTest {
   @Mock
   PostImageRepository postImageRepository;
 
+  @Mock
+  ReportRepository reportRepository;
+
   @Captor
   ArgumentCaptor<Post> postCaptor;
 
@@ -73,8 +77,7 @@ class ManagePostServiceImageTest {
   @BeforeEach
   void setUp() {
     managePostService = new ManagePostService(idGenerator, getWriterInfoPort, fileStoragePort,
-        postRepository,
-        postStatsRepository, postImageRepository);
+        postRepository, postStatsRepository, postImageRepository, reportRepository);
   }
 
   @Test
