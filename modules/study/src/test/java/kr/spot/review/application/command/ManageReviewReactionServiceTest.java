@@ -2,7 +2,6 @@ package kr.spot.review.application.command;
 
 import static kr.spot.review.common.ReviewFixture.MEMBER_ID;
 import static kr.spot.review.common.ReviewFixture.STUDY_ID;
-import static kr.spot.review.common.ReviewFixture.review;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,7 +16,6 @@ import static org.mockito.Mockito.when;
 import kr.spot.IdGenerator;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
-import kr.spot.review.domain.Review;
 import kr.spot.review.domain.associations.ReviewReaction;
 import kr.spot.review.domain.enums.Reaction;
 import kr.spot.review.infrastructure.jpa.ReviewReactionRepository;
@@ -70,10 +68,9 @@ class ManageReviewReactionServiceTest {
       long reviewId = 1L;
       long generatedId = 100L;
       Reaction reaction = Reaction.FIRE;
-      Review review = review(reviewId);
 
       doNothing().when(studyAccessValidator).validateStudyMember(anyLong(), anyLong());
-      when(reviewRepository.getById(anyLong())).thenReturn(review);
+      doNothing().when(reviewRepository).validateExists(anyLong());
       when(reviewReactionRepository.existsByReviewIdAndMemberIdAndReaction(anyLong(), anyLong(),
           any())).thenReturn(false);
       when(idGenerator.nextId()).thenReturn(generatedId);
@@ -85,7 +82,7 @@ class ManageReviewReactionServiceTest {
 
       // then
       verify(studyAccessValidator).validateStudyMember(STUDY_ID, MEMBER_ID);
-      verify(reviewRepository).getById(reviewId);
+      verify(reviewRepository).validateExists(reviewId);
       verify(reviewReactionRepository).save(reactionCaptor.capture());
 
       ReviewReaction capturedReaction = reactionCaptor.getValue();
@@ -96,24 +93,21 @@ class ManageReviewReactionServiceTest {
     }
 
     @Test
-    @DisplayName("이미 동일한 반응을 누른 경우 예외가 발생한다")
-    void should_throw_exception_when_already_reacted() {
+    @DisplayName("이미 동일한 반응이 있으면 무시한다 (멱등성)")
+    void should_ignore_when_already_reacted() {
       // given
       long reviewId = 1L;
       Reaction reaction = Reaction.HEART;
-      Review review = review(reviewId);
 
       doNothing().when(studyAccessValidator).validateStudyMember(anyLong(), anyLong());
-      when(reviewRepository.getById(anyLong())).thenReturn(review);
+      doNothing().when(reviewRepository).validateExists(anyLong());
       when(reviewReactionRepository.existsByReviewIdAndMemberIdAndReaction(anyLong(), anyLong(),
           any())).thenReturn(true);
 
-      // when & then
-      assertThatThrownBy(
-          () -> manageReviewReactionService.addReaction(STUDY_ID, reviewId, MEMBER_ID, reaction))
-          .isInstanceOf(GeneralException.class)
-          .hasFieldOrPropertyWithValue("status", ErrorStatus._ALREADY_REACTED);
+      // when
+      manageReviewReactionService.addReaction(STUDY_ID, reviewId, MEMBER_ID, reaction);
 
+      // then
       verify(reviewReactionRepository, never()).save(any());
     }
 
@@ -125,8 +119,8 @@ class ManageReviewReactionServiceTest {
       Reaction reaction = Reaction.STAR;
 
       doNothing().when(studyAccessValidator).validateStudyMember(anyLong(), anyLong());
-      when(reviewRepository.getById(anyLong()))
-          .thenThrow(new GeneralException(ErrorStatus._REVIEW_NOT_FOUND));
+      doThrow(new GeneralException(ErrorStatus._REVIEW_NOT_FOUND))
+          .when(reviewRepository).validateExists(anyLong());
 
       // when & then
       assertThatThrownBy(
@@ -165,10 +159,9 @@ class ManageReviewReactionServiceTest {
       // given
       long reviewId = 1L;
       Reaction reaction = Reaction.FIRE;
-      Review review = review(reviewId);
 
       doNothing().when(studyAccessValidator).validateStudyMember(anyLong(), anyLong());
-      when(reviewRepository.getById(anyLong())).thenReturn(review);
+      doNothing().when(reviewRepository).validateExists(anyLong());
       when(reviewReactionRepository.hardDelete(anyLong(), anyLong(), anyString())).thenReturn(1);
 
       // when
@@ -176,27 +169,25 @@ class ManageReviewReactionServiceTest {
 
       // then
       verify(studyAccessValidator).validateStudyMember(STUDY_ID, MEMBER_ID);
-      verify(reviewRepository).getById(reviewId);
+      verify(reviewRepository).validateExists(reviewId);
       verify(reviewReactionRepository).hardDelete(reviewId, MEMBER_ID, reaction.name());
     }
 
     @Test
-    @DisplayName("존재하지 않는 반응을 제거하려고 하면 예외가 발생한다")
-    void should_throw_exception_when_reaction_not_found() {
+    @DisplayName("존재하지 않는 반응을 제거해도 예외가 발생하지 않는다 (멱등성)")
+    void should_not_throw_when_reaction_not_found() {
       // given
       long reviewId = 1L;
       Reaction reaction = Reaction.HEART;
-      Review review = review(reviewId);
 
       doNothing().when(studyAccessValidator).validateStudyMember(anyLong(), anyLong());
-      when(reviewRepository.getById(anyLong())).thenReturn(review);
+      doNothing().when(reviewRepository).validateExists(anyLong());
       when(reviewReactionRepository.hardDelete(anyLong(), anyLong(), anyString())).thenReturn(0);
 
-      // when & then
-      assertThatThrownBy(
-          () -> manageReviewReactionService.removeReaction(STUDY_ID, reviewId, MEMBER_ID, reaction))
-          .isInstanceOf(GeneralException.class)
-          .hasFieldOrPropertyWithValue("status", ErrorStatus._REACTION_NOT_FOUND);
+      // when & then (예외 발생 안함)
+      manageReviewReactionService.removeReaction(STUDY_ID, reviewId, MEMBER_ID, reaction);
+
+      verify(reviewReactionRepository).hardDelete(reviewId, MEMBER_ID, reaction.name());
     }
 
     @Test
@@ -207,8 +198,8 @@ class ManageReviewReactionServiceTest {
       Reaction reaction = Reaction.STAR;
 
       doNothing().when(studyAccessValidator).validateStudyMember(anyLong(), anyLong());
-      when(reviewRepository.getById(anyLong()))
-          .thenThrow(new GeneralException(ErrorStatus._REVIEW_NOT_FOUND));
+      doThrow(new GeneralException(ErrorStatus._REVIEW_NOT_FOUND))
+          .when(reviewRepository).validateExists(anyLong());
 
       // when & then
       assertThatThrownBy(
