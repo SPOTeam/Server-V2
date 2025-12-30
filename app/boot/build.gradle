@@ -18,6 +18,7 @@ dependencies {
     implementation project(":modules:member")
     implementation project(":modules:post")
     implementation project(":modules:region")
+    implementation project(":modules:notification")
 
     implementation project(":modules:member-api")
     implementation project(":modules:auth-api")

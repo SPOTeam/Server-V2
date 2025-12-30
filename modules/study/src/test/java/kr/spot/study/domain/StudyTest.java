@@ -100,7 +100,7 @@ class StudyTest {
   class ProcessApplication {
 
     @Test
-    @DisplayName("스터디장이 신청을 승인하면 AWAITING_SELF_APPROVAL 상태로 변경된다")
+    @DisplayName("스터디장이 신청을 승인하면 APPROVE 상태로 변경된다")
     void should_change_status_to_awaiting_self_approval_when_leader_approves() {
       // given
       Study study = study();
@@ -111,7 +111,7 @@ class StudyTest {
 
       // then
       assertThat(application.getStudyMemberStatus())
-          .isEqualTo(StudyMemberStatus.AWAITING_SELF_APPROVAL);
+          .isEqualTo(StudyMemberStatus.APPROVED);
     }
 
     @Test
