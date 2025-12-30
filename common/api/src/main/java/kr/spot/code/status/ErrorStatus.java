@@ -66,6 +66,17 @@ public enum ErrorStatus implements BaseErrorCode {
   // 일정 관련
   _SCHEDULE_NOT_FOUND(404, "SCHEDULE404", "일정을 찾을 수 없습니다."),
   _SCHEDULE_ACCESS_DENIED(403, "SCHEDULE403", "해당 스터디에 속하는 일정이 아닙니다."),
+
+  // 투두 관련
+  _TODO_NOT_FOUND(404, "TODO404", "투두를 찾을 수 없습니다."),
+  _TODO_ACCESS_DENIED(403, "TODO403", "해당 스터디에 속하는 투두가 아닙니다."),
+  _ONLY_TODO_OWNER_CAN_MODIFY(403, "TODO4030", "투두 수정은 작성자만 가능합니다."),
+
+  // 회고 관련
+  _REVIEW_NOT_FOUND(404, "REVIEW404", "회고를 찾을 수 없습니다."),
+  _REVIEW_ACCESS_DENIED(403, "REVIEW403", "해당 스터디에 속하는 회고가 아닙니다."),
+  _ALREADY_REACTED(400, "REVIEW4000", "이미 반응을 누른 회고입니다."),
+  _REACTION_NOT_FOUND(404, "REVIEW4040", "반응을 찾을 수 없습니다."),
   ;
 
   private final int httpStatus;

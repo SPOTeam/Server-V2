@@ -24,13 +24,22 @@ public class Review extends BaseEntity {
   @Id
   private Long id;
 
+  private Long studyId;
+
   @Embedded
   private WriterInfo writerInfo;
 
   @Embedded
   private Content content;
 
-  public static Review of(Long id, WriterInfo writerInfo, Content content) {
-    return new Review(id, writerInfo, content);
+  private Boolean isPrivate;
+
+  public static Review of(Long id, Long studyId, WriterInfo writerInfo, Content content,
+      Boolean isPrivate) {
+    return new Review(id, studyId, writerInfo, content, isPrivate);
+  }
+
+  public boolean isPrivate() {
+    return Boolean.TRUE.equals(isPrivate);
   }
 }
