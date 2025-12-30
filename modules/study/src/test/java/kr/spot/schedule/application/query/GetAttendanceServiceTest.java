@@ -5,6 +5,8 @@ import static kr.spot.schedule.common.AttendanceFixture.OTHER_MEMBER_ID;
 import static kr.spot.schedule.common.AttendanceFixture.QR_CODE_URL;
 import static kr.spot.schedule.common.AttendanceFixture.SCHEDULE_ID;
 import static kr.spot.schedule.common.AttendanceFixture.STUDY_ID;
+import static kr.spot.schedule.common.AttendanceFixture.attendance;
+import static kr.spot.schedule.common.AttendanceFixture.memberInfo;
 import static kr.spot.schedule.common.AttendanceFixture.ongoingSchedule;
 import static kr.spot.schedule.common.AttendanceFixture.ongoingScheduleWithAttendance;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,11 +15,16 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
+import kr.spot.schedule.domain.Attendance;
 import kr.spot.schedule.domain.Schedule;
+import kr.spot.schedule.domain.enums.AttendanceStatus;
+import kr.spot.schedule.infrastructure.jpa.AttendanceRepository;
 import kr.spot.schedule.infrastructure.jpa.ScheduleRepository;
 import kr.spot.schedule.presentation.query.dto.GetAttendanceInfoResponse;
+import kr.spot.schedule.presentation.query.dto.GetAttendanceListResponse;
 import kr.spot.study.application.validator.StudyAccessValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,13 +41,16 @@ class GetAttendanceServiceTest {
   @Mock
   ScheduleRepository scheduleRepository;
   @Mock
+  AttendanceRepository attendanceRepository;
+  @Mock
   StudyAccessValidator studyAccessValidator;
 
   GetAttendanceService service;
 
   @BeforeEach
   void setUp() {
-    service = new GetAttendanceService(scheduleRepository, studyAccessValidator);
+    service = new GetAttendanceService(scheduleRepository, attendanceRepository,
+        studyAccessValidator);
   }
 
   @Nested
@@ -112,6 +122,61 @@ class GetAttendanceServiceTest {
           .isInstanceOf(GeneralException.class)
           .extracting(e -> ((GeneralException) e).getStatus())
           .isEqualTo(ErrorStatus._SCHEDULE_NOT_FOUND);
+    }
+  }
+
+  @Nested
+  @DisplayName("출석 목록 조회")
+  class GetAttendanceList {
+
+    @Test
+    @DisplayName("일정의 출석 목록을 조회한다")
+    void should_returnAttendanceList_when_requested() {
+      // given
+      Attendance attendance1 = attendance();
+      Attendance attendance2 = Attendance.createPending(201L, SCHEDULE_ID, memberInfo(OTHER_MEMBER_ID));
+      attendance2.markAttendance(AttendanceStatus.PRESENT);
+
+      doNothing().when(studyAccessValidator).validateStudyMember(STUDY_ID, MEMBER_ID);
+      when(attendanceRepository.findAllByScheduleId(SCHEDULE_ID))
+          .thenReturn(List.of(attendance1, attendance2));
+
+      // when
+      GetAttendanceListResponse response = service.getAttendanceList(STUDY_ID, SCHEDULE_ID, MEMBER_ID);
+
+      // then
+      assertThat(response.totalCount()).isEqualTo(2);
+      assertThat(response.attendances()).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("출석 기록이 없으면 빈 목록을 반환한다")
+    void should_returnEmptyList_when_noAttendanceRecords() {
+      // given
+      doNothing().when(studyAccessValidator).validateStudyMember(STUDY_ID, MEMBER_ID);
+      when(attendanceRepository.findAllByScheduleId(SCHEDULE_ID)).thenReturn(List.of());
+
+      // when
+      GetAttendanceListResponse response = service.getAttendanceList(STUDY_ID, SCHEDULE_ID, MEMBER_ID);
+
+      // then
+      assertThat(response.totalCount()).isZero();
+      assertThat(response.attendances()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("스터디 멤버가 아니면 출석 목록을 조회할 수 없다")
+    void should_throwException_when_notStudyMember() {
+      // given
+      doThrow(new GeneralException(ErrorStatus._STUDY_ACCESS_DENIED))
+          .when(studyAccessValidator).validateStudyMember(STUDY_ID, OTHER_MEMBER_ID);
+
+      // when & then
+      assertThatThrownBy(
+          () -> service.getAttendanceList(STUDY_ID, SCHEDULE_ID, OTHER_MEMBER_ID))
+          .isInstanceOf(GeneralException.class)
+          .extracting(e -> ((GeneralException) e).getStatus())
+          .isEqualTo(ErrorStatus._STUDY_ACCESS_DENIED);
     }
   }
 }
