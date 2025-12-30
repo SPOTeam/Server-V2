@@ -31,8 +31,7 @@ public class GetReviewService {
   private final StudyAccessValidator studyAccessValidator;
 
   public GetReviewListResponse getReviewList(long studyId, Long viewerId, Long cursor, int size) {
-    boolean isStudyMember =
-        viewerId != null && studyAccessValidator.isStudyMember(studyId, viewerId);
+    boolean isStudyMember = studyAccessValidator.isStudyMember(studyId, viewerId);
     List<Review> reviews = reviewQueryRepository.findByStudyIdWithCursor(studyId, cursor,
         size + 1);
 
