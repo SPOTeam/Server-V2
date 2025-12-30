@@ -66,6 +66,13 @@ public enum ErrorStatus implements BaseErrorCode {
   // 일정 관련
   _SCHEDULE_NOT_FOUND(404, "SCHEDULE404", "일정을 찾을 수 없습니다."),
   _SCHEDULE_ACCESS_DENIED(403, "SCHEDULE403", "해당 스터디에 속하는 일정이 아닙니다."),
+  _SCHEDULE_QR_CODE_ALREADY_ASSIGNED(400, "SCHEDULE4000", "이미 출석 QR 코드가 할당된 일정입니다."),
+
+  // 출석 관련
+  _ATTENDANCE_NOT_IN_SCHEDULE_TIME(400, "ATTENDANCE4000", "일정 시간 외에는 출석체크를 진행할 수 없습니다."),
+  _ATTENDANCE_NOT_STARTED(400, "ATTENDANCE4001", "출석체크가 시작되지 않았습니다."),
+  _ATTENDANCE_ALREADY_CHECKED(400, "ATTENDANCE4002", "이미 출석체크를 완료했습니다."),
+  _INVALID_ATTENDANCE_TOKEN(400, "ATTENDANCE4003", "유효하지 않은 출석 토큰입니다."),
 
   // 투두 관련
   _TODO_NOT_FOUND(404, "TODO404", "투두를 찾을 수 없습니다."),
