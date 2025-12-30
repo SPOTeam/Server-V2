@@ -94,7 +94,12 @@ public class AttendanceCommandService {
               info.name(),
               info.profileImageUrl()
           );
-          return Attendance.createPending(idGenerator.nextId(), scheduleId, memberInfo);
+          Attendance attendance = Attendance.createPending(idGenerator.nextId(), scheduleId,
+              memberInfo);
+          if (studyMember.getStudyMemberStatus() == StudyMemberStatus.OWNER) {
+            attendance.markAttendance(AttendanceStatus.PRESENT);
+          }
+          return attendance;
         })
         .toList();
 
