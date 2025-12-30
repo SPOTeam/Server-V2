@@ -1,6 +1,8 @@
 package kr.spot.review.domain.associations;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -35,6 +37,7 @@ public class ReviewReaction extends BaseEntity {
 
   private Long memberId;
 
+  @Enumerated(EnumType.STRING)
   private Reaction reaction;
 
   public static ReviewReaction of(Long id, Long reviewId, Long memberId, Reaction reaction) {
