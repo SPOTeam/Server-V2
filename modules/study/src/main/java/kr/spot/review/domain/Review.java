@@ -42,4 +42,8 @@ public class Review extends BaseEntity {
   public boolean isPrivate() {
     return Boolean.TRUE.equals(isPrivate);
   }
+
+  public void validateIsOwnMember(Long currentUserId) {
+    writerInfo.validateIsOwnMember(currentUserId);
+  }
 }

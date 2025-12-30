@@ -2,6 +2,8 @@ package kr.spot.review.domain.associations;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import kr.spot.domain.BaseEntity;
 import kr.spot.review.domain.enums.Reaction;
 import lombok.AccessLevel;
@@ -17,6 +19,13 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("status = 'ACTIVE'")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(
+    name = "review_reaction",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_review_member_reaction",
+        columnNames = {"reviewId", "memberId", "reaction"}
+    )
+)
 public class ReviewReaction extends BaseEntity {
 
   @Id
