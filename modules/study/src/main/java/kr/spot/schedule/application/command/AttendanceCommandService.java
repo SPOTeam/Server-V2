@@ -1,8 +1,8 @@
 package kr.spot.schedule.application.command;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import kr.spot.IdGenerator;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
@@ -13,11 +13,14 @@ import kr.spot.schedule.domain.Attendance;
 import kr.spot.schedule.domain.Schedule;
 import kr.spot.schedule.domain.enums.AttendanceStatus;
 import kr.spot.schedule.domain.vo.MemberInfo;
+import kr.spot.schedule.infrastructure.crypto.AttendanceTokenEncryptor;
 import kr.spot.schedule.infrastructure.jpa.AttendanceRepository;
 import kr.spot.schedule.infrastructure.jpa.ScheduleRepository;
 import kr.spot.study.application.validator.StudyAccessValidator;
+import kr.spot.study.domain.associations.StudyMember;
+import kr.spot.study.domain.enums.StudyMemberStatus;
+import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,15 +30,17 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AttendanceCommandService {
 
+  private static final List<StudyMemberStatus> ACTIVE_MEMBER_STATUSES =
+      List.of(StudyMemberStatus.OWNER, StudyMemberStatus.APPROVED);
+
   private final IdGenerator idGenerator;
   private final ScheduleRepository scheduleRepository;
   private final AttendanceRepository attendanceRepository;
+  private final StudyMemberRepository studyMemberRepository;
   private final StudyAccessValidator studyAccessValidator;
   private final GetMemberInfoPort getMemberInfoPort;
   private final ApplicationEventPublisher eventPublisher;
-
-  @Value("${app.base-url}")
-  private String baseUrl;
+  private final AttendanceTokenEncryptor tokenEncryptor;
 
   public void startAttendance(long studyId, long scheduleId, long memberId) {
     studyAccessValidator.validateStudyLeader(studyId, memberId);
@@ -43,7 +48,9 @@ public class AttendanceCommandService {
     Schedule schedule = scheduleRepository.getById(scheduleId);
     schedule.startAttendance(studyId);
 
-    String qrContent = generateQrContent(studyId, scheduleId);
+    createAttendancesForAllMembers(studyId, scheduleId);
+
+    String qrContent = generateEncryptedToken(studyId, scheduleId);
     eventPublisher.publishEvent(AttendanceStartedEvent.of(studyId, scheduleId, qrContent));
   }
 
@@ -54,35 +61,61 @@ public class AttendanceCommandService {
     schedule.stopAttendance(studyId);
   }
 
-  public void checkAttendance(long studyId, long scheduleId, long memberId) {
-    studyAccessValidator.validateStudyMember(studyId, memberId);
+  public void checkAttendance(String encryptedToken, long memberId) {
+    AttendanceTokenData tokenData = decryptToken(encryptedToken);
 
-    Schedule schedule = scheduleRepository.getById(scheduleId);
+    studyAccessValidator.validateStudyMember(tokenData.studyId(), memberId);
+
+    Schedule schedule = scheduleRepository.getById(tokenData.scheduleId());
     schedule.validateAttendanceCheckable();
 
-    if (attendanceRepository.existsByScheduleIdAndMemberInfoMemberId(scheduleId, memberId)) {
-      throw new GeneralException(ErrorStatus._ATTENDANCE_ALREADY_CHECKED);
-    }
+    Attendance attendance = attendanceRepository
+        .findByScheduleIdAndMemberInfoMemberId(tokenData.scheduleId(), memberId)
+        .orElseThrow(() -> new GeneralException(ErrorStatus._STUDY_MEMBER_NOT_FOUND));
 
-    MemberInfo memberInfo = getMemberInfo(memberId);
-    Attendance attendance = Attendance.of(idGenerator.nextId(), scheduleId, memberInfo);
     attendance.markAttendance(AttendanceStatus.PRESENT);
-    attendanceRepository.save(attendance);
   }
 
-  private MemberInfo getMemberInfo(long memberId) {
-    Map<Long, MemberInfoResponse> memberInfoMap = getMemberInfoPort.getMemberInfo(
-        List.of(memberId));
-    MemberInfoResponse info = memberInfoMap.get(memberId);
-    if (info == null) {
-      throw new GeneralException(ErrorStatus._MEMBER_NOT_FOUND);
+  private void createAttendancesForAllMembers(long studyId, long scheduleId) {
+    List<StudyMember> activeMembers = studyMemberRepository
+        .findAllByStudyIdAndStudyMemberStatusIn(studyId, ACTIVE_MEMBER_STATUSES);
+
+    List<Long> memberIds = activeMembers.stream()
+        .map(StudyMember::getMemberId)
+        .toList();
+
+    Map<Long, MemberInfoResponse> memberInfoMap = getMemberInfoPort.getMemberInfo(memberIds);
+
+    List<Attendance> attendances = activeMembers.stream()
+        .map(studyMember -> {
+          MemberInfoResponse info = memberInfoMap.get(studyMember.getMemberId());
+          MemberInfo memberInfo = MemberInfo.of(
+              studyMember.getMemberId(),
+              info.name(),
+              info.profileImageUrl()
+          );
+          return Attendance.createPending(idGenerator.nextId(), scheduleId, memberInfo);
+        })
+        .toList();
+
+    attendanceRepository.saveAll(attendances);
+  }
+
+  private String generateEncryptedToken(long studyId, long scheduleId) {
+    String plainText = String.format("%d:%d:%d", studyId, scheduleId, Instant.now().toEpochMilli());
+    return tokenEncryptor.encrypt(plainText);
+  }
+
+  private AttendanceTokenData decryptToken(String encryptedToken) {
+    String plainText = tokenEncryptor.decrypt(encryptedToken);
+    String[] parts = plainText.split(":");
+    if (parts.length != 3) {
+      throw new GeneralException(ErrorStatus._INVALID_ATTENDANCE_TOKEN);
     }
-    return MemberInfo.of(memberId, info.name(), info.profileImageUrl());
+    return new AttendanceTokenData(Long.parseLong(parts[0]), Long.parseLong(parts[1]));
   }
 
-  private String generateQrContent(long studyId, long scheduleId) {
-    String token = UUID.randomUUID().toString();
-    return String.format("%s/api/studies/%d/schedules/%d/attendance/check?token=%s",
-        baseUrl, studyId, scheduleId, token);
+  private record AttendanceTokenData(long studyId, long scheduleId) {
+
   }
 }

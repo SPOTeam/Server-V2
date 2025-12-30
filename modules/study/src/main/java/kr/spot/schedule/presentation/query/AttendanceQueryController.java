@@ -31,7 +31,9 @@ public class AttendanceQueryController {
       @Parameter(description = "일정 ID", required = true) @PathVariable Long scheduleId,
       @CurrentMember @Parameter(hidden = true) Long memberId
   ) {
-    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
+    GetAttendanceListResponse response = getAttendanceService.getAttendanceList(studyId,
+        scheduleId, memberId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
   }
 
   @Operation(summary = "출석체크 QR 코드 조회", description = "출석체크용 QR 코드 이미지 URL을 조회합니다.")

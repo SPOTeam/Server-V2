@@ -1,6 +1,8 @@
 package kr.spot.schedule.domain;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import kr.spot.domain.BaseEntity;
@@ -28,13 +30,17 @@ public class Attendance extends BaseEntity {
 
   private MemberInfo memberInfo;
 
+  @Enumerated(EnumType.STRING)
   private AttendanceStatus attendanceStatus;
 
   private LocalDateTime attendedAt;
 
-  public static Attendance of(Long id, Long scheduleId, MemberInfo memberInfo) {
-    return new Attendance(id, scheduleId, memberInfo, AttendanceStatus.UNDECIDED,
-        LocalDateTime.now());
+  public static Attendance of(long id, long scheduleId, MemberInfo memberInfo) {
+    return new Attendance(id, scheduleId, memberInfo, AttendanceStatus.UNDECIDED, null);
+  }
+
+  public static Attendance createPending(long id, long scheduleId, MemberInfo memberInfo) {
+    return new Attendance(id, scheduleId, memberInfo, AttendanceStatus.UNDECIDED, null);
   }
 
   public void markAttendance(AttendanceStatus status) {

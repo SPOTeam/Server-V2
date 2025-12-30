@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "스터디 일정 - 출석체크")
@@ -48,8 +49,9 @@ public class AttendanceCommandController {
   public ResponseEntity<ApiResponse<Void>> checkAttendance(
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
       @Parameter(description = "일정 ID", required = true) @PathVariable Long scheduleId,
+      @Parameter(description = "암호화된 출석 토큰", required = true) @RequestParam String token,
       @CurrentMember @Parameter(hidden = true) Long memberId) {
-    attendanceCommandService.checkAttendance(studyId, scheduleId, memberId);
+    attendanceCommandService.checkAttendance(token, memberId);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
   }
 }
