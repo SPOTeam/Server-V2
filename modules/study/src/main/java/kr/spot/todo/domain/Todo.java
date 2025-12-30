@@ -41,18 +41,21 @@ public class Todo extends BaseEntity {
     return new Todo(id, studyId, memberId, dueDate, content, false);
   }
 
-  public void update(String content, LocalDate dueDate, long memberId) {
+  public void update(long studyId, String content, LocalDate dueDate, long memberId) {
+    validateAccess(studyId);
     validateOwner(memberId);
     this.content = content;
     this.dueDate = dueDate;
   }
 
-  public void complete(long memberId) {
+  public void complete(long studyId, long memberId) {
+    validateAccess(studyId);
     validateOwner(memberId);
     this.isCompleted = true;
   }
 
-  public void uncomplete(long memberId) {
+  public void uncomplete(long studyId, long memberId) {
+    validateAccess(studyId);
     validateOwner(memberId);
     this.isCompleted = false;
   }
