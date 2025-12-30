@@ -36,11 +36,14 @@ public class Schedule extends BaseEntity {
 
   private LocalDateTime endAt;
 
+  private boolean attendanceActive;
+
+  private String attendanceQrCodeImageUrl;
+
   public static Schedule of(Long id, Long studyId, String title, String locationMemo,
       LocalDateTime startAt, LocalDateTime endAt
   ) {
-    return new Schedule(id, studyId, title, locationMemo, startAt, endAt
-    );
+    return new Schedule(id, studyId, title, locationMemo, startAt, endAt, false, null);
   }
 
   public void delete(long studyId) {
@@ -55,9 +58,49 @@ public class Schedule extends BaseEntity {
     return !now.isBefore(startAt) && !now.isAfter(endAt);
   }
 
+  public void startAttendance(long studyId) {
+    validateIsValidAccess(studyId);
+    validateIsOngoing();
+    validateIsNotAttendanceActive();
+    this.attendanceActive = true;
+  }
+
+  public void stopAttendance(long studyId) {
+    validateIsValidAccess(studyId);
+    this.attendanceActive = false;
+    this.attendanceQrCodeImageUrl = null;
+  }
+
+  public void updateQrCodeImageUrl(String url) {
+    this.attendanceQrCodeImageUrl = url;
+  }
+
+  public void validateAttendanceCheckable() {
+    validateIsAttendanceActive();
+    validateIsOngoing();
+  }
+
   private void validateIsValidAccess(long studyId) {
     if (studyId != this.studyId) {
       throw new GeneralException(ErrorStatus._SCHEDULE_ACCESS_DENIED);
+    }
+  }
+
+  private void validateIsOngoing() {
+    if (!isOngoing(LocalDateTime.now())) {
+      throw new GeneralException(ErrorStatus._ATTENDANCE_NOT_IN_SCHEDULE_TIME);
+    }
+  }
+
+  private void validateIsAttendanceActive() {
+    if (!this.attendanceActive) {
+      throw new GeneralException(ErrorStatus._ATTENDANCE_NOT_STARTED);
+    }
+  }
+
+  private void validateIsNotAttendanceActive() {
+    if (this.attendanceActive) {
+      throw new GeneralException(ErrorStatus._SCHEDULE_QR_CODE_ALREADY_ASSIGNED);
     }
   }
 }
