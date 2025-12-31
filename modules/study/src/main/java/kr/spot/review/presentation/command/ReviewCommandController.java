@@ -1,5 +1,6 @@
 package kr.spot.review.presentation.command;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.spot.ApiResponse;
@@ -29,6 +30,7 @@ public class ReviewCommandController {
   private final ManageReviewService manageReviewService;
   private final ManageReviewReactionService manageReviewReactionService;
 
+  @Operation(summary = "스터디 회고록 작성", description = "특정 스터디에 대한 회고록을 작성합니다.")
   @PostMapping
   public ResponseEntity<ApiResponse<Void>> createReview(
       @PathVariable Long studyId,
@@ -40,6 +42,7 @@ public class ReviewCommandController {
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._CREATED));
   }
 
+  @Operation(summary = "스터디 회고록 삭제", description = "특정 스터디에 대한 회고록을 삭제합니다.")
   @DeleteMapping("/{reviewId}")
   public ResponseEntity<ApiResponse<Void>> deleteReview(
       @PathVariable Long studyId,
@@ -50,6 +53,7 @@ public class ReviewCommandController {
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._NO_CONTENT));
   }
 
+  @Operation(summary = "스터디 회고록 반응 추가", description = "특정 스터디 회고록에 대한 반응을 추가합니다.")
   @PostMapping("/{reviewId}/reactions")
   public ResponseEntity<ApiResponse<Void>> addReaction(
       @PathVariable Long studyId,
@@ -61,6 +65,7 @@ public class ReviewCommandController {
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._CREATED));
   }
 
+  @Operation(summary = "스터디 회고록 반응 제거", description = "특정 스터디 회고록에 대한 반응을 제거합니다.")
   @DeleteMapping("/{reviewId}/reactions")
   public ResponseEntity<ApiResponse<Void>> removeReaction(
       @PathVariable Long studyId,
