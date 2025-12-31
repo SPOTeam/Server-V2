@@ -7,6 +7,7 @@ import java.util.List;
 import kr.spot.study.domain.QStudy;
 import kr.spot.study.domain.Study;
 import kr.spot.study.domain.associations.QStudyCategory;
+import kr.spot.study.domain.associations.QStudyLike;
 import kr.spot.study.domain.associations.QStudyMember;
 import kr.spot.study.domain.associations.QStudyRegion;
 import kr.spot.study.domain.associations.QStudyStats;
@@ -205,5 +206,34 @@ public class StudyQueryRepository {
       case LIKES -> studyStats.likeCount.desc();
       case HITS -> studyStats.viewCount.desc();
     };
+  }
+
+  public List<Study> findLikedStudies(long memberId, Long cursor, int limit) {
+    QStudy study = QStudy.study;
+    QStudyLike studyLike = QStudyLike.studyLike;
+
+    return query
+        .select(study)
+        .from(studyLike)
+        .join(study).on(study.id.eq(studyLike.studyId))
+        .where(
+            studyLike.memberId.eq(memberId),
+            ltCursor(cursor, study)
+        )
+        .orderBy(study.id.desc())
+        .limit(limit)
+        .fetch();
+  }
+
+  public long countLikedStudies(long memberId) {
+    QStudy study = QStudy.study;
+    QStudyLike studyLike = QStudyLike.studyLike;
+
+    return query
+        .select(study.id.countDistinct())
+        .from(studyLike)
+        .join(study).on(study.id.eq(studyLike.studyId))
+        .where(studyLike.memberId.eq(memberId))
+        .fetchOne();
   }
 }

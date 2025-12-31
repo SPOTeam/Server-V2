@@ -26,4 +26,12 @@ public interface StudyStatsRepository extends JpaRepository<StudyStats, Long> {
        where s.studyId = :studyId and s.status = 'ACTIVE'
       """)
   int increaseViewBy(@Param("studyId") long studyId, @Param("delta") long delta);
+
+  @Modifying
+  @Query("update StudyStats s set s.likeCount = s.likeCount + 1 where s.studyId = :studyId")
+  int increaseLike(@Param("studyId") long studyId);
+
+  @Modifying
+  @Query("update StudyStats s set s.likeCount = case when s.likeCount > 0 then s.likeCount - 1 else 0 end where s.studyId = :studyId")
+  int decreaseLike(@Param("studyId") long studyId);
 }
