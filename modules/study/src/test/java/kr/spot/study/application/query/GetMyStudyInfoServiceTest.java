@@ -428,4 +428,228 @@ class GetMyStudyInfoServiceTest {
       assertThat(response.totalElements()).isEqualTo(0L);
     }
   }
+
+  @Nested
+  @DisplayName("모집중 스터디 조회 (getRecruitingStudies)")
+  class GetRecruitingStudies {
+
+    private final long viewerId = 1L;
+    private final int pageSize = 10;
+
+    @Test
+    @DisplayName("필터 조건에 맞는 모집중 스터디를 조회한다")
+    void should_find_recruiting_studies_with_filters() {
+      // given
+      List<Study> studies = createStudies(pageSize + 1);
+      Long expectedNextCursor = studies.get(pageSize - 1).getId();
+
+      given(studyQueryRepository.findRecruitingStudies(
+          eq(FeeCategory.NONE), eq(List.of(Category.LANGUAGE)), eq(true), eq(SortBy.HITS),
+          eq(null), eq(pageSize + 1)))
+          .willReturn(studies);
+      given(studyQueryRepository.countRecruitingStudies(
+          eq(FeeCategory.NONE), eq(List.of(Category.LANGUAGE)), eq(true)))
+          .willReturn((long) studies.size());
+      given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+
+      // when
+      GetStudyOverviewResponse response = getMyStudyInfoService.getRecruitingStudies(
+          viewerId, FeeCategory.NONE, List.of(Category.LANGUAGE), true, SortBy.HITS, null, pageSize
+      );
+
+      // then
+      verify(studyQueryRepository).findRecruitingStudies(
+          eq(FeeCategory.NONE), eq(List.of(Category.LANGUAGE)), eq(true), eq(SortBy.HITS),
+          eq(null), eq(pageSize + 1));
+      assertThat(response.content()).hasSize(pageSize);
+      assertThat(response.hasNext()).isTrue();
+      assertThat(response.nextCursor()).isEqualTo(expectedNextCursor);
+    }
+
+    @Test
+    @DisplayName("필터 없이 모집중 스터디를 조회한다")
+    void should_find_recruiting_studies_without_filters() {
+      // given
+      List<Study> studies = createStudies(5);
+
+      given(studyQueryRepository.findRecruitingStudies(
+          eq(null), eq(null), eq(null), eq(null), eq(null), eq(pageSize + 1)))
+          .willReturn(studies);
+      given(studyQueryRepository.countRecruitingStudies(eq(null), eq(null), eq(null)))
+          .willReturn((long) studies.size());
+      given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+
+      // when
+      GetStudyOverviewResponse response = getMyStudyInfoService.getRecruitingStudies(
+          viewerId, null, null, null, null, null, pageSize
+      );
+
+      // then
+      assertThat(response.content()).hasSize(5);
+      assertThat(response.hasNext()).isFalse();
+      assertThat(response.nextCursor()).isNull();
+    }
+
+    @Test
+    @DisplayName("좋아요한 스터디는 isLiked가 true로 표시된다")
+    void should_mark_liked_studies() {
+      // given
+      List<Study> studies = createStudies(3);
+      Long likedStudyId = studies.get(0).getId();
+
+      given(studyQueryRepository.findRecruitingStudies(any(), any(), any(), any(), any(), anyInt()))
+          .willReturn(studies);
+      given(studyQueryRepository.countRecruitingStudies(any(), any(), any()))
+          .willReturn((long) studies.size());
+      given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of(likedStudyId));
+
+      // when
+      GetStudyOverviewResponse response = getMyStudyInfoService.getRecruitingStudies(
+          viewerId, null, null, null, null, null, pageSize
+      );
+
+      // then
+      assertThat(response.content().get(0).isLiked()).isTrue();
+      assertThat(response.content().get(1).isLiked()).isFalse();
+      assertThat(response.content().get(2).isLiked()).isFalse();
+    }
+  }
+
+  @Nested
+  @DisplayName("카테고리별 스터디 조회 (getStudiesByCategory)")
+  class GetStudiesByCategory {
+
+    private final long viewerId = 1L;
+    private final int pageSize = 10;
+
+    @Test
+    @DisplayName("특정 카테고리의 스터디를 조회한다")
+    void should_find_studies_by_category() {
+      // given
+      List<Study> studies = createStudies(pageSize + 1);
+      Long expectedNextCursor = studies.get(pageSize - 1).getId();
+
+      given(studyQueryRepository.findStudiesByCategory(
+          eq(RecruitingStatus.RECRUITING), eq(FeeCategory.NONE), eq(Category.LANGUAGE),
+          eq(false), eq(SortBy.LIKES), eq(null), eq(pageSize + 1)))
+          .willReturn(studies);
+      given(studyQueryRepository.countStudiesByCategory(
+          eq(RecruitingStatus.RECRUITING), eq(FeeCategory.NONE), eq(Category.LANGUAGE), eq(false)))
+          .willReturn((long) studies.size());
+      given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+
+      // when
+      GetStudyOverviewResponse response = getMyStudyInfoService.getStudiesByCategory(
+          viewerId, RecruitingStatus.RECRUITING, FeeCategory.NONE, Category.LANGUAGE,
+          false, SortBy.LIKES, null, pageSize
+      );
+
+      // then
+      verify(studyQueryRepository).findStudiesByCategory(
+          eq(RecruitingStatus.RECRUITING), eq(FeeCategory.NONE), eq(Category.LANGUAGE),
+          eq(false), eq(SortBy.LIKES), eq(null), eq(pageSize + 1));
+      assertThat(response.content()).hasSize(pageSize);
+      assertThat(response.hasNext()).isTrue();
+      assertThat(response.nextCursor()).isEqualTo(expectedNextCursor);
+    }
+
+    @Test
+    @DisplayName("조건에 맞는 스터디가 없으면 빈 결과를 반환한다")
+    void should_return_empty_when_no_studies() {
+      // given
+      given(studyQueryRepository.findStudiesByCategory(any(), any(), any(), any(), any(), any(), anyInt()))
+          .willReturn(Collections.emptyList());
+      given(studyQueryRepository.countStudiesByCategory(any(), any(), any(), any()))
+          .willReturn(0L);
+      given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+
+      // when
+      GetStudyOverviewResponse response = getMyStudyInfoService.getStudiesByCategory(
+          viewerId, RecruitingStatus.COMPLETED, FeeCategory.ABOVE_50K, Category.CAREER,
+          true, SortBy.RECENT, null, pageSize
+      );
+
+      // then
+      assertThat(response.content()).isEmpty();
+      assertThat(response.hasNext()).isFalse();
+      assertThat(response.nextCursor()).isNull();
+      assertThat(response.totalElements()).isEqualTo(0L);
+    }
+  }
+
+  @Nested
+  @DisplayName("좋아요한 스터디 조회 (getLikedStudies)")
+  class GetLikedStudies {
+
+    private final long viewerId = 1L;
+    private final int pageSize = 10;
+
+    @Test
+    @DisplayName("내가 좋아요한 스터디 목록을 조회한다")
+    void should_find_liked_studies() {
+      // given
+      List<Study> studies = createStudies(pageSize + 1);
+      Long expectedNextCursor = studies.get(pageSize - 1).getId();
+      Set<Long> likedStudyIds = studies.stream().map(Study::getId).collect(java.util.stream.Collectors.toSet());
+
+      given(studyQueryRepository.findLikedStudies(viewerId, null, pageSize + 1))
+          .willReturn(studies);
+      given(studyQueryRepository.countLikedStudies(viewerId))
+          .willReturn((long) studies.size());
+      given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(likedStudyIds);
+
+      // when
+      GetStudyOverviewResponse response = getMyStudyInfoService.getLikedStudies(viewerId, null, pageSize);
+
+      // then
+      verify(studyQueryRepository).findLikedStudies(viewerId, null, pageSize + 1);
+      assertThat(response.content()).hasSize(pageSize);
+      assertThat(response.hasNext()).isTrue();
+      assertThat(response.nextCursor()).isEqualTo(expectedNextCursor);
+      assertThat(response.content()).allMatch(study -> study.isLiked());
+    }
+
+    @Test
+    @DisplayName("좋아요한 스터디가 없으면 빈 결과를 반환한다")
+    void should_return_empty_when_no_liked_studies() {
+      // given
+      given(studyQueryRepository.findLikedStudies(viewerId, null, pageSize + 1))
+          .willReturn(Collections.emptyList());
+      given(studyQueryRepository.countLikedStudies(viewerId))
+          .willReturn(0L);
+      given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+
+      // when
+      GetStudyOverviewResponse response = getMyStudyInfoService.getLikedStudies(viewerId, null, pageSize);
+
+      // then
+      assertThat(response.content()).isEmpty();
+      assertThat(response.hasNext()).isFalse();
+      assertThat(response.nextCursor()).isNull();
+      assertThat(response.totalElements()).isEqualTo(0L);
+    }
+
+    @Test
+    @DisplayName("커서 기반으로 다음 페이지를 조회한다")
+    void should_find_next_page_with_cursor() {
+      // given
+      Long cursor = 100L;
+      List<Study> studies = createStudies(5);
+
+      given(studyQueryRepository.findLikedStudies(viewerId, cursor, pageSize + 1))
+          .willReturn(studies);
+      given(studyQueryRepository.countLikedStudies(viewerId))
+          .willReturn(15L);
+      given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+
+      // when
+      GetStudyOverviewResponse response = getMyStudyInfoService.getLikedStudies(viewerId, cursor, pageSize);
+
+      // then
+      verify(studyQueryRepository).findLikedStudies(viewerId, cursor, pageSize + 1);
+      assertThat(response.content()).hasSize(5);
+      assertThat(response.hasNext()).isFalse();
+      assertThat(response.totalElements()).isEqualTo(15L);
+    }
+  }
 }
