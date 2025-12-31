@@ -126,7 +126,8 @@ public class StudySearchController {
       @RequestParam(defaultValue = "10") @Min(1) @Max(50) Integer size
   ) {
     return ResponseEntity.ok(
-        ApiResponse.onSuccess(SuccessStatus._OK, null));
+        ApiResponse.onSuccess(SuccessStatus._OK,
+            getMyStudyInfoService.getLikedStudies(viewerId, cursor, size)));
   }
 
   // TODO 모집중 스터디

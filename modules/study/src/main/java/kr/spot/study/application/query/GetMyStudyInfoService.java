@@ -139,4 +139,11 @@ public class GetMyStudyInfoService {
     }
     return preferredRegionCodes;
   }
+
+  public GetStudyOverviewResponse getLikedStudies(long memberId, Long cursor, int size) {
+    final int pageSize = Math.min(size, MAX_PAGE_SIZE);
+    List<Study> rows = studyQueryRepository.findLikedStudies(memberId, cursor, pageSize + 1);
+    long totalElements = studyQueryRepository.countLikedStudies(memberId);
+    return toCursorPage(rows, pageSize, totalElements);
+  }
 }
