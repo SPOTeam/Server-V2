@@ -47,14 +47,6 @@ public class StudySearchController {
         getMyStudyInfoService.getMyStudyOverview(viewerId, status, cursor, size)));
   }
 
-  @Operation(summary = "지금 가장 인기있는 스터디 조회 - 구현 중",
-      description = "지금 가장 인기있는 스터디를 조회합니다. (page, size 파라미터로 페이징 처리 가능)")
-  @GetMapping("/hot")
-  public ResponseEntity<ApiResponse<GetStudyOverviewResponse>> getHotStudies(
-  ) {
-    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
-  }
-
   @Operation(summary = "전공/진로학습 이건 어때요? 스터디 조회",
       description = "회원의 선호 카테고리에 해당하는 스터디 중 랜덤하게 3개를 조회합니다. 매 요청마다 결과가 달라질 수 있습니다.")
   @GetMapping("/recommended")
