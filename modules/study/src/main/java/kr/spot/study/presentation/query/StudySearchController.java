@@ -51,7 +51,7 @@ public class StudySearchController {
       description = "회원의 선호 카테고리에 해당하는 스터디 중 랜덤하게 3개를 조회합니다. 매 요청마다 결과가 달라질 수 있습니다.")
   @GetMapping("/recommended")
   public ResponseEntity<ApiResponse<GetStudyOverviewResponse>> getRecommendedStudies(
-      @CurrentMember @Parameter(hidden = true) long memberId
+      @CurrentMember @Parameter(hidden = true) Long memberId
   ) {
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,
         getMyStudyInfoService.getRecommendedStudies(memberId)));
