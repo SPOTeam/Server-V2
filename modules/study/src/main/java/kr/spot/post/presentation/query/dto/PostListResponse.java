@@ -18,7 +18,6 @@ public record PostListResponse(
       boolean isPinned,
       boolean isLiked,
       PostStatsResponse stats,
-      WriterInfoResponse writer,
       LocalDateTime createdAt
   ) {
 
@@ -29,21 +28,10 @@ public record PostListResponse(
         boolean isPinned,
         boolean isLiked,
         PostStatsResponse stats,
-        WriterInfoResponse writer,
         LocalDateTime createdAt
     ) {
-      return new PostItem(postId, title, content, isPinned, isLiked, stats, writer, createdAt);
+      return new PostItem(postId, title, content, isPinned, isLiked, stats, createdAt);
     }
   }
 
-  public record WriterInfoResponse(
-      Long writerId,
-      String nickname,
-      String profileImageUrl
-  ) {
-
-    public static WriterInfoResponse of(Long writerId, String nickname, String profileImageUrl) {
-      return new WriterInfoResponse(writerId, nickname, profileImageUrl);
-    }
-  }
 }
