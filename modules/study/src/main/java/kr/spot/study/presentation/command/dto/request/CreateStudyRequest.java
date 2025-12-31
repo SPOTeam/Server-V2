@@ -10,6 +10,7 @@ public record CreateStudyRequest(
     Boolean hasFee,
     Integer amount,
     String description,
+    Boolean isOnline,
     Set<Category> categories,
     Set<Style> styles,
     Set<String> regionCodes

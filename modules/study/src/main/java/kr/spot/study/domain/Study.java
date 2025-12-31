@@ -57,17 +57,25 @@ public class Study extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private RecruitingStatus recruitingStatus;
 
+  @Column(nullable = false)
+  private Boolean isOnline = false;
+
   public static Study of(Long id, Long leaderId, String name, Integer maxMembers, Fee fee,
       String description) {
-    return of(id, leaderId, name, maxMembers, fee, null, description);
+    return of(id, leaderId, name, maxMembers, fee, null, description, false);
   }
 
   public static Study of(Long id, Long leaderId, String name, Integer maxMembers, Fee fee,
       String imageUrl, String description) {
+    return of(id, leaderId, name, maxMembers, fee, imageUrl, description, false);
+  }
+
+  public static Study of(Long id, Long leaderId, String name, Integer maxMembers, Fee fee,
+      String imageUrl, String description, Boolean isOnline) {
     validateStudyNameIsNotBlank(name);
     validateMaxMembers(maxMembers);
     return new Study(id, leaderId, name, maxMembers, CURRENT_MEMBERS, fee, imageUrl, description,
-        RecruitingStatus.RECRUITING);
+        RecruitingStatus.RECRUITING, isOnline != null && isOnline);
   }
 
   private static void validateStudyNameIsNotBlank(String name) {

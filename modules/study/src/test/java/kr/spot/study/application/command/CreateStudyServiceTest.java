@@ -167,6 +167,7 @@ class CreateStudyServiceTest {
           true,
           10000,
           "Test Description",
+          false,
           Set.of(Category.LANGUAGE),
           Set.of(Style.DISCUSSION_BASED),
           Set.of("SEOUL")

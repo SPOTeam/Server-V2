@@ -69,6 +69,7 @@ public class StudyQueryRepository {
       RecruitingStatus recruitingStatus,
       FeeCategory feeCategory,
       List<Category> categories,
+      Boolean isOnline,
       SortBy sortBy,
       Long cursor,
       int limit,
@@ -90,6 +91,7 @@ public class StudyQueryRepository {
             eqRecruitingStatus(recruitingStatus, study),
             eqFeeCategory(feeCategory, study),
             inCategories(categories, studyCategory),
+            eqIsOnline(isOnline, study),
             ltCursor(cursor, study)
         )
         .groupBy(study.id)
@@ -105,6 +107,7 @@ public class StudyQueryRepository {
       RecruitingStatus recruitingStatus,
       FeeCategory feeCategory,
       List<Category> categories,
+      Boolean isOnline,
       List<String> regionCodes
   ) {
     QStudy study = QStudy.study;
@@ -120,7 +123,8 @@ public class StudyQueryRepository {
             studyRegion.regionCode.in(regionCodes),
             eqRecruitingStatus(recruitingStatus, study),
             eqFeeCategory(feeCategory, study),
-            inCategories(categories, studyCategory)
+            inCategories(categories, studyCategory),
+            eqIsOnline(isOnline, study)
         )
         .fetchOne();
   }
@@ -128,6 +132,7 @@ public class StudyQueryRepository {
   public List<Study> findMyPreferredCategoryStudies(
       RecruitingStatus recruitingStatus,
       FeeCategory feeCategory,
+      Boolean isOnline,
       SortBy sortBy,
       Long cursor,
       int limit,
@@ -146,6 +151,7 @@ public class StudyQueryRepository {
             eqRecruitingStatus(recruitingStatus, study),
             eqFeeCategory(feeCategory, study),
             inCategories(categories, studyCategory),
+            eqIsOnline(isOnline, study),
             ltCursor(cursor, study)
         )
         .groupBy(study.id)
@@ -160,6 +166,7 @@ public class StudyQueryRepository {
   public long countMyPreferredCategoryStudies(
       RecruitingStatus recruitingStatus,
       FeeCategory feeCategory,
+      Boolean isOnline,
       List<Category> categories
   ) {
     QStudy study = QStudy.study;
@@ -172,7 +179,118 @@ public class StudyQueryRepository {
         .where(
             eqRecruitingStatus(recruitingStatus, study),
             eqFeeCategory(feeCategory, study),
-            inCategories(categories, studyCategory)
+            inCategories(categories, studyCategory),
+            eqIsOnline(isOnline, study)
+        )
+        .fetchOne();
+  }
+
+  public List<Study> findRecruitingStudies(
+      FeeCategory feeCategory,
+      List<Category> categories,
+      Boolean isOnline,
+      SortBy sortBy,
+      Long cursor,
+      int limit
+  ) {
+    QStudy study = QStudy.study;
+    QStudyCategory studyCategory = QStudyCategory.studyCategory;
+    QStudyStats studyStats = QStudyStats.studyStats;
+
+    return query
+        .select(study)
+        .from(study)
+        .leftJoin(studyCategory).on(studyCategory.studyId.eq(study.id))
+        .leftJoin(studyStats).on(studyStats.studyId.eq(study.id))
+        .where(
+            study.recruitingStatus.eq(RecruitingStatus.RECRUITING),
+            eqFeeCategory(feeCategory, study),
+            inCategories(categories, studyCategory),
+            eqIsOnline(isOnline, study),
+            ltCursor(cursor, study)
+        )
+        .groupBy(study.id)
+        .orderBy(
+            orderBy(sortBy, study, studyStats),
+            study.id.desc()
+        )
+        .limit(limit)
+        .fetch();
+  }
+
+  public long countRecruitingStudies(
+      FeeCategory feeCategory,
+      List<Category> categories,
+      Boolean isOnline
+  ) {
+    QStudy study = QStudy.study;
+    QStudyCategory studyCategory = QStudyCategory.studyCategory;
+
+    return query
+        .select(study.id.countDistinct())
+        .from(study)
+        .leftJoin(studyCategory).on(studyCategory.studyId.eq(study.id))
+        .where(
+            study.recruitingStatus.eq(RecruitingStatus.RECRUITING),
+            eqFeeCategory(feeCategory, study),
+            inCategories(categories, studyCategory),
+            eqIsOnline(isOnline, study)
+        )
+        .fetchOne();
+  }
+
+  public List<Study> findStudiesByCategory(
+      RecruitingStatus recruitingStatus,
+      FeeCategory feeCategory,
+      Category category,
+      Boolean isOnline,
+      SortBy sortBy,
+      Long cursor,
+      int limit
+  ) {
+    QStudy study = QStudy.study;
+    QStudyCategory studyCategory = QStudyCategory.studyCategory;
+    QStudyStats studyStats = QStudyStats.studyStats;
+
+    return query
+        .select(study)
+        .from(study)
+        .join(studyCategory).on(studyCategory.studyId.eq(study.id))
+        .leftJoin(studyStats).on(studyStats.studyId.eq(study.id))
+        .where(
+            eqRecruitingStatus(recruitingStatus, study),
+            eqFeeCategory(feeCategory, study),
+            eqCategory(category, studyCategory),
+            eqIsOnline(isOnline, study),
+            ltCursor(cursor, study)
+        )
+        .groupBy(study.id)
+        .orderBy(
+            orderBy(sortBy, study, studyStats),
+            study.id.desc()
+        )
+        .limit(limit)
+        .fetch();
+  }
+
+  public long countStudiesByCategory(
+      RecruitingStatus recruitingStatus,
+      FeeCategory feeCategory,
+      Category category,
+      Boolean isOnline
+  ) {
+    QStudy study = QStudy.study;
+    QStudyCategory studyCategory = QStudyCategory.studyCategory;
+
+    return query
+        .select(study.id.countDistinct())
+        .from(study)
+        .join(studyCategory).on(studyCategory.studyId.eq(study.id))
+        .where(
+            eqRecruitingStatus(recruitingStatus, study),
+            eqFeeCategory(feeCategory, study),
+            eqCategory(category, studyCategory),
+            eqIsOnline(isOnline, study)
         )
         .fetchOne();
   }
@@ -190,6 +308,14 @@ public class StudyQueryRepository {
       return null;
     }
     return studyCategory.category.in(categories);
+  }
+
+  private BooleanExpression eqCategory(Category category, QStudyCategory studyCategory) {
+    return category == null ? null : studyCategory.category.eq(category);
+  }
+
+  private BooleanExpression eqIsOnline(Boolean isOnline, QStudy study) {
+    return isOnline == null ? null : study.isOnline.eq(isOnline);
   }
 
   private BooleanExpression ltCursor(Long cursor, QStudy study) {
@@ -235,5 +361,47 @@ public class StudyQueryRepository {
         .join(study).on(study.id.eq(studyLike.studyId))
         .where(studyLike.memberId.eq(memberId))
         .fetchOne();
+  }
+
+  public List<Study> findRecruitingStudiesByCategories(List<Category> categories, int limit) {
+    QStudy study = QStudy.study;
+    QStudyCategory studyCategory = QStudyCategory.studyCategory;
+
+    return query
+        .select(study)
+        .from(study)
+        .join(studyCategory).on(studyCategory.studyId.eq(study.id))
+        .where(
+            studyCategory.category.in(categories),
+            study.recruitingStatus.eq(RecruitingStatus.RECRUITING)
+        )
+        .groupBy(study.id)
+        .orderBy(study.id.desc())
+        .limit(limit)
+        .fetch();
+  }
+
+  public List<Study> findPopularRecruitingStudies(List<Long> excludeIds, int limit) {
+    QStudy study = QStudy.study;
+    QStudyStats studyStats = QStudyStats.studyStats;
+
+    return query
+        .select(study)
+        .from(study)
+        .leftJoin(studyStats).on(studyStats.studyId.eq(study.id))
+        .where(
+            study.recruitingStatus.eq(RecruitingStatus.RECRUITING),
+            notInIds(excludeIds, study)
+        )
+        .orderBy(studyStats.likeCount.desc(), study.id.desc())
+        .limit(limit)
+        .fetch();
+  }
+
+  private BooleanExpression notInIds(List<Long> excludeIds, QStudy study) {
+    if (excludeIds == null || excludeIds.isEmpty()) {
+      return null;
+    }
+    return study.id.notIn(excludeIds);
   }
 }
