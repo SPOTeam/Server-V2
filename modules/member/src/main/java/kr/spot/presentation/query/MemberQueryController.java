@@ -10,7 +10,10 @@ import kr.spot.ApiResponse;
 import kr.spot.annotations.CurrentMember;
 import kr.spot.application.query.GetMemberInfoService;
 import kr.spot.code.status.SuccessStatus;
+import kr.spot.presentation.query.dto.response.GetMemberInfoResponse;
 import kr.spot.presentation.query.dto.response.GetMemberNameResponse;
+import kr.spot.presentation.query.dto.response.GetMemberPreferCategoryResponse;
+import kr.spot.presentation.query.dto.response.GetMemberPreferRegionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +38,28 @@ public class MemberQueryController {
   public ResponseEntity<ApiResponse<GetMemberNameResponse>> getMemberName(
       @CurrentMember @Parameter(hidden = true) Long memberId) {
     GetMemberNameResponse response = getMemberInfoService.getMemberName(memberId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
+  }
+
+  @GetMapping("/info")
+  public ResponseEntity<ApiResponse<GetMemberInfoResponse>> getMemberInfo(
+      @CurrentMember @Parameter(hidden = true) Long memberId) {
+    GetMemberInfoResponse response = getMemberInfoService.getMemberInfo(memberId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
+  }
+
+  @GetMapping("/prefer-categories")
+  public ResponseEntity<ApiResponse<GetMemberPreferCategoryResponse>> getMemberPreferCategories(
+      @CurrentMember @Parameter(hidden = true) Long memberId) {
+    GetMemberPreferCategoryResponse response = getMemberInfoService.getMemberPreferCategories(
+        memberId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
+  }
+
+  @GetMapping("/prefer-regions")
+  public ResponseEntity<ApiResponse<GetMemberPreferRegionResponse>> getMemberPreferRegions(
+      @CurrentMember @Parameter(hidden = true) Long memberId) {
+    GetMemberPreferRegionResponse response = getMemberInfoService.getMemberPreferRegions(memberId);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
   }
 }

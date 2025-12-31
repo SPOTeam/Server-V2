@@ -3,6 +3,7 @@ package kr.spot.study.infrastructure.jpa;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
 import kr.spot.study.domain.Study;
+import kr.spot.study.domain.enums.RecruitingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface StudyRepository extends JpaRepository<Study, Long> {
@@ -11,4 +12,6 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
     return findById(studyId)
         .orElseThrow(() -> new GeneralException(ErrorStatus._STUDY_NOT_FOUND));
   }
+
+  long countByLeaderIdAndRecruitingStatus(long leaderId, RecruitingStatus recruitingStatus);
 }

@@ -20,4 +20,9 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
   List<StudyMember> findAllByStudyIdAndStudyMemberStatusIn(Long studyId,
       List<StudyMemberStatus> studyMemberStatuses);
 
+  long countByMemberIdAndStudyMemberStatusIn(long memberId,
+      List<StudyMemberStatus> studyMemberStatuses);
+
+  long countByMemberIdAndStudyMemberStatus(long memberId, StudyMemberStatus studyMemberStatus);
+
 }
