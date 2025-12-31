@@ -109,6 +109,13 @@ public class GetMyStudyInfoService {
     return toCursorPage(rows, pageSize, totalElements);
   }
 
+  public GetStudyOverviewResponse getLikedStudies(long memberId, Long cursor, int size) {
+    final int pageSize = Math.min(size, MAX_PAGE_SIZE);
+    List<Study> rows = studyQueryRepository.findLikedStudies(memberId, cursor, pageSize + 1);
+    long totalElements = studyQueryRepository.countLikedStudies(memberId);
+    return toCursorPage(rows, pageSize, totalElements);
+  }
+
   private GetStudyOverviewResponse toCursorPage(List<Study> rows, int pageSize,
       Long totalElements) {
     boolean hasNext = rows.size() > pageSize;
@@ -138,12 +145,5 @@ public class GetMyStudyInfoService {
       preferredRegionCodes = List.of(category);
     }
     return preferredRegionCodes;
-  }
-
-  public GetStudyOverviewResponse getLikedStudies(long memberId, Long cursor, int size) {
-    final int pageSize = Math.min(size, MAX_PAGE_SIZE);
-    List<Study> rows = studyQueryRepository.findLikedStudies(memberId, cursor, pageSize + 1);
-    long totalElements = studyQueryRepository.countLikedStudies(memberId);
-    return toCursorPage(rows, pageSize, totalElements);
   }
 }
