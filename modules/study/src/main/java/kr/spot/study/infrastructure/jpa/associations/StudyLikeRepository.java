@@ -30,4 +30,7 @@ public interface StudyLikeRepository extends JpaRepository<StudyLike, Long> {
   @Modifying
   @Query(value = "DELETE FROM study_like WHERE member_id = :memberId", nativeQuery = true)
   void deleteAllByMemberId(@Param("memberId") long memberId);
+
+  @Query("SELECT sl.studyId FROM StudyLike sl WHERE sl.memberId = :memberId")
+  java.util.Set<Long> findStudyIdsByMemberId(@Param("memberId") long memberId);
 }

@@ -3,6 +3,7 @@ package kr.spot.study.application.query;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import kr.spot.ports.GetPreferredCategoryPort;
 import kr.spot.ports.GetPreferredRegionPort;
 import kr.spot.study.application.mapper.StudyDTOMapper;
@@ -12,6 +13,7 @@ import kr.spot.study.domain.enums.FeeCategory;
 import kr.spot.study.domain.enums.RecruitingStatus;
 import kr.spot.study.domain.enums.SortBy;
 import kr.spot.study.domain.enums.StudyMemberStatus;
+import kr.spot.study.infrastructure.jpa.associations.StudyLikeRepository;
 import kr.spot.study.infrastructure.jpa.querydsl.StudyQueryRepository;
 import kr.spot.study.presentation.query.dto.response.GetStudyOverviewResponse;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +30,10 @@ public class GetMyStudyInfoService {
   private final GetPreferredRegionPort getPreferredRegionPort;
   private final GetPreferredCategoryPort getPreferredCategoryPort;
   private final StudyQueryRepository studyQueryRepository;
+  private final StudyLikeRepository studyLikeRepository;
 
   public GetStudyOverviewResponse getMyStudyOverview(
-      Long viewerId,
+      long viewerId,
       StudyMemberStatus status,
       Long cursor,
       int size
@@ -47,7 +50,7 @@ public class GetMyStudyInfoService {
         viewerId,
         status
     );
-    return toCursorPage(rows, pageSize, totalElements);
+    return toCursorPage(rows, viewerId, pageSize, totalElements);
   }
 
   public GetStudyOverviewResponse getMyPreferredRegionStudies(
@@ -83,7 +86,7 @@ public class GetMyStudyInfoService {
         isOnline,
         filteredRegionCodes
     );
-    return toCursorPage(rows, pageSize, totalElements);
+    return toCursorPage(rows, viewerId, pageSize, totalElements);
   }
 
   public GetStudyOverviewResponse getMyPreferredCategoryStudies(
@@ -115,7 +118,7 @@ public class GetMyStudyInfoService {
         isOnline,
         preferredCategories
     );
-    return toCursorPage(rows, pageSize, totalElements);
+    return toCursorPage(rows, viewerId, pageSize, totalElements);
   }
 
   public GetStudyOverviewResponse getRecruitingStudies(
@@ -143,7 +146,7 @@ public class GetMyStudyInfoService {
         categories,
         isOnline
     );
-    return toCursorPage(rows, pageSize, totalElements);
+    return toCursorPage(rows, viewerId, pageSize, totalElements);
   }
 
   public GetStudyOverviewResponse getStudiesByCategory(
@@ -174,24 +177,25 @@ public class GetMyStudyInfoService {
         category,
         isOnline
     );
-    return toCursorPage(rows, pageSize, totalElements);
+    return toCursorPage(rows, viewerId, pageSize, totalElements);
   }
 
-  public GetStudyOverviewResponse getLikedStudies(long memberId, Long cursor, int size) {
+  public GetStudyOverviewResponse getLikedStudies(long viewerId, Long cursor, int size) {
     final int pageSize = Math.min(size, MAX_PAGE_SIZE);
-    List<Study> rows = studyQueryRepository.findLikedStudies(memberId, cursor, pageSize + 1);
-    long totalElements = studyQueryRepository.countLikedStudies(memberId);
-    return toCursorPage(rows, pageSize, totalElements);
+    List<Study> rows = studyQueryRepository.findLikedStudies(viewerId, cursor, pageSize + 1);
+    long totalElements = studyQueryRepository.countLikedStudies(viewerId);
+    return toCursorPage(rows, viewerId, pageSize, totalElements);
   }
 
-  public GetStudyOverviewResponse getRecommendedStudies(long memberId) {
+  public GetStudyOverviewResponse getRecommendedStudies(long viewerId) {
     final int recommendCount = 3;
 
-    List<Category> preferredCategories = getPreferredCategories(memberId);
+    List<Category> preferredCategories = getPreferredCategories(viewerId);
     List<Study> result = pickRandomStudiesFromPreferred(preferredCategories, recommendCount);
     fillWithPopularStudies(result, recommendCount);
 
-    return StudyDTOMapper.toDTO(result, false, null, (long) result.size());
+    Set<Long> likedStudyIds = studyLikeRepository.findStudyIdsByMemberId(viewerId);
+    return StudyDTOMapper.toDTO(result, likedStudyIds, false, null, (long) result.size());
   }
 
   private List<Category> getPreferredCategories(long memberId) {
@@ -229,12 +233,13 @@ public class GetMyStudyInfoService {
     result.addAll(popularStudies);
   }
 
-  private GetStudyOverviewResponse toCursorPage(List<Study> rows, int pageSize,
-      Long totalElements) {
+  private GetStudyOverviewResponse toCursorPage(List<Study> rows, long viewerId, int pageSize,
+      long totalElements) {
     boolean hasNext = rows.size() > pageSize;
     List<Study> pageContent = hasNext ? rows.subList(0, pageSize) : rows;
     Long nextCursor = hasNext ? pageContent.getLast().getId() : null;
-    return StudyDTOMapper.toDTO(pageContent, hasNext, nextCursor, totalElements);
+    Set<Long> likedStudyIds = studyLikeRepository.findStudyIdsByMemberId(viewerId);
+    return StudyDTOMapper.toDTO(pageContent, likedStudyIds, hasNext, nextCursor, totalElements);
   }
 
   private List<String> filterPreferredRegionCodes(List<String> regionCodes,
