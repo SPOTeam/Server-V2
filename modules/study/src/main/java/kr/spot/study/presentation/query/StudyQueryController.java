@@ -10,11 +10,14 @@ import kr.spot.ApiResponse;
 import kr.spot.annotations.CurrentMember;
 import kr.spot.code.status.SuccessStatus;
 import kr.spot.study.application.query.GetMyStudyInfoService;
+import kr.spot.study.application.query.GetStudyDetailService;
 import kr.spot.study.domain.enums.Category;
 import kr.spot.study.domain.enums.FeeCategory;
 import kr.spot.study.domain.enums.RecruitingStatus;
 import kr.spot.study.domain.enums.SortBy;
 import kr.spot.study.domain.enums.StudyMemberStatus;
+import kr.spot.study.presentation.query.dto.response.GetStudyInfoResponse;
+import kr.spot.study.presentation.query.dto.response.GetStudyMembersResponse;
 import kr.spot.study.presentation.query.dto.response.GetStudyOverviewResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +33,28 @@ import org.springframework.web.bind.annotation.RestController;
 public class StudyQueryController {
 
   private final GetMyStudyInfoService getMyStudyInfoService;
+  private final GetStudyDetailService getStudyDetailService;
+
+  @Operation(summary = "스터디 상세 정보 조회",
+      description = "스터디의 상세 정보를 조회합니다.")
+  @GetMapping("/info")
+  public ResponseEntity<ApiResponse<GetStudyInfoResponse>> getStudyInfo(
+      @RequestParam Long studyId,
+      @CurrentMember @Parameter(hidden = true) Long viewerId
+  ) {
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,
+        getStudyDetailService.getStudyInfo(studyId, viewerId)));
+  }
+
+  @Operation(summary = "스터디 멤버 조회",
+      description = "스터디의 멤버들을 조회합니다.")
+  @GetMapping("/members")
+  public ResponseEntity<ApiResponse<GetStudyMembersResponse>> getStudyMembers(
+      @RequestParam Long studyId
+  ) {
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,
+        getStudyDetailService.getStudyMembers(studyId)));
+  }
 
   @Operation(summary = "마이페이지 스터디 조회",
       description = "마이페이지에 필요한 스터디를 조회합니다.\n "
@@ -55,8 +80,8 @@ public class StudyQueryController {
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
   }
 
-  @Operation(summary = "추천하는 스터디 조회 - 구현 중",
-      description = "추천하는 스터디를 조회합니다. (page, size 파라미터로 페이징 처리 가능)")
+  @Operation(summary = "전공/진로학습 이건 어때요? 스터디 조회 - 구현 중",
+      description = "전공/진로학습 이건 어때요? 스터디를 조회합니다. (page, size 파라미터로 페이징 처리 가능)")
   @GetMapping("/recommended")
   public ResponseEntity<ApiResponse<GetStudyOverviewResponse>> getRecommendedStudies(
   ) {

@@ -8,7 +8,6 @@ import kr.spot.post.domain.vo.WriterInfo;
 import kr.spot.post.presentation.query.dto.PostDetailResponse;
 import kr.spot.post.presentation.query.dto.PostDetailResponse.CommentResponse;
 import kr.spot.post.presentation.query.dto.PostListResponse.PostItem;
-import kr.spot.post.presentation.query.dto.PostListResponse.WriterInfoResponse;
 import kr.spot.post.presentation.query.dto.PostStatsResponse;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -34,7 +33,6 @@ public final class PostResponseMapper {
         .isPinned(post.isPinned())
         .isOwner(post.isOwnedBy(viewerId))
         .isLiked(isLiked)
-        .writer(toDetailWriterInfoResponse(post.getWriterInfo()))
         .stats(toStatsResponse(stats, displayViewCount))
         .createdAt(post.getCreatedAt())
         .comments(toCommentResponses(comments, viewerId))
@@ -58,7 +56,6 @@ public final class PostResponseMapper {
         post.isPinned(),
         isLiked,
         toStatsResponse(stats),
-        toWriterInfoResponse(post.getWriterInfo()),
         post.getCreatedAt()
     );
   }
@@ -71,7 +68,6 @@ public final class PostResponseMapper {
         post.isPinned(),
         isLiked,
         toStatsResponse(stats),
-        toWriterInfoResponse(post.getWriterInfo()),
         post.getCreatedAt()
     );
   }
@@ -93,15 +89,9 @@ public final class PostResponseMapper {
     );
   }
 
-  private static WriterInfoResponse toWriterInfoResponse(WriterInfo writerInfo) {
-    return WriterInfoResponse.of(
-        writerInfo.getWriterId(),
-        writerInfo.getWriterName(),
-        writerInfo.getWriterProfileImageUrl()
-    );
-  }
 
-  private static PostDetailResponse.WriterInfoResponse toDetailWriterInfoResponse(WriterInfo writerInfo) {
+  private static PostDetailResponse.WriterInfoResponse toDetailWriterInfoResponse(
+      WriterInfo writerInfo) {
     return PostDetailResponse.WriterInfoResponse.of(
         writerInfo.getWriterId(),
         writerInfo.getWriterName(),
