@@ -28,4 +28,8 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
       """, nativeQuery = true)
   int hardDelete(@Param("postId") Long postId,
       @Param("memberId") Long memberId);
+
+  @Modifying
+  @Query(value = "DELETE FROM study_post_like WHERE member_id = :memberId", nativeQuery = true)
+  void deleteAllByMemberId(@Param("memberId") long memberId);
 }

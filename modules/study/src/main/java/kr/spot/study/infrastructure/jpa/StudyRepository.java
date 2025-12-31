@@ -14,4 +14,6 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
   }
 
   long countByLeaderIdAndRecruitingStatus(long leaderId, RecruitingStatus recruitingStatus);
+
+  boolean existsByLeaderId(long leaderId);
 }

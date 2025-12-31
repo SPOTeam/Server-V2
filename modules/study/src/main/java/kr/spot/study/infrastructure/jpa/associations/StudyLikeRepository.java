@@ -26,4 +26,8 @@ public interface StudyLikeRepository extends JpaRepository<StudyLike, Long> {
       """, nativeQuery = true)
   int hardDelete(@Param("studyId") long studyId,
       @Param("memberId") long memberId);
+
+  @Modifying
+  @Query(value = "DELETE FROM study_like WHERE member_id = :memberId", nativeQuery = true)
+  void deleteAllByMemberId(@Param("memberId") long memberId);
 }

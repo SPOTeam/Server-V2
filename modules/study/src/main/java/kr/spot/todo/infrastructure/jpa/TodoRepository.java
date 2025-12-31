@@ -11,4 +11,6 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
     return findById(todoId).orElseThrow(
         () -> new GeneralException(ErrorStatus._TODO_NOT_FOUND));
   }
+
+  void deleteByMemberId(long memberId);
 }

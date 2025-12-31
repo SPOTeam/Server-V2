@@ -65,4 +65,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
       throw new GeneralException(ErrorStatus._POST_NOT_FOUND);
     }
   }
+
+  void deleteByWriterInfoWriterId(long writerId);
 }
