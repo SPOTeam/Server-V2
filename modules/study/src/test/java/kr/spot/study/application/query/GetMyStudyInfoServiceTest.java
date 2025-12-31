@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.util.Collections;
@@ -304,6 +305,106 @@ class GetMyStudyInfoServiceTest {
       assertThat(response.content()).isEmpty();
       assertThat(response.hasNext()).isFalse();
       assertThat(response.nextCursor()).isNull();
+    }
+  }
+
+  @Nested
+  @DisplayName("추천 스터디 조회 (getRecommendedStudies)")
+  class GetRecommendedStudies {
+
+    private final long memberId = 1L;
+
+    @Test
+    @DisplayName("선호 카테고리 스터디가 3개 이상이면, 인기 스터디를 조회하지 않는다")
+    void should_not_fetch_popular_when_enough_preferred_studies() {
+      // given
+      List<String> preferredCategoryNames = List.of("SELF_STUDY", "CAREER");
+      List<Category> preferredCategories = List.of(Category.SELF_STUDY, Category.CAREER);
+      List<Study> candidates = createStudies(10);
+
+      given(getPreferredCategoryPort.get(memberId)).willReturn(preferredCategoryNames);
+      given(studyQueryRepository.findRecruitingStudiesByCategories(preferredCategories, 20))
+          .willReturn(candidates);
+
+      // when
+      GetStudyOverviewResponse response = getMyStudyInfoService.getRecommendedStudies(memberId);
+
+      // then
+      verify(getPreferredCategoryPort).get(memberId);
+      verify(studyQueryRepository).findRecruitingStudiesByCategories(preferredCategories, 20);
+      verify(studyQueryRepository, never()).findPopularRecruitingStudies(any(), anyInt());
+      assertThat(response.content()).hasSize(3);
+      assertThat(response.totalElements()).isEqualTo(3L);
+    }
+
+    @Test
+    @DisplayName("선호 카테고리 스터디가 3개 미만이면, 인기 스터디로 부족한 만큼 채운다")
+    void should_fill_with_popular_studies_when_not_enough_preferred() {
+      // given
+      List<String> preferredCategoryNames = List.of("SELF_STUDY");
+      List<Category> preferredCategories = List.of(Category.SELF_STUDY);
+      List<Study> preferredStudies = createStudies(1);
+      List<Study> popularStudies = createStudies(2);
+
+      given(getPreferredCategoryPort.get(memberId)).willReturn(preferredCategoryNames);
+      given(studyQueryRepository.findRecruitingStudiesByCategories(preferredCategories, 20))
+          .willReturn(preferredStudies);
+      given(studyQueryRepository.findPopularRecruitingStudies(
+          List.of(preferredStudies.getFirst().getId()), 2))
+          .willReturn(popularStudies);
+
+      // when
+      GetStudyOverviewResponse response = getMyStudyInfoService.getRecommendedStudies(memberId);
+
+      // then
+      verify(studyQueryRepository).findRecruitingStudiesByCategories(preferredCategories, 20);
+      verify(studyQueryRepository).findPopularRecruitingStudies(
+          List.of(preferredStudies.getFirst().getId()), 2);
+      assertThat(response.content()).hasSize(3);
+      assertThat(response.totalElements()).isEqualTo(3L);
+    }
+
+    @Test
+    @DisplayName("선호 카테고리가 없으면, 인기 스터디 3개를 반환한다")
+    void should_return_popular_studies_when_no_preferred_categories() {
+      // given
+      List<Study> popularStudies = createStudies(3);
+
+      given(getPreferredCategoryPort.get(memberId)).willReturn(Collections.emptyList());
+      given(studyQueryRepository.findPopularRecruitingStudies(Collections.emptyList(), 3))
+          .willReturn(popularStudies);
+
+      // when
+      GetStudyOverviewResponse response = getMyStudyInfoService.getRecommendedStudies(memberId);
+
+      // then
+      verify(getPreferredCategoryPort).get(memberId);
+      verify(studyQueryRepository).findPopularRecruitingStudies(Collections.emptyList(), 3);
+      assertThat(response.content()).hasSize(3);
+      assertThat(response.totalElements()).isEqualTo(3L);
+    }
+
+    @Test
+    @DisplayName("선호 카테고리 스터디와 인기 스터디 모두 없으면, 빈 결과를 반환한다")
+    void should_return_empty_when_no_studies_at_all() {
+      // given
+      List<String> preferredCategoryNames = List.of("SELF_STUDY");
+      List<Category> preferredCategories = List.of(Category.SELF_STUDY);
+
+      given(getPreferredCategoryPort.get(memberId)).willReturn(preferredCategoryNames);
+      given(studyQueryRepository.findRecruitingStudiesByCategories(preferredCategories, 20))
+          .willReturn(Collections.emptyList());
+      given(studyQueryRepository.findPopularRecruitingStudies(Collections.emptyList(), 3))
+          .willReturn(Collections.emptyList());
+
+      // when
+      GetStudyOverviewResponse response = getMyStudyInfoService.getRecommendedStudies(memberId);
+
+      // then
+      verify(studyQueryRepository).findRecruitingStudiesByCategories(preferredCategories, 20);
+      verify(studyQueryRepository).findPopularRecruitingStudies(Collections.emptyList(), 3);
+      assertThat(response.content()).isEmpty();
+      assertThat(response.totalElements()).isEqualTo(0L);
     }
   }
 }

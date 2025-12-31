@@ -236,4 +236,46 @@ public class StudyQueryRepository {
         .where(studyLike.memberId.eq(memberId))
         .fetchOne();
   }
+
+  public List<Study> findRecruitingStudiesByCategories(List<Category> categories, int limit) {
+    QStudy study = QStudy.study;
+    QStudyCategory studyCategory = QStudyCategory.studyCategory;
+
+    return query
+        .select(study)
+        .from(study)
+        .join(studyCategory).on(studyCategory.studyId.eq(study.id))
+        .where(
+            studyCategory.category.in(categories),
+            study.recruitingStatus.eq(RecruitingStatus.RECRUITING)
+        )
+        .groupBy(study.id)
+        .orderBy(study.id.desc())
+        .limit(limit)
+        .fetch();
+  }
+
+  public List<Study> findPopularRecruitingStudies(List<Long> excludeIds, int limit) {
+    QStudy study = QStudy.study;
+    QStudyStats studyStats = QStudyStats.studyStats;
+
+    return query
+        .select(study)
+        .from(study)
+        .leftJoin(studyStats).on(studyStats.studyId.eq(study.id))
+        .where(
+            study.recruitingStatus.eq(RecruitingStatus.RECRUITING),
+            notInIds(excludeIds, study)
+        )
+        .orderBy(studyStats.likeCount.desc(), study.id.desc())
+        .limit(limit)
+        .fetch();
+  }
+
+  private BooleanExpression notInIds(List<Long> excludeIds, QStudy study) {
+    if (excludeIds == null || excludeIds.isEmpty()) {
+      return null;
+    }
+    return study.id.notIn(excludeIds);
+  }
 }

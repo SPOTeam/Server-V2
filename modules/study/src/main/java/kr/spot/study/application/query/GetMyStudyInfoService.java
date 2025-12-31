@@ -1,5 +1,7 @@
 package kr.spot.study.application.query;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import kr.spot.ports.GetPreferredCategoryPort;
 import kr.spot.ports.GetPreferredRegionPort;
@@ -114,6 +116,51 @@ public class GetMyStudyInfoService {
     List<Study> rows = studyQueryRepository.findLikedStudies(memberId, cursor, pageSize + 1);
     long totalElements = studyQueryRepository.countLikedStudies(memberId);
     return toCursorPage(rows, pageSize, totalElements);
+  }
+
+  public GetStudyOverviewResponse getRecommendedStudies(long memberId) {
+    final int recommendCount = 3;
+
+    List<Category> preferredCategories = getPreferredCategories(memberId);
+    List<Study> result = pickRandomStudiesFromPreferred(preferredCategories, recommendCount);
+    fillWithPopularStudies(result, recommendCount);
+
+    return StudyDTOMapper.toDTO(result, false, null, (long) result.size());
+  }
+
+  private List<Category> getPreferredCategories(long memberId) {
+    return getPreferredCategoryPort.get(memberId)
+        .stream()
+        .map(Category::fromString)
+        .toList();
+  }
+
+  private List<Study> pickRandomStudiesFromPreferred(List<Category> categories, int count) {
+    if (categories.isEmpty()) {
+      return new ArrayList<>();
+    }
+
+    final int fetchLimit = 20;
+    List<Study> candidates = studyQueryRepository.findRecruitingStudiesByCategories(
+        categories, fetchLimit);
+
+    List<Study> shuffled = new ArrayList<>(candidates);
+    Collections.shuffle(shuffled);
+
+    return new ArrayList<>(shuffled.stream().limit(count).toList());
+  }
+
+  private void fillWithPopularStudies(List<Study> result, int targetCount) {
+    if (result.size() >= targetCount) {
+      return;
+    }
+
+    List<Long> excludeIds = result.stream().map(Study::getId).toList();
+    int remaining = targetCount - result.size();
+
+    List<Study> popularStudies = studyQueryRepository.findPopularRecruitingStudies(
+        excludeIds, remaining);
+    result.addAll(popularStudies);
   }
 
   private GetStudyOverviewResponse toCursorPage(List<Study> rows, int pageSize,
