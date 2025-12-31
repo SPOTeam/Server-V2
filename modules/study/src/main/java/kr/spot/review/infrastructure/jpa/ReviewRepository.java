@@ -17,4 +17,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
       throw new GeneralException(ErrorStatus._REVIEW_NOT_FOUND);
     }
   }
+
+  void deleteByWriterInfoWriterId(long writerId);
 }

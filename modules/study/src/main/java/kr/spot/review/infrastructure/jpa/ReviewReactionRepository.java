@@ -22,4 +22,8 @@ public interface ReviewReactionRepository extends JpaRepository<ReviewReaction, 
   int hardDelete(@Param("reviewId") Long reviewId,
       @Param("memberId") Long memberId,
       @Param("reaction") String reaction);
+
+  @Modifying
+  @Query(value = "DELETE FROM review_reaction WHERE member_id = :memberId", nativeQuery = true)
+  void deleteAllByMemberId(@Param("memberId") long memberId);
 }

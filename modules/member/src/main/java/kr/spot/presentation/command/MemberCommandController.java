@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.spot.ApiResponse;
 import kr.spot.annotations.CurrentMember;
+import kr.spot.application.command.MemberWithdrawService;
 import kr.spot.application.command.RegisterMemberInfoService;
 import kr.spot.application.command.RegisterPreferredCategoryService;
 import kr.spot.application.command.RegisterPreferredRegionService;
@@ -17,6 +18,7 @@ import kr.spot.presentation.command.dto.request.RegisterPreferredRegionRequest;
 import kr.spot.presentation.command.dto.request.UpdateMemberNameRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +33,7 @@ public class MemberCommandController {
   private final RegisterPreferredCategoryService registerPreferredCategoryService;
   private final RegisterPreferredRegionService registerPreferredRegionService;
   private final RegisterMemberInfoService registerMemberInfoService;
+  private final MemberWithdrawService memberWithdrawService;
 
   @Operation(summary = "선호 카테고리 등록", description = "회원의 선호 카테고리를 등록합니다. 한 번 저장 후 다시 호출하면 덮어씁니다. (이전 데이터 삭제)")
   @ApiResponses({
@@ -82,5 +85,22 @@ public class MemberCommandController {
   ) {
     registerMemberInfoService.updateMemberName(memberId, request);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._NO_CONTENT));
+  }
+
+  @Operation(summary = "회원 탈퇴", description = """
+      ## 회원 탈퇴를 수행합니다.
+      - 회원 정보 및 관련 데이터가 모두 삭제됩니다.
+      - 클라이언트에서도 저장된 토큰을 삭제해주세요.
+      """)
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탈퇴 성공"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자입니다.", content = @Content(schema = @Schema(implementation = kr.spot.ApiResponse.class)))
+  })
+  @DeleteMapping("/me")
+  public ResponseEntity<ApiResponse<Void>> withdraw(
+      @CurrentMember @Parameter(hidden = true) long memberId
+  ) {
+    memberWithdrawService.withdraw(memberId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
   }
 }
