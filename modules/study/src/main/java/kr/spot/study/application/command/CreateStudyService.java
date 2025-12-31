@@ -40,7 +40,7 @@ public class CreateStudyService {
   public void createStudy(CreateStudyRequest request, Long leaderId, MultipartFile imageFile) {
     long studyId = idGenerator.nextId();
     Study study = Study.of(studyId, leaderId, request.name(), request.maxMembers(),
-        Fee.of(request.hasFee(), request.amount()), request.description());
+        Fee.of(request.hasFee(), request.amount()), null, request.description(), request.isOnline());
     StudyStats studyStats = StudyStats.of(studyId);
     StudyMember studyMember = StudyMember.create(idGenerator.nextId(), studyId, leaderId);
 
