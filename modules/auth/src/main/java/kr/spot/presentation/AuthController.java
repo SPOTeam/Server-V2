@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.spot.ApiResponse;
+import kr.spot.annotations.CurrentMember;
+import kr.spot.application.token.LogoutService;
 import kr.spot.application.token.TokenReissueService;
 import kr.spot.code.status.SuccessStatus;
 import kr.spot.presentation.command.dto.TokenDTO;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private final TokenReissueService tokenReissueService;
+  private final LogoutService logoutService;
 
   @Operation(summary = "토큰 재발급", description = """
       ## 리프레시 토큰을 통해 새로운 액세스 토큰과 리프레시 토큰을 발급받습니다.
@@ -44,5 +47,21 @@ public class AuthController {
   ) {
     return ResponseEntity.ok(
         ApiResponse.onSuccess(SuccessStatus._OK, tokenReissueService.reissueToken(refreshToken)));
+  }
+
+  @Operation(summary = "로그아웃", description = """
+      ## 로그아웃을 수행합니다.
+      - 서버에 저장된 리프레시 토큰을 삭제합니다.
+      - 액세스 토큰은 만료될 때까지 유효하므로, 클라이언트에서도 토큰을 삭제해주세요.
+      """)
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK"),
+  })
+  @PostMapping("/logout")
+  public ResponseEntity<ApiResponse<Void>> logout(
+      @CurrentMember long memberId
+  ) {
+    logoutService.logout(memberId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
   }
 }
