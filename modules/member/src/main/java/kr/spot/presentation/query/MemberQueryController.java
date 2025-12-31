@@ -41,6 +41,7 @@ public class MemberQueryController {
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
   }
 
+  @Operation(summary = "[마이페이지] 회원 정보 조회", description = "현재 로그인한 회원의 정보를 조회합니다.")
   @GetMapping("/info")
   public ResponseEntity<ApiResponse<GetMemberInfoResponse>> getMemberInfo(
       @CurrentMember @Parameter(hidden = true) Long memberId) {
@@ -48,6 +49,7 @@ public class MemberQueryController {
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
   }
 
+  @Operation(summary = "회원 선호 카테고리 조회", description = "현재 로그인한 회원의 선호 카테고리를 조회합니다.")
   @GetMapping("/prefer-categories")
   public ResponseEntity<ApiResponse<GetMemberPreferCategoryResponse>> getMemberPreferCategories(
       @CurrentMember @Parameter(hidden = true) Long memberId) {
@@ -56,6 +58,7 @@ public class MemberQueryController {
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
   }
 
+  @Operation(summary = "회원 선호 지역 조회", description = "현재 로그인한 회원의 선호 지역을 조회합니다.")
   @GetMapping("/prefer-regions")
   public ResponseEntity<ApiResponse<GetMemberPreferRegionResponse>> getMemberPreferRegions(
       @CurrentMember @Parameter(hidden = true) Long memberId) {
