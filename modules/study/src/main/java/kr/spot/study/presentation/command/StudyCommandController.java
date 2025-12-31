@@ -13,12 +13,15 @@ import kr.spot.study.application.command.CreateStudyService;
 import kr.spot.study.presentation.command.dto.request.CreateStudyRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Tag(name = "스터디")
 @RestController
 @RequestMapping("/api/studies")
 @RequiredArgsConstructor
@@ -26,7 +29,6 @@ public class StudyCommandController {
 
   private final CreateStudyService createStudyService;
 
-  @Tag(name = "스터디")
   @Operation(summary = "스터디 생성", description =
       "새로운 스터디를 생성합니다. 요청 정보는 `multipart/form-data` 형식으로 보내야 하며, 이미지 파일은 선택 사항입니다."
           + "request는 application/json 형식으로 보내야 합니다.")
@@ -48,5 +50,21 @@ public class StudyCommandController {
       @RequestPart(required = false) MultipartFile imageFile) {
     createStudyService.createStudy(request, memberId, imageFile);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._CREATED));
+  }
+
+  @PostMapping("/{studyId}/like")
+  public ResponseEntity<ApiResponse<Void>> likeStudy(
+      @PathVariable Long studyId,
+      @CurrentMember @Parameter(hidden = true) Long memberId
+  ) {
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
+  }
+
+  @DeleteMapping("/{studyId}/unlike")
+  public ResponseEntity<ApiResponse<Void>> unlikeStudy(
+      @PathVariable Long studyId,
+      @CurrentMember @Parameter(hidden = true) Long memberId
+  ) {
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
   }
 }
