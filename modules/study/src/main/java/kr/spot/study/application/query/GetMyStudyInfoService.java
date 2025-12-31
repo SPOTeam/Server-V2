@@ -51,62 +51,128 @@ public class GetMyStudyInfoService {
   }
 
   public GetStudyOverviewResponse getMyPreferredRegionStudies(
-      Long viewerId,
+      long viewerId,
       RecruitingStatus recruitingStatus,
       FeeCategory feeCategory,
       List<Category> categories,
+      Boolean isOnline,
       SortBy sortBy,
       Long cursor,
-      Integer size,
+      int size,
       List<String> regionCodes
   ) {
     final int pageSize = Math.min(size, MAX_PAGE_SIZE);
     List<String> preferredRegionCodes = getPreferredRegionPort.get(viewerId);
+    List<String> filteredRegionCodes = filterPreferredRegionCodes(regionCodes, preferredRegionCodes);
 
     List<Study> rows = studyQueryRepository.findMyPreferredRegionStudies(
         recruitingStatus,
         feeCategory,
         categories,
+        isOnline,
         sortBy,
         cursor,
         pageSize + 1,
-        filterPreferredRegionCodes(regionCodes, preferredRegionCodes)
+        filteredRegionCodes
     );
 
     long totalElements = studyQueryRepository.countMyPreferredRegionStudies(
         recruitingStatus,
         feeCategory,
         categories,
-        filterPreferredRegionCodes(regionCodes, preferredRegionCodes)
+        isOnline,
+        filteredRegionCodes
     );
     return toCursorPage(rows, pageSize, totalElements);
   }
 
   public GetStudyOverviewResponse getMyPreferredCategoryStudies(
-      Long viewerId,
+      long viewerId,
       Category category,
       RecruitingStatus recruitingStatus,
       FeeCategory feeCategory,
+      Boolean isOnline,
       SortBy sortBy,
       Long cursor,
-      Integer size
+      int size
   ) {
     final int pageSize = Math.min(size, MAX_PAGE_SIZE);
-    List<Category> preferredRegionCodes = getCategories(viewerId, category);
+    List<Category> preferredCategories = getCategories(viewerId, category);
 
     List<Study> rows = studyQueryRepository.findMyPreferredCategoryStudies(
         recruitingStatus,
         feeCategory,
+        isOnline,
         sortBy,
         cursor,
         pageSize + 1,
-        preferredRegionCodes
+        preferredCategories
     );
 
     long totalElements = studyQueryRepository.countMyPreferredCategoryStudies(
         recruitingStatus,
         feeCategory,
-        preferredRegionCodes
+        isOnline,
+        preferredCategories
+    );
+    return toCursorPage(rows, pageSize, totalElements);
+  }
+
+  public GetStudyOverviewResponse getRecruitingStudies(
+      long viewerId,
+      FeeCategory feeCategory,
+      List<Category> categories,
+      Boolean isOnline,
+      SortBy sortBy,
+      Long cursor,
+      int size
+  ) {
+    final int pageSize = Math.min(size, MAX_PAGE_SIZE);
+
+    List<Study> rows = studyQueryRepository.findRecruitingStudies(
+        feeCategory,
+        categories,
+        isOnline,
+        sortBy,
+        cursor,
+        pageSize + 1
+    );
+
+    long totalElements = studyQueryRepository.countRecruitingStudies(
+        feeCategory,
+        categories,
+        isOnline
+    );
+    return toCursorPage(rows, pageSize, totalElements);
+  }
+
+  public GetStudyOverviewResponse getStudiesByCategory(
+      long viewerId,
+      RecruitingStatus recruitingStatus,
+      FeeCategory feeCategory,
+      Category category,
+      Boolean isOnline,
+      SortBy sortBy,
+      Long cursor,
+      int size
+  ) {
+    final int pageSize = Math.min(size, MAX_PAGE_SIZE);
+
+    List<Study> rows = studyQueryRepository.findStudiesByCategory(
+        recruitingStatus,
+        feeCategory,
+        category,
+        isOnline,
+        sortBy,
+        cursor,
+        pageSize + 1
+    );
+
+    long totalElements = studyQueryRepository.countStudiesByCategory(
+        recruitingStatus,
+        feeCategory,
+        category,
+        isOnline
     );
     return toCursorPage(rows, pageSize, totalElements);
   }

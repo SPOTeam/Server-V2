@@ -145,7 +145,7 @@ class GetMyStudyInfoServiceTest {
   @DisplayName("내 관심 지역 스터디 목록 조회 (getMyPreferredRegionStudies)")
   class GetMyPreferredRegionStudies {
 
-    private final Long viewerId = 1L;
+    private final long viewerId = 1L;
     private final int pageSize = 10;
 
     @Test
@@ -158,23 +158,20 @@ class GetMyStudyInfoServiceTest {
 
       given(getPreferredRegionPort.get(viewerId)).willReturn(preferredRegions);
       given(studyQueryRepository.findMyPreferredRegionStudies(any(), any(), any(), any(), any(),
-          anyInt(),
-          eq(preferredRegions)))
+          any(), anyInt(), eq(preferredRegions)))
           .willReturn(studies);
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyPreferredRegionStudies(
           viewerId, RecruitingStatus.RECRUITING, FeeCategory.ABOVE_50K, Collections.emptyList(),
-          SortBy.HITS,
-          null, pageSize, Collections.emptyList()
+          null, SortBy.HITS, null, pageSize, Collections.emptyList()
       );
 
       // then
       verify(getPreferredRegionPort).get(viewerId);
       verify(studyQueryRepository).findMyPreferredRegionStudies(
           eq(RecruitingStatus.RECRUITING), eq(FeeCategory.ABOVE_50K), eq(Collections.emptyList()),
-          eq(SortBy.HITS),
-          eq(null), eq(pageSize + 1), eq(preferredRegions)
+          eq(null), eq(SortBy.HITS), eq(null), eq(pageSize + 1), eq(preferredRegions)
       );
       assertThat(response.content()).hasSize(pageSize);
       assertThat(response.hasNext()).isTrue();
@@ -192,21 +189,19 @@ class GetMyStudyInfoServiceTest {
 
       given(getPreferredRegionPort.get(viewerId)).willReturn(preferredRegions);
       given(studyQueryRepository.findMyPreferredRegionStudies(any(), any(), any(), any(), any(),
-          anyInt(),
-          eq(expectedRegions)))
+          any(), anyInt(), eq(expectedRegions)))
           .willReturn(studies);
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyPreferredRegionStudies(
           viewerId, RecruitingStatus.RECRUITING, FeeCategory.ABOVE_50K, Collections.emptyList(),
-          SortBy.HITS,
-          null, pageSize, filterRegions
+          null, SortBy.HITS, null, pageSize, filterRegions
       );
 
       // then
       verify(getPreferredRegionPort).get(viewerId);
       verify(studyQueryRepository).findMyPreferredRegionStudies(
-          any(), any(), any(), any(), any(), eq(pageSize + 1), eq(expectedRegions)
+          any(), any(), any(), any(), any(), any(), eq(pageSize + 1), eq(expectedRegions)
       );
       assertThat(response.content()).hasSize(5);
       assertThat(response.hasNext()).isFalse();
@@ -218,21 +213,19 @@ class GetMyStudyInfoServiceTest {
       // given
       given(getPreferredRegionPort.get(viewerId)).willReturn(Collections.emptyList());
       given(studyQueryRepository.findMyPreferredRegionStudies(any(), any(), any(), any(), any(),
-          anyInt(),
-          eq(Collections.emptyList())))
+          any(), anyInt(), eq(Collections.emptyList())))
           .willReturn(Collections.emptyList());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyPreferredRegionStudies(
           viewerId, RecruitingStatus.RECRUITING, FeeCategory.ABOVE_50K, Collections.emptyList(),
-          SortBy.HITS,
-          null, pageSize, Collections.emptyList()
+          null, SortBy.HITS, null, pageSize, Collections.emptyList()
       );
 
       // then
       verify(getPreferredRegionPort).get(viewerId);
       verify(studyQueryRepository).findMyPreferredRegionStudies(
-          any(), any(), any(), any(), any(), eq(pageSize + 1), eq(Collections.emptyList())
+          any(), any(), any(), any(), any(), any(), eq(pageSize + 1), eq(Collections.emptyList())
       );
       assertThat(response.content()).isEmpty();
       assertThat(response.hasNext()).isFalse();
@@ -244,7 +237,7 @@ class GetMyStudyInfoServiceTest {
   @DisplayName("내 관심 카테고리 스터디 목록 조회 (getMyPreferredCategoryStudies)")
   class GetMyPreferredCategoryStudies {
 
-    private final Long viewerId = 1L;
+    private final long viewerId = 1L;
     private final int pageSize = 10;
 
     @Test
@@ -257,23 +250,21 @@ class GetMyStudyInfoServiceTest {
       Long expectedNextCursor = studies.get(pageSize - 1).getId();
 
       given(getPreferredCategoryPort.get(viewerId)).willReturn(preferredCategoryName);
-      given(
-          studyQueryRepository.findMyPreferredCategoryStudies(any(), any(), any(), any(), anyInt(),
-              eq(preferredCategory)))
+      given(studyQueryRepository.findMyPreferredCategoryStudies(any(), any(), any(), any(), any(),
+          anyInt(), eq(preferredCategory)))
           .willReturn(studies);
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyPreferredCategoryStudies(
           viewerId, null, RecruitingStatus.RECRUITING, FeeCategory.ABOVE_50K,
-          SortBy.HITS, null, pageSize
+          null, SortBy.HITS, null, pageSize
       );
 
       // then
       verify(getPreferredCategoryPort).get(viewerId);
       verify(studyQueryRepository).findMyPreferredCategoryStudies(
-          eq(RecruitingStatus.RECRUITING), eq(FeeCategory.ABOVE_50K), eq(SortBy.HITS),
-          eq(null), eq(pageSize + 1),
-          eq(List.of(Category.SELF_STUDY, Category.CAREER))
+          eq(RecruitingStatus.RECRUITING), eq(FeeCategory.ABOVE_50K), eq(null), eq(SortBy.HITS),
+          eq(null), eq(pageSize + 1), eq(preferredCategory)
       );
       assertThat(response.content()).hasSize(pageSize);
       assertThat(response.hasNext()).isTrue();
@@ -286,21 +277,20 @@ class GetMyStudyInfoServiceTest {
     void should_return_empty_when_no_preferred_regions() {
       // given
       given(getPreferredCategoryPort.get(viewerId)).willReturn(Collections.emptyList());
-      given(
-          studyQueryRepository.findMyPreferredCategoryStudies(any(), any(), any(), any(), anyInt(),
-              eq(Collections.emptyList())))
+      given(studyQueryRepository.findMyPreferredCategoryStudies(any(), any(), any(), any(), any(),
+          anyInt(), eq(Collections.emptyList())))
           .willReturn(Collections.emptyList());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyPreferredCategoryStudies(
           viewerId, null, RecruitingStatus.RECRUITING, FeeCategory.ABOVE_50K,
-          SortBy.HITS, null, pageSize
+          null, SortBy.HITS, null, pageSize
       );
 
       // then
       verify(getPreferredCategoryPort).get(viewerId);
       verify(studyQueryRepository).findMyPreferredCategoryStudies(
-          any(), any(), any(), any(), eq(pageSize + 1), eq(Collections.emptyList())
+          any(), any(), any(), any(), any(), eq(pageSize + 1), eq(Collections.emptyList())
       );
       assertThat(response.content()).isEmpty();
       assertThat(response.hasNext()).isFalse();
