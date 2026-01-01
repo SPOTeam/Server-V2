@@ -39,7 +39,7 @@ public class ManageReviewService {
         imageUrl);
 
     Review review = Review.of(idGenerator.nextId(), studyId, writerInfo, content,
-        request.isPrivateReview());
+        request.isPrivate());
     reviewRepository.save(review);
   }
 
