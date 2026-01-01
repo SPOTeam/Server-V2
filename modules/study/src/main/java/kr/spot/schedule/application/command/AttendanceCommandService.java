@@ -59,6 +59,13 @@ public class AttendanceCommandService {
 
     Schedule schedule = scheduleRepository.getById(scheduleId);
     schedule.stopAttendance(studyId);
+
+    markAbsentForUndecidedAttendances(scheduleId);
+  }
+
+  private void markAbsentForUndecidedAttendances(long scheduleId) {
+    List<Attendance> attendances = attendanceRepository.findAllByScheduleId(scheduleId);
+    attendances.forEach(Attendance::markAbsentIfUndecided);
   }
 
   public void checkAttendance(String encryptedToken, long memberId) {
