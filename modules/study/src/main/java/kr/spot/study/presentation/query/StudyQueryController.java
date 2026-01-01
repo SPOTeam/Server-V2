@@ -12,13 +12,13 @@ import kr.spot.study.presentation.query.dto.response.GetStudyMembersResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "스터디 조회")
 @RestController
-@RequestMapping("/api/studies")
+@RequestMapping("/api/studies/{studyId}")
 @RequiredArgsConstructor
 public class StudyQueryController {
 
@@ -28,7 +28,7 @@ public class StudyQueryController {
       description = "스터디의 상세 정보를 조회합니다.")
   @GetMapping("/info")
   public ResponseEntity<ApiResponse<GetStudyInfoResponse>> getStudyInfo(
-      @RequestParam Long studyId,
+      @PathVariable Long studyId,
       @CurrentMember @Parameter(hidden = true) Long viewerId
   ) {
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,
@@ -39,7 +39,7 @@ public class StudyQueryController {
       description = "스터디의 멤버들을 조회합니다.")
   @GetMapping("/members")
   public ResponseEntity<ApiResponse<GetStudyMembersResponse>> getStudyMembers(
-      @RequestParam Long studyId
+      @PathVariable Long studyId
   ) {
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,
         getStudyDetailService.getStudyMembers(studyId)));
