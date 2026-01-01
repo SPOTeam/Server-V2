@@ -37,7 +37,7 @@ public class TodoQueryController {
   @GetMapping("/members/{memberId}")
   public ResponseEntity<ApiResponse<GetTodoListResponse>> getTodosByDate(
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
-      @PathVariable @Parameter(hidden = true) Long memberId,
+      @PathVariable Long memberId,
       @Parameter(description = "조회할 날짜 (ISO 8601 표준)", example = "2025-01-15")
       @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
     GetTodoListResponse response = getTodoService.getTodosByDate(studyId, memberId, date);
