@@ -87,6 +87,14 @@ public class JwtTokenProvider implements TokenProvider {
     return claims.get(MEMBER_ID, Long.class);
   }
 
+  public TokenDTO createTestToken(final Long memberId) {
+    Date now = new Date();
+    long oneYearInMillis = 365L * 24 * 60 * 60 * 1000;
+    String accessToken = generateToken(memberId, now, oneYearInMillis, ACCESS);
+    String refreshToken = generateToken(memberId, now, oneYearInMillis, REFRESH);
+    return TokenDTO.of(accessToken, refreshToken);
+  }
+
   private Claims getClaims(final String token) {
     return Jwts.parserBuilder()
         .setSigningKey(Keys.hmacShaKeyFor(JWT_SECRET_KEY.getBytes()))
