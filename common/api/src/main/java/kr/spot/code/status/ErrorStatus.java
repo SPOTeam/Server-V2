@@ -50,6 +50,7 @@ public enum ErrorStatus implements BaseErrorCode {
   _STUDY_ALREADY_APPLIED(400, "STUDY4006", "이미 해당 스터디에 지원한 상태입니다."),
   _STUDY_ACCESS_DENIED(403, "STUDY4032", "스터디에 접근할 권한이 없습니다."),
   _INVALID_STUDY_ACCESS(403, "STUDY4033", "유효하지 않은 스터디 접근입니다."),
+  _STUDY_IS_FULL(400, "STUDY4007", "스터디 정원이 가득 찼습니다."),
 
   // 게시글 관련
   _POST_NOT_FOUND(404, "POST404", "게시글을 찾을 수 없습니다."),
