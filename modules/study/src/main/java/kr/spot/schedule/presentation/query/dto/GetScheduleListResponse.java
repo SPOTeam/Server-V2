@@ -13,14 +13,14 @@ public record GetScheduleListResponse(
   }
 
   public record ScheduleResponse(
-      long scheduleId,
+      Long scheduleId,
       String title,
       LocalDateTime startAt,
       LocalDateTime endAt,
       boolean isNow
   ) {
 
-    public static ScheduleResponse from(long scheduleId, String title,
+    public static ScheduleResponse from(Long scheduleId, String title,
         LocalDateTime startAt, LocalDateTime endAt, boolean isNow) {
       return new ScheduleResponse(scheduleId, title, startAt, endAt, isNow);
     }

@@ -82,6 +82,7 @@ public class GetStudyDetailService {
   private GetStudyInfoResponse toStudyInfoResponse(Study study, List<Category> categories,
       Statistics statistics) {
     return GetStudyInfoResponse.of(
+        study.getId(),
         study.getName(),
         study.getDescription(),
         study.getImageUrl(),
