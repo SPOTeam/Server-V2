@@ -6,7 +6,7 @@ public record GetReviewListResponse(
     List<ReviewResponse> reviews,
     boolean hasNext,
     Long nextCursor,
-    Long totalElements
+    long totalElements
 ) {
 
   public record ReviewResponse(
@@ -55,14 +55,14 @@ public record GetReviewListResponse(
   }
 
   public record ReactionCountResponse(
-      Long fireCount,
-      Long heartCount,
-      Long starCount,
-      Long smileCount
+      long fireCount,
+      long heartCount,
+      long starCount,
+      long smileCount
   ) {
 
-    public static ReactionCountResponse from(Long fireCount, Long heartCount, Long starCount,
-        Long smileCount) {
+    public static ReactionCountResponse from(long fireCount, long heartCount, long starCount,
+        long smileCount) {
       return new ReactionCountResponse(fireCount, heartCount, starCount, smileCount);
     }
   }

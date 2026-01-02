@@ -3,7 +3,7 @@ package kr.spot.presentation.query.dto.response;
 import kr.spot.domain.enums.LoginType;
 
 public record GetMemberInfoResponse(
-    long memberId,
+    Long memberId,
     String nickname,
     String profileImageUrl,
     LoginType loginType,

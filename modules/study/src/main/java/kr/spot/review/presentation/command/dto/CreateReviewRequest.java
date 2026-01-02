@@ -7,7 +7,4 @@ public record CreateReviewRequest(
     Boolean isPrivate
 ) {
 
-  public boolean isPrivateReview() {
-    return Boolean.TRUE.equals(isPrivate);
-  }
 }

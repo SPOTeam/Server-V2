@@ -64,7 +64,7 @@ public class ScheduleQueryRepository {
         .selectFrom(schedule)
         .where(
             schedule.studyId.eq(studyId),
-            schedule.startAt.goe(now)
+            schedule.endAt.goe(now)
         )
         .orderBy(schedule.startAt.asc())
         .limit(limit)

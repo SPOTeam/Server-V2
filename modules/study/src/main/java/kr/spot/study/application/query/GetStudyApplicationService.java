@@ -46,6 +46,7 @@ public class GetStudyApplicationService {
     );
   }
 
+  @Deprecated(forRemoval = true)
   public GetAppliesResponse getStudyApplications(Long studyId, Long requesterId) {
 
     studyAccessValidator.validateStudyLeader(studyId, requesterId);

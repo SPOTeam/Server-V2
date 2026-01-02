@@ -40,7 +40,8 @@ public class StudyApplyQueryController {
         getStudyApplicationService.getMyAppliedStudy(memberId)));
   }
 
-  @Operation(summary = "스터디 신청 내역 조회", description = "특정 스터디의 신청 내역을 조회합니다. (스터디장 권한)")
+  @Deprecated
+  @Operation(summary = "[사용 X] 스터디 신청 내역 조회", description = "특정 스터디의 신청 내역을 조회합니다. (스터디장 권한)")
   @ApiResponses({
       @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = GetAppliesResponse.class)))
   })

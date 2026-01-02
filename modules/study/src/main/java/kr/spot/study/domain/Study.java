@@ -91,9 +91,23 @@ public class Study extends BaseEntity {
   }
 
   public void processApplication(StudyMember application, Long requesterId, Decision decision) {
+    validateIsFull();
     validateIsStudyOwner(requesterId);
     validateIsValidStatusToProcessApply(application);
     application.decide(decision);
+    increaseMemberCountIfApproved(decision);
+  }
+
+  private void validateIsFull() {
+    if (this.currentMembers >= this.maxMembers) {
+      throw new GeneralException(ErrorStatus._STUDY_IS_FULL);
+    }
+  }
+
+  private void increaseMemberCountIfApproved(Decision decision) {
+    if (decision == Decision.APPROVE) {
+      this.currentMembers += 1;
+    }
   }
 
   public void validateIsStudyOwner(Long requesterId) {

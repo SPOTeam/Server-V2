@@ -157,6 +157,51 @@ class StudyTest {
           .isInstanceOf(GeneralException.class)
           .hasFieldOrPropertyWithValue("status", ErrorStatus._NOT_PENDING_APPLICATION);
     }
+
+    @Test
+    @DisplayName("스터디 정원이 가득 찼을 때 신청을 처리하면 예외가 발생한다")
+    void should_throw_exception_when_study_is_full() {
+      // given
+      Study fullStudy = Study.of(ID, LEADER_ID, NAME, 1, Fee.of(HAS_FEE, FEE_AMOUNT), IMAGE_URL,
+          DESCRIPTION); // maxMembers = 1, currentMembers = 1 (생성 시 초기값)
+      StudyMember application = applied(1L, fullStudy.getId(), 100L, "참여하고 싶습니다");
+
+      // when & then
+      assertThatThrownBy(
+          () -> fullStudy.processApplication(application, LEADER_ID, Decision.APPROVE))
+          .isInstanceOf(GeneralException.class)
+          .hasFieldOrPropertyWithValue("status", ErrorStatus._STUDY_IS_FULL);
+    }
+
+    @Test
+    @DisplayName("신청을 승인하면 현재 멤버 수가 1 증가한다")
+    void should_increase_current_members_when_approved() {
+      // given
+      Study study = study();
+      StudyMember application = applied(1L, study.getId(), 100L, "참여하고 싶습니다");
+      int initialMemberCount = study.getCurrentMembers();
+
+      // when
+      study.processApplication(application, LEADER_ID, Decision.APPROVE);
+
+      // then
+      assertThat(study.getCurrentMembers()).isEqualTo(initialMemberCount + 1);
+    }
+
+    @Test
+    @DisplayName("신청을 거절하면 현재 멤버 수가 증가하지 않는다")
+    void should_not_increase_current_members_when_rejected() {
+      // given
+      Study study = study();
+      StudyMember application = applied(1L, study.getId(), 100L, "참여하고 싶습니다");
+      int initialMemberCount = study.getCurrentMembers();
+
+      // when
+      study.processApplication(application, LEADER_ID, Decision.REJECT);
+
+      // then
+      assertThat(study.getCurrentMembers()).isEqualTo(initialMemberCount);
+    }
   }
 
   @Nested

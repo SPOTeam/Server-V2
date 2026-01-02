@@ -6,20 +6,20 @@ public record GetStudyOverviewResponse(
     List<StudyOverview> content,
     boolean hasNext,
     Long nextCursor,
-    Long totalElements
+    long totalElements
 ) {
 
   public static GetStudyOverviewResponse of(
       List<StudyOverview> content,
       boolean hasNext,
       Long nextCursor,
-      Long totalElements
+      long totalElements
   ) {
     return new GetStudyOverviewResponse(content, hasNext, nextCursor, totalElements);
   }
 
   public record StudyOverview(
-      long id,
+      Long id,
       String name,
       String description,
       int maxMembers,
@@ -31,7 +31,7 @@ public record GetStudyOverviewResponse(
   ) {
 
     public static StudyOverview of(
-        long id,
+        Long id,
         String title,
         String description,
         int totalMembers,

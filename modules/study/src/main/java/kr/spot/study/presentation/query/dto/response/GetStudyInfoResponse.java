@@ -4,6 +4,7 @@ import java.util.List;
 import kr.spot.study.domain.enums.Category;
 
 public record GetStudyInfoResponse(
+    Long id,
     String title,
     String description,
     String thumbnailUrl,
@@ -12,6 +13,7 @@ public record GetStudyInfoResponse(
 ) {
 
   public static GetStudyInfoResponse of(
+      Long id,
       String title,
       String description,
       String thumbnailUrl,
@@ -19,6 +21,7 @@ public record GetStudyInfoResponse(
       Statistics statistics
   ) {
     return new GetStudyInfoResponse(
+        id,
         title,
         description,
         thumbnailUrl,
