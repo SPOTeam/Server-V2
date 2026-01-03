@@ -16,12 +16,14 @@ public class ManageScheduleService {
   private final IdGenerator idGenerator;
   private final ScheduleRepository scheduleRepository;
 
-  public void createSchedule(CreateScheduleRequest request, long studyId) {
-    Schedule schedule = Schedule.of(idGenerator.nextId(), studyId, request.title(),
+  public long createSchedule(CreateScheduleRequest request, long studyId) {
+    long scheduleId = idGenerator.nextId();
+    Schedule schedule = Schedule.of(scheduleId, studyId, request.title(),
         request.locationInfo(),
         request.startAt(), request.endAt());
 
     scheduleRepository.save(schedule);
+    return scheduleId;
   }
 
   public void deleteSchedule(long studyId, long scheduleId) {

@@ -29,7 +29,7 @@ public class ManageReviewService {
   private final ReviewRepository reviewRepository;
   private final StudyAccessValidator studyAccessValidator;
 
-  public void createReview(long studyId, long memberId, CreateReviewRequest request,
+  public long createReview(long studyId, long memberId, CreateReviewRequest request,
       MultipartFile imageFile) {
     studyAccessValidator.validateStudyMember(studyId, memberId);
 
@@ -38,9 +38,10 @@ public class ManageReviewService {
     Content content = Content.of(request.activity(), request.learned(), request.encouragement(),
         imageUrl);
 
-    Review review = Review.of(idGenerator.nextId(), studyId, writerInfo, content,
-        request.isPrivate());
+    long reviewId = idGenerator.nextId();
+    Review review = Review.of(reviewId, studyId, writerInfo, content, request.isPrivate());
     reviewRepository.save(review);
+    return reviewId;
   }
 
   public void deleteReview(long studyId, long reviewId, long memberId) {

@@ -11,6 +11,7 @@ import kr.spot.annotations.CurrentMember;
 import kr.spot.code.status.SuccessStatus;
 import kr.spot.post.application.command.LikePostService;
 import kr.spot.post.application.command.ManagePostService;
+import kr.spot.post.presentation.command.dto.CreatePostResponse;
 import kr.spot.post.presentation.command.dto.ManagePostRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -38,12 +39,13 @@ public class PostCommandController {
       @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "`STUDY404`: 스터디를 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
   })
   @PostMapping
-  public ResponseEntity<ApiResponse<Void>> createPost(
+  public ResponseEntity<ApiResponse<CreatePostResponse>> createPost(
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
       @CurrentMember @Parameter(hidden = true) Long writerId,
       @RequestBody ManagePostRequest request) {
-    managePostService.createPost(studyId, writerId, request);
-    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._CREATED));
+    long postId = managePostService.createPost(studyId, writerId, request);
+    return ResponseEntity.ok(
+        ApiResponse.onSuccess(SuccessStatus._CREATED, CreatePostResponse.from(postId)));
   }
 
   @Operation(summary = "스터디 게시글 수정", description = "스터디의 게시글을 수정합니다. 작성자만 수정할 수 있습니다.")

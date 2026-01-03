@@ -37,7 +37,7 @@ public class CreateStudyService {
   private final StudyStatsRepository studyStatsRepository;
   private final StudyMemberRepository studyMemberRepository;
 
-  public void createStudy(CreateStudyRequest request, Long leaderId, MultipartFile imageFile) {
+  public long createStudy(CreateStudyRequest request, long leaderId, MultipartFile imageFile) {
     long studyId = idGenerator.nextId();
     Study study = Study.of(studyId, leaderId, request.name(), request.maxMembers(),
         Fee.of(request.hasFee(), request.amount()), null, request.description(), request.isOnline());
@@ -53,6 +53,7 @@ public class CreateStudyService {
     saveAllStudyRegions(request, studyId);
 
     eventPublisher.publishEvent(StudyCreatedEvent.of(studyId, imageFile));
+    return studyId;
   }
 
   private void saveAllStudyCategories(CreateStudyRequest request, long studyId) {

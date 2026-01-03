@@ -17,15 +17,17 @@ public class ManageTodoService {
   private final IdGenerator idGenerator;
   private final TodoRepository todoRepository;
 
-  public void createTodo(long studyId, long memberId, CreateTodoRequest request) {
+  public long createTodo(long studyId, long memberId, CreateTodoRequest request) {
+    long todoId = idGenerator.nextId();
     Todo todo = Todo.of(
-        idGenerator.nextId(),
+        todoId,
         studyId,
         memberId,
         request.dueDate(),
         request.content()
     );
     todoRepository.save(todo);
+    return todoId;
   }
 
   public void updateTodo(long studyId, long todoId, long memberId, UpdateTodoRequest request) {
