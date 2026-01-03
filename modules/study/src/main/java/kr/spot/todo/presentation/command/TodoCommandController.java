@@ -11,6 +11,7 @@ import kr.spot.annotations.CurrentMember;
 import kr.spot.code.status.SuccessStatus;
 import kr.spot.todo.application.command.ManageTodoService;
 import kr.spot.todo.presentation.command.dto.CreateTodoRequest;
+import kr.spot.todo.presentation.command.dto.CreateTodoResponse;
 import kr.spot.todo.presentation.command.dto.UpdateTodoRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -37,12 +38,13 @@ public class TodoCommandController {
       @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "`STUDY404`: 스터디를 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
   })
   @PostMapping
-  public ResponseEntity<ApiResponse<Void>> createTodo(
+  public ResponseEntity<ApiResponse<CreateTodoResponse>> createTodo(
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
       @CurrentMember @Parameter(hidden = true) Long memberId,
       @RequestBody CreateTodoRequest request) {
-    manageTodoService.createTodo(studyId, memberId, request);
-    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._CREATED));
+    long todoId = manageTodoService.createTodo(studyId, memberId, request);
+    return ResponseEntity.ok(
+        ApiResponse.onSuccess(SuccessStatus._CREATED, CreateTodoResponse.from(todoId)));
   }
 
   @Operation(summary = "투두 수정", description = "투두 내용과 마감일을 수정합니다.")

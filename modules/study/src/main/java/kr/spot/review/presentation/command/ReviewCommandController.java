@@ -10,6 +10,7 @@ import kr.spot.review.application.command.ManageReviewReactionService;
 import kr.spot.review.application.command.ManageReviewService;
 import kr.spot.review.domain.enums.Reaction;
 import kr.spot.review.presentation.command.dto.CreateReviewRequest;
+import kr.spot.review.presentation.command.dto.CreateReviewResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,14 +33,15 @@ public class ReviewCommandController {
 
   @Operation(summary = "스터디 회고록 작성", description = "특정 스터디에 대한 회고록을 작성합니다.")
   @PostMapping
-  public ResponseEntity<ApiResponse<Void>> createReview(
+  public ResponseEntity<ApiResponse<CreateReviewResponse>> createReview(
       @PathVariable Long studyId,
       @CurrentMember @Parameter(hidden = true) Long memberId,
       @RequestPart CreateReviewRequest request,
       @RequestPart(required = false) MultipartFile imageFile
   ) {
-    manageReviewService.createReview(studyId, memberId, request, imageFile);
-    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._CREATED));
+    long reviewId = manageReviewService.createReview(studyId, memberId, request, imageFile);
+    return ResponseEntity.ok(
+        ApiResponse.onSuccess(SuccessStatus._CREATED, CreateReviewResponse.from(reviewId)));
   }
 
   @Operation(summary = "스터디 회고록 삭제", description = "특정 스터디에 대한 회고록을 삭제합니다.")

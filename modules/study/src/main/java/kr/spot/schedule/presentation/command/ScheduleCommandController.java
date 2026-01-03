@@ -11,6 +11,7 @@ import kr.spot.ApiResponse;
 import kr.spot.code.status.SuccessStatus;
 import kr.spot.schedule.application.command.ManageScheduleService;
 import kr.spot.schedule.presentation.command.dto.CreateScheduleRequest;
+import kr.spot.schedule.presentation.command.dto.CreateScheduleResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,11 +36,12 @@ public class ScheduleCommandController {
       @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "`STUDY404`: 스터디를 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
   })
   @PostMapping
-  public ResponseEntity<ApiResponse<Void>> createSchedule(
+  public ResponseEntity<ApiResponse<CreateScheduleResponse>> createSchedule(
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
       @RequestBody CreateScheduleRequest request) {
-    manageScheduleService.createSchedule(request, studyId);
-    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._CREATED));
+    long scheduleId = manageScheduleService.createSchedule(request, studyId);
+    return ResponseEntity.ok(
+        ApiResponse.onSuccess(SuccessStatus._CREATED, CreateScheduleResponse.from(scheduleId)));
   }
 
   @Operation(summary = "스터디 일정 삭제", description = "스터디의 일정을 삭제합니다.")

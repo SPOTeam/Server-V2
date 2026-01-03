@@ -12,6 +12,7 @@ import kr.spot.code.status.SuccessStatus;
 import kr.spot.study.application.command.CreateStudyService;
 import kr.spot.study.application.command.StudyLikeService;
 import kr.spot.study.presentation.command.dto.request.CreateStudyRequest;
+import kr.spot.study.presentation.command.dto.response.CreateStudyResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,11 +48,13 @@ public class StudyCommandController {
       @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자입니다.", content = @Content(schema = @Schema(implementation = kr.spot.ApiResponse.class)))
   })
   @PostMapping
-  public ResponseEntity<ApiResponse<Void>> createStudy(@RequestPart CreateStudyRequest request,
+  public ResponseEntity<ApiResponse<CreateStudyResponse>> createStudy(
+      @RequestPart CreateStudyRequest request,
       @CurrentMember @Parameter(hidden = true) Long memberId,
       @RequestPart(required = false) MultipartFile imageFile) {
-    createStudyService.createStudy(request, memberId, imageFile);
-    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._CREATED));
+    long studyId = createStudyService.createStudy(request, memberId, imageFile);
+    return ResponseEntity.ok(
+        ApiResponse.onSuccess(SuccessStatus._CREATED, CreateStudyResponse.from(studyId)));
   }
 
   @Operation(summary = "스터디 좋아요", description = "스터디에 좋아요를 누릅니다.")
