@@ -25,11 +25,12 @@ public class ManagePostService {
   private final PostStatsRepository postStatsRepository;
   private final StudyAccessValidator studyAccessValidator;
 
-  public void createPost(long studyId, long writerId, ManagePostRequest request) {
+  public long createPost(long studyId, long writerId, ManagePostRequest request) {
     studyAccessValidator.validateStudyMember(studyId, writerId);
     WriterInfo writerInfo = getWriterInfo(writerId);
     Post post = createAndSavePost(request, studyId, writerInfo);
     initializeAndSavePostStats(post);
+    return post.getId();
   }
 
   public void updatePost(long studyId, long postId, ManagePostRequest request, long writerId) {
