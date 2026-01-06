@@ -15,12 +15,12 @@ import java.util.Set;
 import kr.spot.ports.GetPreferredCategoryPort;
 import kr.spot.ports.GetPreferredRegionPort;
 import kr.spot.study.domain.Study;
-import kr.spot.study.infrastructure.jpa.associations.StudyLikeRepository;
 import kr.spot.study.domain.enums.Category;
 import kr.spot.study.domain.enums.FeeCategory;
 import kr.spot.study.domain.enums.RecruitingStatus;
 import kr.spot.study.domain.enums.SortBy;
 import kr.spot.study.domain.enums.StudyMemberStatus;
+import kr.spot.study.infrastructure.jpa.associations.StudyLikeRepository;
 import kr.spot.study.infrastructure.jpa.querydsl.StudyQueryRepository;
 import kr.spot.study.presentation.query.dto.response.GetStudyOverviewResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -61,18 +61,20 @@ class GetMyStudyInfoServiceTest {
       List<Study> studies = createStudies(pageSize + 1); // 11개 생성
       Long expectedNextCursor = studies.get(pageSize - 1).getId(); // 10번째 스터디의 ID
 
-      given(studyQueryRepository.findMyStudies(viewerId, status, null, pageSize + 1))
+      given(studyQueryRepository.findMyStudies(viewerId, List.of(status), null, pageSize + 1))
           .willReturn(studies);
-      given(studyQueryRepository.countMyStudies(viewerId, status)).willReturn((long) studies.size());
+      given(studyQueryRepository.countMyStudies(viewerId, List.of(status))).willReturn(
+          (long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
 
       // when
-      GetStudyOverviewResponse response = getMyStudyInfoService.getMyStudyOverview(viewerId, status,
+      GetStudyOverviewResponse response = getMyStudyInfoService.getMyStudyOverview(viewerId,
+          List.of(status),
           null,
           pageSize);
 
       // then
-      verify(studyQueryRepository).findMyStudies(viewerId, status, null, pageSize + 1);
+      verify(studyQueryRepository).findMyStudies(viewerId, List.of(status), null, pageSize + 1);
       assertThat(response.content()).hasSize(pageSize);
       assertThat(response.hasNext()).isTrue();
       assertThat(response.nextCursor()).isEqualTo(expectedNextCursor);
@@ -85,18 +87,20 @@ class GetMyStudyInfoServiceTest {
       int pageSize = 10;
       List<Study> studies = createStudies(5); // 5개 생성 (pageSize보다 적음)
 
-      given(studyQueryRepository.findMyStudies(viewerId, status, null, pageSize + 1))
+      given(studyQueryRepository.findMyStudies(viewerId, List.of(status), null, pageSize + 1))
           .willReturn(studies);
-      given(studyQueryRepository.countMyStudies(viewerId, status)).willReturn((long) studies.size());
+      given(studyQueryRepository.countMyStudies(viewerId, List.of(status))).willReturn(
+          (long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
 
       // when
-      GetStudyOverviewResponse response = getMyStudyInfoService.getMyStudyOverview(viewerId, status,
+      GetStudyOverviewResponse response = getMyStudyInfoService.getMyStudyOverview(viewerId,
+          List.of(status),
           null,
           pageSize);
 
       // then
-      verify(studyQueryRepository).findMyStudies(viewerId, status, null, pageSize + 1);
+      verify(studyQueryRepository).findMyStudies(viewerId, List.of(status), null, pageSize + 1);
       assertThat(response.content()).hasSize(5);
       assertThat(response.hasNext()).isFalse();
       assertThat(response.nextCursor()).isNull();
@@ -111,18 +115,20 @@ class GetMyStudyInfoServiceTest {
       List<Study> studies = createStudies(pageSize + 1);
       Long expectedNextCursor = studies.get(pageSize - 1).getId();
 
-      given(studyQueryRepository.findMyStudies(viewerId, status, cursor, pageSize + 1))
+      given(studyQueryRepository.findMyStudies(viewerId, List.of(status), cursor, pageSize + 1))
           .willReturn(studies);
-      given(studyQueryRepository.countMyStudies(viewerId, status)).willReturn((long) studies.size());
+      given(studyQueryRepository.countMyStudies(viewerId, List.of(status))).willReturn(
+          (long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
 
       // when
-      GetStudyOverviewResponse response = getMyStudyInfoService.getMyStudyOverview(viewerId, status,
+      GetStudyOverviewResponse response = getMyStudyInfoService.getMyStudyOverview(viewerId,
+          List.of(status),
           cursor,
           pageSize);
 
       // then
-      verify(studyQueryRepository).findMyStudies(viewerId, status, cursor, pageSize + 1);
+      verify(studyQueryRepository).findMyStudies(viewerId, List.of(status), cursor, pageSize + 1);
       assertThat(response.content()).hasSize(pageSize);
       assertThat(response.hasNext()).isTrue();
       assertThat(response.nextCursor()).isEqualTo(expectedNextCursor);
@@ -136,18 +142,20 @@ class GetMyStudyInfoServiceTest {
       int maxPageSize = GetMyStudyInfoService.MAX_PAGE_SIZE; // 50
       List<Study> studies = createStudies(maxPageSize + 1); // 51개 생성
 
-      given(studyQueryRepository.findMyStudies(viewerId, status, null, maxPageSize + 1))
+      given(studyQueryRepository.findMyStudies(viewerId, List.of(status), null, maxPageSize + 1))
           .willReturn(studies);
-      given(studyQueryRepository.countMyStudies(viewerId, status)).willReturn((long) studies.size());
+      given(studyQueryRepository.countMyStudies(viewerId, List.of(status))).willReturn(
+          (long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
 
       // when
-      GetStudyOverviewResponse response = getMyStudyInfoService.getMyStudyOverview(viewerId, status,
+      GetStudyOverviewResponse response = getMyStudyInfoService.getMyStudyOverview(viewerId,
+          List.of(status),
           null,
           requestedSize);
 
       // then
-      verify(studyQueryRepository).findMyStudies(viewerId, status, null, maxPageSize + 1);
+      verify(studyQueryRepository).findMyStudies(viewerId, List.of(status), null, maxPageSize + 1);
       assertThat(response.content()).hasSize(maxPageSize);
       assertThat(response.hasNext()).isTrue();
     }
@@ -172,7 +180,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.findMyPreferredRegionStudies(any(), any(), any(), any(), any(),
           any(), anyInt(), eq(preferredRegions)))
           .willReturn(studies);
-      given(studyQueryRepository.countMyPreferredRegionStudies(any(), any(), any(), any(), eq(preferredRegions)))
+      given(studyQueryRepository.countMyPreferredRegionStudies(any(), any(), any(), any(),
+          eq(preferredRegions)))
           .willReturn((long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
 
@@ -206,7 +215,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.findMyPreferredRegionStudies(any(), any(), any(), any(), any(),
           any(), anyInt(), eq(expectedRegions)))
           .willReturn(studies);
-      given(studyQueryRepository.countMyPreferredRegionStudies(any(), any(), any(), any(), eq(expectedRegions)))
+      given(studyQueryRepository.countMyPreferredRegionStudies(any(), any(), any(), any(),
+          eq(expectedRegions)))
           .willReturn((long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
 
@@ -233,7 +243,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.findMyPreferredRegionStudies(any(), any(), any(), any(), any(),
           any(), anyInt(), eq(Collections.emptyList())))
           .willReturn(Collections.emptyList());
-      given(studyQueryRepository.countMyPreferredRegionStudies(any(), any(), any(), any(), eq(Collections.emptyList())))
+      given(studyQueryRepository.countMyPreferredRegionStudies(any(), any(), any(), any(),
+          eq(Collections.emptyList())))
           .willReturn(0L);
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
 
@@ -274,7 +285,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.findMyPreferredCategoryStudies(any(), any(), any(), any(), any(),
           anyInt(), eq(preferredCategory)))
           .willReturn(studies);
-      given(studyQueryRepository.countMyPreferredCategoryStudies(any(), any(), any(), eq(preferredCategory)))
+      given(studyQueryRepository.countMyPreferredCategoryStudies(any(), any(), any(),
+          eq(preferredCategory)))
           .willReturn((long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
 
@@ -304,7 +316,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.findMyPreferredCategoryStudies(any(), any(), any(), any(), any(),
           anyInt(), eq(Collections.emptyList())))
           .willReturn(Collections.emptyList());
-      given(studyQueryRepository.countMyPreferredCategoryStudies(any(), any(), any(), eq(Collections.emptyList())))
+      given(studyQueryRepository.countMyPreferredCategoryStudies(any(), any(), any(),
+          eq(Collections.emptyList())))
           .willReturn(0L);
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
 
@@ -557,7 +570,8 @@ class GetMyStudyInfoServiceTest {
     @DisplayName("조건에 맞는 스터디가 없으면 빈 결과를 반환한다")
     void should_return_empty_when_no_studies() {
       // given
-      given(studyQueryRepository.findStudiesByCategory(any(), any(), any(), any(), any(), any(), anyInt()))
+      given(studyQueryRepository.findStudiesByCategory(any(), any(), any(), any(), any(), any(),
+          anyInt()))
           .willReturn(Collections.emptyList());
       given(studyQueryRepository.countStudiesByCategory(any(), any(), any(), any()))
           .willReturn(0L);
@@ -590,7 +604,8 @@ class GetMyStudyInfoServiceTest {
       // given
       List<Study> studies = createStudies(pageSize + 1);
       Long expectedNextCursor = studies.get(pageSize - 1).getId();
-      Set<Long> likedStudyIds = studies.stream().map(Study::getId).collect(java.util.stream.Collectors.toSet());
+      Set<Long> likedStudyIds = studies.stream().map(Study::getId)
+          .collect(java.util.stream.Collectors.toSet());
 
       given(studyQueryRepository.findLikedStudies(viewerId, null, pageSize + 1))
           .willReturn(studies);
@@ -599,7 +614,8 @@ class GetMyStudyInfoServiceTest {
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(likedStudyIds);
 
       // when
-      GetStudyOverviewResponse response = getMyStudyInfoService.getLikedStudies(viewerId, null, pageSize);
+      GetStudyOverviewResponse response = getMyStudyInfoService.getLikedStudies(viewerId, null,
+          pageSize);
 
       // then
       verify(studyQueryRepository).findLikedStudies(viewerId, null, pageSize + 1);
@@ -620,7 +636,8 @@ class GetMyStudyInfoServiceTest {
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
 
       // when
-      GetStudyOverviewResponse response = getMyStudyInfoService.getLikedStudies(viewerId, null, pageSize);
+      GetStudyOverviewResponse response = getMyStudyInfoService.getLikedStudies(viewerId, null,
+          pageSize);
 
       // then
       assertThat(response.content()).isEmpty();
@@ -643,7 +660,8 @@ class GetMyStudyInfoServiceTest {
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
 
       // when
-      GetStudyOverviewResponse response = getMyStudyInfoService.getLikedStudies(viewerId, cursor, pageSize);
+      GetStudyOverviewResponse response = getMyStudyInfoService.getLikedStudies(viewerId, cursor,
+          pageSize);
 
       // then
       verify(studyQueryRepository).findLikedStudies(viewerId, cursor, pageSize + 1);

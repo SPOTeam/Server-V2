@@ -27,7 +27,7 @@ public class StudyQueryRepository {
 
   public List<Study> findMyStudies(
       Long viewerId,
-      StudyMemberStatus status,
+      List<StudyMemberStatus> statuses,
       Long cursor,
       int limit) {
     QStudy study = QStudy.study;
@@ -39,7 +39,7 @@ public class StudyQueryRepository {
         .join(study).on(study.id.eq(studyMember.studyId))
         .where(
             studyMember.memberId.eq(viewerId),
-            studyMember.studyMemberStatus.eq(status),
+            studyMember.studyMemberStatus.in(statuses),
             ltCursor(cursor, study)
         )
         .orderBy(study.id.desc())
@@ -49,7 +49,7 @@ public class StudyQueryRepository {
 
   public long countMyStudies(
       Long viewerId,
-      StudyMemberStatus status
+      List<StudyMemberStatus> statuses
   ) {
     QStudy study = QStudy.study;
     QStudyMember studyMember = QStudyMember.studyMember;
@@ -60,7 +60,7 @@ public class StudyQueryRepository {
         .join(study).on(study.id.eq(studyMember.studyId))
         .where(
             studyMember.memberId.eq(viewerId),
-            studyMember.studyMemberStatus.eq(status)
+            studyMember.studyMemberStatus.in(statuses)
         )
         .fetchOne();
   }

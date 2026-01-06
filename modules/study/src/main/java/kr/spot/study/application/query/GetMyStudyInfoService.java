@@ -34,21 +34,21 @@ public class GetMyStudyInfoService {
 
   public GetStudyOverviewResponse getMyStudyOverview(
       long viewerId,
-      StudyMemberStatus status,
+      List<StudyMemberStatus> statuses,
       Long cursor,
       int size
   ) {
     final int pageSize = Math.min(size, MAX_PAGE_SIZE);
     List<Study> rows = studyQueryRepository.findMyStudies(
         viewerId,
-        status,
+        statuses,
         cursor,
         pageSize + 1
     );
 
     long totalElements = studyQueryRepository.countMyStudies(
         viewerId,
-        status
+        statuses
     );
     return toCursorPage(rows, viewerId, pageSize, totalElements);
   }
@@ -66,7 +66,8 @@ public class GetMyStudyInfoService {
   ) {
     final int pageSize = Math.min(size, MAX_PAGE_SIZE);
     List<String> preferredRegionCodes = getPreferredRegionPort.get(viewerId);
-    List<String> filteredRegionCodes = filterPreferredRegionCodes(regionCodes, preferredRegionCodes);
+    List<String> filteredRegionCodes = filterPreferredRegionCodes(regionCodes,
+        preferredRegionCodes);
 
     List<Study> rows = studyQueryRepository.findMyPreferredRegionStudies(
         recruitingStatus,
