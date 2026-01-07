@@ -15,7 +15,6 @@ import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyCategoryRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyRegionRepository;
-import kr.spot.study.infrastructure.jpa.associations.StudyStatsRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyStyleRepository;
 import kr.spot.study.presentation.command.dto.request.CreateStudyRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,9 +52,6 @@ class CreateStudyServiceTest {
   StudyCategoryRepository studyCategoryRepository;
 
   @Mock
-  StudyStatsRepository studyStatsRepository;
-
-  @Mock
   StudyMemberRepository studyMemberRepository;
 
   @Captor
@@ -69,7 +65,7 @@ class CreateStudyServiceTest {
   @BeforeEach
   void setUp() {
     createStudyService = new CreateStudyService(idGenerator, eventPublisher, studyRepository,
-        studyStyleRepository, studyRegionRepository, studyCategoryRepository, studyStatsRepository,
+        studyStyleRepository, studyRegionRepository, studyCategoryRepository,
         studyMemberRepository);
   }
 
@@ -153,7 +149,6 @@ class CreateStudyServiceTest {
 
       // then
       verify(studyRepository).save(any(Study.class));
-      verify(studyStatsRepository).save(any());
       verify(studyMemberRepository).save(any());
       verify(studyCategoryRepository).saveAll(any());
       verify(studyStyleRepository).saveAll(any());

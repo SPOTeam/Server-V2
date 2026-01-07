@@ -60,6 +60,10 @@ public class Study extends BaseEntity {
   @Column(nullable = false)
   private Boolean isOnline = false;
 
+  private Long viewCount;
+
+  private Long likeCount;
+
   public static Study of(Long id, Long leaderId, String name, Integer maxMembers, Fee fee,
       String description) {
     return of(id, leaderId, name, maxMembers, fee, null, description, false);
@@ -75,7 +79,7 @@ public class Study extends BaseEntity {
     validateStudyNameIsNotBlank(name);
     validateMaxMembers(maxMembers);
     return new Study(id, leaderId, name, maxMembers, CURRENT_MEMBERS, fee, imageUrl, description,
-        RecruitingStatus.RECRUITING, isOnline != null && isOnline);
+        RecruitingStatus.RECRUITING, isOnline != null && isOnline, 0L, 0L);
   }
 
   private static void validateStudyNameIsNotBlank(String name) {

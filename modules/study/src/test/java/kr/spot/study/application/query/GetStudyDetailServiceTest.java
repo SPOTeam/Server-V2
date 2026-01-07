@@ -10,14 +10,12 @@ import kr.spot.ports.dto.MemberInfoResponse;
 import kr.spot.study.domain.Study;
 import kr.spot.study.domain.associations.StudyCategory;
 import kr.spot.study.domain.associations.StudyMember;
-import kr.spot.study.domain.associations.StudyStats;
 import kr.spot.study.domain.enums.Category;
 import kr.spot.study.domain.enums.StudyMemberStatus;
 import kr.spot.study.domain.vo.Fee;
 import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyCategoryRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
-import kr.spot.study.infrastructure.jpa.associations.StudyStatsRepository;
 import kr.spot.study.presentation.query.dto.response.GetStudyInfoResponse;
 import kr.spot.study.presentation.query.dto.response.GetStudyMembersResponse;
 import kr.spot.study.presentation.query.dto.response.GetStudyMembersResponse.MemberResponse;
@@ -39,9 +37,6 @@ class GetStudyDetailServiceTest {
 
   @Mock
   StudyCategoryRepository studyCategoryRepository;
-
-  @Mock
-  StudyStatsRepository studyStatsRepository;
 
   @Mock
   StudyMemberRepository studyMemberRepository;
@@ -66,8 +61,7 @@ class GetStudyDetailServiceTest {
     @DisplayName("스터디 상세 정보를 정상적으로 반환한다")
     void should_return_study_info_successfully() {
       // given
-      Study study = createStudy(studyId, "알고리즘 스터디", 10, 5);
-      StudyStats stats = createStudyStats(studyId, 100L, 50L);
+      Study study = createStudy(studyId, "알고리즘 스터디", 10, 5, 100L, 50L);
       List<StudyCategory> categories = List.of(
           StudyCategory.of(1L, studyId, Category.LANGUAGE),
           StudyCategory.of(2L, studyId, Category.CERTIFICATION)
@@ -75,9 +69,8 @@ class GetStudyDetailServiceTest {
       long displayViewCount = 150L;
 
       given(studyRepository.getStudyById(studyId)).willReturn(study);
-      given(studyStatsRepository.getByStudyId(studyId)).willReturn(stats);
       given(studyCategoryRepository.findAllByStudyId(studyId)).willReturn(categories);
-      given(studyViewCountService.calculateDisplayViewCount(stats, studyId, viewerId))
+      given(studyViewCountService.calculateDisplayViewCount(study, studyId, viewerId))
           .willReturn(displayViewCount);
 
       // when
@@ -97,14 +90,12 @@ class GetStudyDetailServiceTest {
     @DisplayName("카테고리가 없는 스터디도 정상적으로 반환한다")
     void should_return_study_info_with_empty_categories() {
       // given
-      Study study = createStudy(studyId, "스터디", 5, 1);
-      StudyStats stats = createStudyStats(studyId, 10L, 5L);
+      Study study = createStudy(studyId, "스터디", 5, 1, 10L, 5L);
       long displayViewCount = 10L;
 
       given(studyRepository.getStudyById(studyId)).willReturn(study);
-      given(studyStatsRepository.getByStudyId(studyId)).willReturn(stats);
       given(studyCategoryRepository.findAllByStudyId(studyId)).willReturn(List.of());
-      given(studyViewCountService.calculateDisplayViewCount(stats, studyId, viewerId))
+      given(studyViewCountService.calculateDisplayViewCount(study, studyId, viewerId))
           .willReturn(displayViewCount);
 
       // when
@@ -115,17 +106,13 @@ class GetStudyDetailServiceTest {
       assertThat(result.statistics().hitCount()).isEqualTo(displayViewCount);
     }
 
-    private Study createStudy(long id, String name, int maxMembers, int currentMembers) {
+    private Study createStudy(long id, String name, int maxMembers, int currentMembers,
+        long viewCount, long likeCount) {
       Study study = Study.of(id, 1L, name, maxMembers, Fee.of(false, 0), "스터디 설명");
       ReflectionTestUtils.setField(study, "currentMembers", currentMembers);
+      ReflectionTestUtils.setField(study, "viewCount", viewCount);
+      ReflectionTestUtils.setField(study, "likeCount", likeCount);
       return study;
-    }
-
-    private StudyStats createStudyStats(long studyId, long viewCount, long likeCount) {
-      StudyStats stats = StudyStats.of(studyId);
-      ReflectionTestUtils.setField(stats, "viewCount", viewCount);
-      ReflectionTestUtils.setField(stats, "likeCount", likeCount);
-      return stats;
     }
   }
 

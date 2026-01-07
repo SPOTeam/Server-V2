@@ -1,6 +1,6 @@
 package kr.spot.study.application.query;
 
-import kr.spot.study.domain.associations.StudyStats;
+import kr.spot.study.domain.Study;
 import kr.spot.view.ViewAbuseGuard;
 import kr.spot.view.ViewCounter;
 import kr.spot.view.ViewableType;
@@ -16,8 +16,8 @@ public class StudyViewCountService {
   private final ViewCounter viewCounter;
   private final ViewAbuseGuard viewAbuseGuard;
 
-  public long calculateDisplayViewCount(StudyStats stats, long studyId, long viewerId) {
-    long baseViewCount = stats.getViewCount();
+  public long calculateDisplayViewCount(Study study, long studyId, long viewerId) {
+    long baseViewCount = study.getViewCount();
     long viewDelta = getViewDeltaFromCounter(studyId, viewerId);
     return baseViewCount + viewDelta;
   }

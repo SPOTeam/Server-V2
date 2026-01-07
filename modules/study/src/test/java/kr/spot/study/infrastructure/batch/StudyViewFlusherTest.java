@@ -2,7 +2,7 @@ package kr.spot.study.infrastructure.batch;
 
 import static org.mockito.Mockito.verify;
 
-import kr.spot.study.infrastructure.jpa.associations.StudyStatsRepository;
+import kr.spot.study.infrastructure.jpa.StudyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,14 +12,14 @@ import org.mockito.MockitoAnnotations;
 class StudyViewFlusherTest {
 
   @Mock
-  StudyStatsRepository studyStatsRepository;
+  StudyRepository studyRepository;
 
   StudyViewFlusher flusher;
 
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-    flusher = new StudyViewFlusher(studyStatsRepository);
+    flusher = new StudyViewFlusher(studyRepository);
   }
 
   @Test
@@ -33,6 +33,6 @@ class StudyViewFlusherTest {
     flusher.updateViewCount(studyId, delta);
 
     // then
-    verify(studyStatsRepository).increaseViewBy(studyId, delta);
+    verify(studyRepository).increaseViewBy(studyId, delta);
   }
 }
