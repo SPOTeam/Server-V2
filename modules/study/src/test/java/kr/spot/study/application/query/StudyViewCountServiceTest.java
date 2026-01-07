@@ -5,7 +5,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import kr.spot.study.domain.associations.StudyStats;
+import kr.spot.study.domain.Study;
+import kr.spot.study.domain.vo.Fee;
 import kr.spot.view.ViewAbuseGuard;
 import kr.spot.view.ViewCounter;
 import kr.spot.view.ViewableType;
@@ -41,7 +42,7 @@ class StudyViewCountServiceTest {
     @DisplayName("새로운 조회일 경우 조회수를 증가시키고 합산하여 반환한다")
     void should_increment_and_return_total_when_new_view() {
       // given
-      StudyStats stats = StudyStats.of(studyId);
+      Study study = Study.of(studyId, 1L, "테스트 스터디", 10, Fee.of(false, 0), "설명");
       long expectedDelta = 5L;
 
       given(viewAbuseGuard.shouldCount(ViewableType.STUDY, studyId, viewerId))
@@ -50,7 +51,7 @@ class StudyViewCountServiceTest {
           .willReturn(expectedDelta);
 
       // when
-      long result = sut.calculateDisplayViewCount(stats, studyId, viewerId);
+      long result = sut.calculateDisplayViewCount(study, studyId, viewerId);
 
       // then
       assertThat(result).isEqualTo(expectedDelta);
@@ -61,7 +62,7 @@ class StudyViewCountServiceTest {
     @DisplayName("중복 조회일 경우 증가 없이 현재 델타만 반환한다")
     void should_return_current_delta_when_duplicate_view() {
       // given
-      StudyStats stats = StudyStats.of(studyId);
+      Study study = Study.of(studyId, 1L, "테스트 스터디", 10, Fee.of(false, 0), "설명");
       long currentDelta = 10L;
 
       given(viewAbuseGuard.shouldCount(ViewableType.STUDY, studyId, viewerId))
@@ -70,7 +71,7 @@ class StudyViewCountServiceTest {
           .willReturn(currentDelta);
 
       // when
-      long result = sut.calculateDisplayViewCount(stats, studyId, viewerId);
+      long result = sut.calculateDisplayViewCount(study, studyId, viewerId);
 
       // then
       assertThat(result).isEqualTo(currentDelta);
@@ -82,16 +83,16 @@ class StudyViewCountServiceTest {
     @DisplayName("Redis 오류 발생 시 기본 조회수만 반환한다")
     void should_return_base_count_when_redis_error() {
       // given
-      StudyStats stats = StudyStats.of(studyId);
+      Study study = Study.of(studyId, 1L, "테스트 스터디", 10, Fee.of(false, 0), "설명");
 
       given(viewAbuseGuard.shouldCount(ViewableType.STUDY, studyId, viewerId))
           .willThrow(new RuntimeException("Redis connection failed"));
 
       // when
-      long result = sut.calculateDisplayViewCount(stats, studyId, viewerId);
+      long result = sut.calculateDisplayViewCount(study, studyId, viewerId);
 
       // then
-      assertThat(result).isEqualTo(stats.getViewCount());
+      assertThat(result).isEqualTo(study.getViewCount());
     }
   }
 }

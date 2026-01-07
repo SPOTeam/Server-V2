@@ -5,8 +5,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import kr.spot.IdGenerator;
+import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyLikeRepository;
-import kr.spot.study.infrastructure.jpa.associations.StudyStatsRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ class StudyLikeServiceTest {
   StudyLikeRepository studyLikeRepository;
 
   @Mock
-  StudyStatsRepository studyStatsRepository;
+  StudyRepository studyRepository;
 
   @InjectMocks
   StudyLikeService sut;
@@ -51,7 +51,7 @@ class StudyLikeServiceTest {
 
       // then
       verify(studyLikeRepository).saveStudyLike(generatedId, studyId, memberId);
-      verify(studyStatsRepository).increaseLike(studyId);
+      verify(studyRepository).increaseLike(studyId);
     }
 
     @Test
@@ -66,7 +66,7 @@ class StudyLikeServiceTest {
 
       // then
       verify(studyLikeRepository).saveStudyLike(generatedId, studyId, memberId);
-      verify(studyStatsRepository, never()).increaseLike(studyId);
+      verify(studyRepository, never()).increaseLike(studyId);
     }
   }
 
@@ -88,7 +88,7 @@ class StudyLikeServiceTest {
 
       // then
       verify(studyLikeRepository).hardDelete(studyId, memberId);
-      verify(studyStatsRepository).decreaseLike(studyId);
+      verify(studyRepository).decreaseLike(studyId);
     }
 
     @Test
@@ -102,7 +102,7 @@ class StudyLikeServiceTest {
 
       // then
       verify(studyLikeRepository).hardDelete(studyId, memberId);
-      verify(studyStatsRepository, never()).decreaseLike(studyId);
+      verify(studyRepository, never()).decreaseLike(studyId);
     }
   }
 }

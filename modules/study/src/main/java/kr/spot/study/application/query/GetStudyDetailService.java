@@ -7,13 +7,11 @@ import kr.spot.ports.dto.MemberInfoResponse;
 import kr.spot.study.domain.Study;
 import kr.spot.study.domain.associations.StudyCategory;
 import kr.spot.study.domain.associations.StudyMember;
-import kr.spot.study.domain.associations.StudyStats;
 import kr.spot.study.domain.enums.Category;
 import kr.spot.study.domain.enums.StudyMemberStatus;
 import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyCategoryRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
-import kr.spot.study.infrastructure.jpa.associations.StudyStatsRepository;
 import kr.spot.study.presentation.query.dto.response.GetStudyInfoResponse;
 import kr.spot.study.presentation.query.dto.response.GetStudyInfoResponse.Statistics;
 import kr.spot.study.presentation.query.dto.response.GetStudyMembersResponse;
@@ -32,16 +30,14 @@ public class GetStudyDetailService {
 
   private final StudyRepository studyRepository;
   private final StudyCategoryRepository studyCategoryRepository;
-  private final StudyStatsRepository studyStatsRepository;
   private final StudyMemberRepository studyMemberRepository;
   private final StudyViewCountService studyViewCountService;
   private final GetMemberInfoPort getMemberInfoPort;
 
   public GetStudyInfoResponse getStudyInfo(long studyId, long viewerId) {
     Study study = findStudy(studyId);
-    StudyStats stats = findStudyStats(studyId);
     List<Category> categories = findCategories(studyId);
-    Statistics statistics = buildStatistics(study, stats, studyId, viewerId);
+    Statistics statistics = buildStatistics(study, studyId, viewerId);
 
     return toStudyInfoResponse(study, categories, statistics);
   }
@@ -58,23 +54,19 @@ public class GetStudyDetailService {
     return studyRepository.getStudyById(studyId);
   }
 
-  private StudyStats findStudyStats(long studyId) {
-    return studyStatsRepository.getByStudyId(studyId);
-  }
-
   private List<Category> findCategories(long studyId) {
     return studyCategoryRepository.findAllByStudyId(studyId).stream()
         .map(StudyCategory::getCategory)
         .toList();
   }
 
-  private Statistics buildStatistics(Study study, StudyStats stats, long studyId, long viewerId) {
-    long displayViewCount = studyViewCountService.calculateDisplayViewCount(stats, studyId,
+  private Statistics buildStatistics(Study study, long studyId, long viewerId) {
+    long displayViewCount = studyViewCountService.calculateDisplayViewCount(study, studyId,
         viewerId);
     return Statistics.of(
         study.getMaxMembers(),
         study.getCurrentMembers(),
-        stats.getLikeCount(),
+        study.getLikeCount(),
         displayViewCount
     );
   }
