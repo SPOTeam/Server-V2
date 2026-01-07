@@ -1,66 +1,70 @@
 package kr.spot.application.event;
 
+import java.time.LocalDateTime;
 import kr.spot.IdGenerator;
 import kr.spot.domain.Notification;
 import kr.spot.domain.enums.NotificationType;
-import kr.spot.domain.vo.Content;
-import kr.spot.domain.vo.NotificationTarget;
 import kr.spot.event.StudyApplicationProcessedEvent;
 import kr.spot.infrastructure.jpa.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+/**
+ * 스터디 신청 처리 결과 알림을 생성합니다.
+ * study 모듈에서 발행하는 StudyApplicationProcessedEvent를 처리합니다.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class StudyApplicationNotificationListener {
 
-  private final IdGenerator idGenerator;
-  private final NotificationRepository notificationRepository;
+    private final IdGenerator idGenerator;
+    private final NotificationRepository notificationRepository;
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-  public void handle(StudyApplicationProcessedEvent event) {
-    try {
-      Notification notification = createNotification(event);
-      notificationRepository.save(notification);
-      log.info("Notification saved: studyId={}, applicantId={}, decision={}",
-          event.studyId(), event.applicantId(), event.decision());
-    } catch (Exception e) {
-      log.error("Failed to save notification: {}", event, e);
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void handle(StudyApplicationProcessedEvent event) {
+        try {
+            Notification notification = createNotification(event);
+            notificationRepository.save(notification);
+            log.info("Notification saved: studyId={}, applicantId={}, decision={}",
+                event.studyId(), event.applicantId(), event.decision());
+        } catch (DataIntegrityViolationException e) {
+            // dedupe_key 중복 - 이미 동일한 알림이 존재함
+            log.debug("Duplicate notification ignored for studyId={}, applicantId={}",
+                event.studyId(), event.applicantId());
+        } catch (Exception e) {
+            log.error("Failed to save notification: {}", event, e);
+        }
     }
-  }
 
-  private Notification createNotification(StudyApplicationProcessedEvent event) {
-    Content content = Content.of(
-        buildTitle(event),
-        buildMessage(event),
-        event.studyThumbnailUrl()
-    );
+    private Notification createNotification(StudyApplicationProcessedEvent event) {
+        NotificationType type = event.isApproved()
+            ? NotificationType.STUDY_APPLICATION_APPROVED
+            : NotificationType.STUDY_APPLICATION_REJECTED;
 
-    NotificationTarget target = NotificationTarget.of(
-        event.applicantId(),
-        event.studyId(),
-        NotificationType.STUDY_APPLICATION_RESULT,
-        null
-    );
+        String title = event.studyName();
+        String body = event.isApproved()
+            ? "스터디 가입이 승인되었습니다! 지금 바로 참여해보세요."
+            : "스터디 가입이 거절되었습니다.";
 
-    return Notification.of(idGenerator.nextId(), content, target);
-  }
+        String dedupeKey = String.format("%s:STUDY:%d:%d",
+            type.name(), event.studyId(), event.applicantId());
 
-  private String buildTitle(StudyApplicationProcessedEvent event) {
-    return event.studyName() + (event.isApproved() ? " 신청이 수락되었어요!" : " 신청이 거절되었어요.");
-  }
-
-  private String buildMessage(StudyApplicationProcessedEvent event) {
-    if (event.isApproved()) {
-      return String.format("'%s' 스터디 가입이 승인되었습니다.", event.studyName());
+        return Notification.create(
+            idGenerator.nextId(),
+            event.applicantId(),
+            type,
+            title,
+            body,
+            event.studyThumbnailUrl(),
+            "STUDY",
+            event.studyId(),
+            LocalDateTime.now(),
+            dedupeKey
+        );
     }
-    return String.format("'%s' 스터디 가입이 거절되었습니다.", event.studyName());
-  }
 }

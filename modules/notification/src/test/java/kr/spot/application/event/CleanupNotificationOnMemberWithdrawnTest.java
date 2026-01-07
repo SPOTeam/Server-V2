@@ -14,28 +14,28 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class CleanupNotificationOnMemberWithdrawnTest {
 
-  private static final long MEMBER_ID = 1L;
+    private static final long MEMBER_ID = 1L;
 
-  @Mock
-  NotificationRepository notificationRepository;
+    @Mock
+    NotificationRepository notificationRepository;
 
-  CleanupNotificationOnMemberWithdrawn handler;
+    CleanupNotificationOnMemberWithdrawn handler;
 
-  @BeforeEach
-  void setUp() {
-    handler = new CleanupNotificationOnMemberWithdrawn(notificationRepository);
-  }
+    @BeforeEach
+    void setUp() {
+        handler = new CleanupNotificationOnMemberWithdrawn(notificationRepository);
+    }
 
-  @Test
-  @DisplayName("회원 탈퇴 시 알림을 삭제한다")
-  void should_deleteNotifications_when_memberWithdrawn() {
-    // given
-    MemberWithdrawnEvent event = new MemberWithdrawnEvent(MEMBER_ID);
+    @Test
+    @DisplayName("회원 탈퇴 시 알림을 삭제한다")
+    void should_deleteNotifications_when_memberWithdrawn() {
+        // given
+        MemberWithdrawnEvent event = new MemberWithdrawnEvent(MEMBER_ID);
 
-    // when
-    handler.handle(event);
+        // when
+        handler.handle(event);
 
-    // then
-    verify(notificationRepository).deleteByTargetTargetMemberId(MEMBER_ID);
-  }
+        // then
+        verify(notificationRepository).deleteByMemberId(MEMBER_ID);
+    }
 }
