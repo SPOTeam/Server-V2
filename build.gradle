@@ -1,6 +1,7 @@
 plugins {
     id "io.spring.dependency-management" version "1.1.6" apply false
     id "org.springframework.boot" version "3.3.2" apply false
+    id "jacoco"
 }
 
 allprojects {
@@ -12,6 +13,7 @@ allprojects {
 subprojects {
     apply plugin: "java"
     apply plugin: "io.spring.dependency-management"
+    apply plugin: "jacoco"
 
     dependencyManagement {
         imports { mavenBom "org.springframework.boot:spring-boot-dependencies:3.3.2" }
@@ -23,12 +25,66 @@ subprojects {
         options.compilerArgs += "-parameters"
     }
 
-    tasks.test { useJUnitPlatform() }
+    tasks.test {
+        useJUnitPlatform()
+        finalizedBy jacocoTestReport
+    }
+
+    jacoco {
+        toolVersion = "0.8.12"
+    }
+
+    jacocoTestReport {
+        dependsOn test
+        reports {
+            xml.required = true
+            html.required = true
+        }
+        afterEvaluate {
+            classDirectories.setFrom(files(classDirectories.files.collect {
+                fileTree(dir: it, includes: [
+                    '**/domain/**',
+                    '**/application/**'
+                ], excludes: [
+                    '**/infrastructure/**',
+                    '**/presentation/**',
+                    '**/config/**'
+                ])
+            }))
+        }
+    }
 
     dependencies {
         compileOnly "org.projectlombok:lombok"
         annotationProcessor "org.projectlombok:lombok"
         testCompileOnly "org.projectlombok:lombok"
         testAnnotationProcessor "org.projectlombok:lombok"
+    }
+}
+
+// 전체 프로젝트 통합 커버리지 리포트
+tasks.register('jacocoRootReport', JacocoReport) {
+    dependsOn subprojects.findAll { it.plugins.hasPlugin('jacoco') }.collect { it.tasks.named('test') }
+
+    additionalSourceDirs.from(subprojects.findAll { it.plugins.hasPlugin('java') }.collect { it.sourceSets.main.allSource.srcDirs })
+    sourceDirectories.from(subprojects.findAll { it.plugins.hasPlugin('java') }.collect { it.sourceSets.main.allSource.srcDirs })
+
+    def allClassDirs = subprojects.findAll { it.plugins.hasPlugin('java') }.collect { it.sourceSets.main.output }
+    classDirectories.from(files(allClassDirs).asFileTree.matching {
+        include '**/domain/**'
+        include '**/application/**'
+        exclude '**/infrastructure/**'
+        exclude '**/presentation/**'
+        exclude '**/config/**'
+    })
+
+    executionData.from(subprojects.findAll { it.plugins.hasPlugin('jacoco') }.collect {
+        it.tasks.named('test').map { task -> task.extensions.getByType(JacocoTaskExtension).destinationFile }
+    })
+
+    reports {
+        xml.required = true
+        html.required = true
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco/aggregated')
     }
 }
