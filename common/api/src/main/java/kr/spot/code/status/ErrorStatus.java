@@ -86,6 +86,14 @@ public enum ErrorStatus implements BaseErrorCode {
   _REVIEW_ACCESS_DENIED(403, "REVIEW403", "해당 스터디에 속하는 회고가 아닙니다."),
   _ALREADY_REACTED(400, "REVIEW4000", "이미 반응을 누른 회고입니다."),
   _REACTION_NOT_FOUND(404, "REVIEW4040", "반응을 찾을 수 없습니다."),
+
+  // 알림 관련
+  _NOTIFICATION_NOT_FOUND(404, "NOTIFICATION404", "알림을 찾을 수 없습니다."),
+  _INVALID_NOTIFICATION_TYPE(400, "NOTIFICATION4000", "유효하지 않은 알림 유형입니다."),
+  _NOTIFICATION_PAYLOAD_MISSING_MEMBER_ID(400, "NOTIFICATION4001", "알림 페이로드에 memberId가 필요합니다."),
+  _NOTIFICATION_PAYLOAD_MISSING_STUDY_ID(400, "NOTIFICATION4002", "알림 페이로드에 studyId가 필요합니다."),
+  _NOTIFICATION_TEMPLATE_NOT_FOUND(500, "NOTIFICATION5000", "알림 템플릿을 찾을 수 없습니다."),
+  _PUSH_NOTIFICATION_FAILED(500, "NOTIFICATION5001", "푸시 알림 발송에 실패했습니다."),
   ;
 
   private final int httpStatus;

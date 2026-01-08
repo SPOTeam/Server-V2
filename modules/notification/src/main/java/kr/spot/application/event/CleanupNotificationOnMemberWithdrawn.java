@@ -15,6 +15,6 @@ public class CleanupNotificationOnMemberWithdrawn {
 
   @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
   public void handle(MemberWithdrawnEvent event) {
-    notificationRepository.deleteByTargetTargetMemberId(event.memberId());
+    notificationRepository.deleteByMemberId(event.memberId());
   }
 }
