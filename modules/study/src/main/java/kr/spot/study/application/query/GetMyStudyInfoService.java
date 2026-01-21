@@ -14,6 +14,7 @@ import kr.spot.study.domain.enums.RecruitingStatus;
 import kr.spot.study.domain.enums.SortBy;
 import kr.spot.study.domain.enums.StudyMemberStatus;
 import kr.spot.study.infrastructure.jpa.associations.StudyLikeRepository;
+import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
 import kr.spot.study.infrastructure.jpa.querydsl.StudyQueryRepository;
 import kr.spot.study.presentation.query.dto.response.GetStudyOverviewResponse;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class GetMyStudyInfoService {
   private final GetPreferredCategoryPort getPreferredCategoryPort;
   private final StudyQueryRepository studyQueryRepository;
   private final StudyLikeRepository studyLikeRepository;
+  private final StudyMemberRepository studyMemberRepository;
 
   public GetStudyOverviewResponse getMyStudyOverview(
       long viewerId,
@@ -196,7 +198,10 @@ public class GetMyStudyInfoService {
     fillWithPopularStudies(result, recommendCount);
 
     Set<Long> likedStudyIds = studyLikeRepository.findStudyIdsByMemberId(viewerId);
-    return StudyDTOMapper.toDTO(result, likedStudyIds, false, null, (long) result.size());
+    Set<Long> ownedStudyIds = studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(
+        viewerId, StudyMemberStatus.OWNER);
+    return StudyDTOMapper.toDTO(result, likedStudyIds, ownedStudyIds, false, null,
+        (long) result.size());
   }
 
   private List<Category> getPreferredCategories(long memberId) {
@@ -240,7 +245,10 @@ public class GetMyStudyInfoService {
     List<Study> pageContent = hasNext ? rows.subList(0, pageSize) : rows;
     Long nextCursor = hasNext ? pageContent.getLast().getId() : null;
     Set<Long> likedStudyIds = studyLikeRepository.findStudyIdsByMemberId(viewerId);
-    return StudyDTOMapper.toDTO(pageContent, likedStudyIds, hasNext, nextCursor, totalElements);
+    Set<Long> ownedStudyIds = studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(
+        viewerId, StudyMemberStatus.OWNER);
+    return StudyDTOMapper.toDTO(pageContent, likedStudyIds, ownedStudyIds, hasNext, nextCursor,
+        totalElements);
   }
 
   private List<String> filterPreferredRegionCodes(List<String> regionCodes,
