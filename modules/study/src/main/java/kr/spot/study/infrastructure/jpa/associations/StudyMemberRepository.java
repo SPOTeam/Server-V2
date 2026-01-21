@@ -7,6 +7,8 @@ import kr.spot.exception.GeneralException;
 import kr.spot.study.domain.associations.StudyMember;
 import kr.spot.study.domain.enums.StudyMemberStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> {
 
@@ -28,6 +30,10 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
 
   void deleteByMemberId(long memberId);
 
-  Set<Long> findStudyIdsByMemberIdAndStudyMemberStatus(long memberId,
-      StudyMemberStatus studyMemberStatus);
+  @Query("SELECT sm.studyId FROM StudyMember sm "
+      + "WHERE sm.memberId = :memberId "
+      + "AND sm.studyMemberStatus = :studyMemberStatus")
+  Set<Long> findStudyIdsByMemberIdAndStudyMemberStatus(
+      @Param("memberId") long memberId,
+      @Param("studyMemberStatus") StudyMemberStatus studyMemberStatus);
 }
