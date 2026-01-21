@@ -21,6 +21,7 @@ import kr.spot.study.domain.enums.RecruitingStatus;
 import kr.spot.study.domain.enums.SortBy;
 import kr.spot.study.domain.enums.StudyMemberStatus;
 import kr.spot.study.infrastructure.jpa.associations.StudyLikeRepository;
+import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
 import kr.spot.study.infrastructure.jpa.querydsl.StudyQueryRepository;
 import kr.spot.study.presentation.query.dto.response.GetStudyOverviewResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -45,6 +46,8 @@ class GetMyStudyInfoServiceTest {
   private StudyQueryRepository studyQueryRepository;
   @Mock
   private StudyLikeRepository studyLikeRepository;
+  @Mock
+  private StudyMemberRepository studyMemberRepository;
 
   @Nested
   @DisplayName("내 스터디 목록 조회 (getMyStudyOverview)")
@@ -66,6 +69,9 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.countMyStudies(viewerId, List.of(status))).willReturn(
           (long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyStudyOverview(viewerId,
@@ -92,7 +98,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.countMyStudies(viewerId, List.of(status))).willReturn(
           (long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
-
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyStudyOverview(viewerId,
           List.of(status),
@@ -120,6 +127,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.countMyStudies(viewerId, List.of(status))).willReturn(
           (long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyStudyOverview(viewerId,
@@ -147,6 +156,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.countMyStudies(viewerId, List.of(status))).willReturn(
           (long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyStudyOverview(viewerId,
@@ -184,6 +195,8 @@ class GetMyStudyInfoServiceTest {
           eq(preferredRegions)))
           .willReturn((long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyPreferredRegionStudies(
@@ -219,6 +232,8 @@ class GetMyStudyInfoServiceTest {
           eq(expectedRegions)))
           .willReturn((long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyPreferredRegionStudies(
@@ -247,6 +262,8 @@ class GetMyStudyInfoServiceTest {
           eq(Collections.emptyList())))
           .willReturn(0L);
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyPreferredRegionStudies(
@@ -289,6 +306,8 @@ class GetMyStudyInfoServiceTest {
           eq(preferredCategory)))
           .willReturn((long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyPreferredCategoryStudies(
@@ -320,6 +339,8 @@ class GetMyStudyInfoServiceTest {
           eq(Collections.emptyList())))
           .willReturn(0L);
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getMyPreferredCategoryStudies(
@@ -356,6 +377,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.findRecruitingStudiesByCategories(preferredCategories, 20))
           .willReturn(candidates);
       given(studyLikeRepository.findStudyIdsByMemberId(memberId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(memberId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getRecommendedStudies(memberId);
@@ -384,6 +407,8 @@ class GetMyStudyInfoServiceTest {
           List.of(preferredStudies.getFirst().getId()), 2))
           .willReturn(popularStudies);
       given(studyLikeRepository.findStudyIdsByMemberId(memberId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(memberId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getRecommendedStudies(memberId);
@@ -406,6 +431,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.findPopularRecruitingStudies(Collections.emptyList(), 3))
           .willReturn(popularStudies);
       given(studyLikeRepository.findStudyIdsByMemberId(memberId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(memberId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getRecommendedStudies(memberId);
@@ -430,6 +457,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.findPopularRecruitingStudies(Collections.emptyList(), 3))
           .willReturn(Collections.emptyList());
       given(studyLikeRepository.findStudyIdsByMemberId(memberId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(memberId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getRecommendedStudies(memberId);
@@ -464,6 +493,8 @@ class GetMyStudyInfoServiceTest {
           eq(FeeCategory.NONE), eq(List.of(Category.LANGUAGE)), eq(true)))
           .willReturn((long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getRecruitingStudies(
@@ -491,6 +522,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.countRecruitingStudies(eq(null), eq(null), eq(null)))
           .willReturn((long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getRecruitingStudies(
@@ -515,6 +548,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.countRecruitingStudies(any(), any(), any()))
           .willReturn((long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of(likedStudyId));
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getRecruitingStudies(
@@ -550,6 +585,8 @@ class GetMyStudyInfoServiceTest {
           eq(RecruitingStatus.RECRUITING), eq(FeeCategory.NONE), eq(Category.LANGUAGE), eq(false)))
           .willReturn((long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getStudiesByCategory(
@@ -576,6 +613,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.countStudiesByCategory(any(), any(), any(), any()))
           .willReturn(0L);
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getStudiesByCategory(
@@ -612,6 +651,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.countLikedStudies(viewerId))
           .willReturn((long) studies.size());
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(likedStudyIds);
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getLikedStudies(viewerId, null,
@@ -634,6 +675,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.countLikedStudies(viewerId))
           .willReturn(0L);
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getLikedStudies(viewerId, null,
@@ -658,6 +701,8 @@ class GetMyStudyInfoServiceTest {
       given(studyQueryRepository.countLikedStudies(viewerId))
           .willReturn(15L);
       given(studyLikeRepository.findStudyIdsByMemberId(viewerId)).willReturn(Set.of());
+      given(studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(viewerId,
+          StudyMemberStatus.OWNER)).willReturn(Set.of());
 
       // when
       GetStudyOverviewResponse response = getMyStudyInfoService.getLikedStudies(viewerId, cursor,
