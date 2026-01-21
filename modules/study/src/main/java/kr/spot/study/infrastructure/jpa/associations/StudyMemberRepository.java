@@ -1,6 +1,7 @@
 package kr.spot.study.infrastructure.jpa.associations;
 
 import java.util.List;
+import java.util.Set;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
 import kr.spot.study.domain.associations.StudyMember;
@@ -26,4 +27,7 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
   long countByMemberIdAndStudyMemberStatus(long memberId, StudyMemberStatus studyMemberStatus);
 
   void deleteByMemberId(long memberId);
+
+  Set<Long> findStudyIdsByMemberIdAndStudyMemberStatus(long memberId,
+      StudyMemberStatus studyMemberStatus);
 }
