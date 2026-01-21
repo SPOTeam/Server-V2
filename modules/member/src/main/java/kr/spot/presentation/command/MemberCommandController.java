@@ -98,7 +98,7 @@ public class MemberCommandController {
   })
   @DeleteMapping("/me")
   public ResponseEntity<ApiResponse<Void>> withdraw(
-      @CurrentMember @Parameter(hidden = true) long memberId
+      @CurrentMember @Parameter(hidden = true) Long memberId
   ) {
     memberWithdrawService.withdraw(memberId);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, null));
