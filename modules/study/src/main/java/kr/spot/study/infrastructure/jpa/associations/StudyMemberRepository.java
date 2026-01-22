@@ -1,6 +1,7 @@
 package kr.spot.study.infrastructure.jpa.associations;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
@@ -16,6 +17,13 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
     return findById(studyMemberId)
         .orElseThrow(() -> new GeneralException(ErrorStatus._STUDY_MEMBER_NOT_FOUND));
   }
+
+  default StudyMember getByMemberIdAndStudyId(Long memberId, Long studyId) {
+    return findByMemberIdAndStudyId(memberId, studyId)
+        .orElseThrow(() -> new GeneralException(ErrorStatus._STUDY_MEMBER_NOT_FOUND));
+  }
+
+  Optional<StudyMember> findByMemberIdAndStudyId(Long memberId, Long studyId);
 
   boolean existsByStudyIdAndMemberIdAndStudyMemberStatusIn(Long studyId, Long memberId,
       List<StudyMemberStatus> studyMemberStatuses);

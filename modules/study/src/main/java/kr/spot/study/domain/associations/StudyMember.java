@@ -9,6 +9,7 @@ import kr.spot.domain.BaseEntity;
 import kr.spot.exception.GeneralException;
 import kr.spot.study.domain.enums.Decision;
 import kr.spot.study.domain.enums.StudyMemberStatus;
+import kr.spot.study.domain.enums.WithdrawReason;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -66,5 +67,16 @@ public class StudyMember extends BaseEntity {
     } else if (decision == Decision.REJECT) {
       this.studyMemberStatus = StudyMemberStatus.SELF_REJECTED;
     }
+  }
+
+  public boolean isOwner() {
+    return this.studyMemberStatus == StudyMemberStatus.OWNER;
+  }
+
+  public void withdrawStudy(WithdrawReason withdrawReason, StudyMember nextOwner) {
+    if (studyMemberStatus.equals(StudyMemberStatus.OWNER) && nextOwner == null) {
+      throw new GeneralException(ErrorStatus._NEXT_OWNER_ID_REQUIRED_FOR_OWNER_WITHDRAWAL);
+    }
+    this.studyMemberStatus = StudyMemberStatus.WITHDRAWN;
   }
 }
