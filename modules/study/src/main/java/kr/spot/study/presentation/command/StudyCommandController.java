@@ -10,14 +10,19 @@ import kr.spot.ApiResponse;
 import kr.spot.annotations.CurrentMember;
 import kr.spot.code.status.SuccessStatus;
 import kr.spot.study.application.command.CreateStudyService;
+import kr.spot.study.application.command.ReportStudyMemberService;
 import kr.spot.study.application.command.StudyLikeService;
+import kr.spot.study.application.command.WithdrawStudyService;
 import kr.spot.study.presentation.command.dto.request.CreateStudyRequest;
+import kr.spot.study.presentation.command.dto.request.RepostStudyMemberRequest;
+import kr.spot.study.presentation.command.dto.request.WithdrawStudyRequest;
 import kr.spot.study.presentation.command.dto.response.CreateStudyResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,7 +35,9 @@ import org.springframework.web.multipart.MultipartFile;
 public class StudyCommandController {
 
   private final CreateStudyService createStudyService;
+  private final ReportStudyMemberService reportStudyMemberService;
   private final StudyLikeService studyLikeService;
+  private final WithdrawStudyService withdrawStudyService;
 
   @Operation(summary = "스터디 생성", description =
       "새로운 스터디를 생성합니다. 요청 정보는 `multipart/form-data` 형식으로 보내야 하며, 이미지 파일은 선택 사항입니다."
@@ -74,6 +81,29 @@ public class StudyCommandController {
       @CurrentMember @Parameter(hidden = true) Long memberId
   ) {
     studyLikeService.unlikeStudy(studyId, memberId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
+  }
+
+  @Operation(summary = "스터디 탈퇴", description = "스터디에서 탈퇴합니다.")
+  @PostMapping("{studyId}/withdraw")
+  public ResponseEntity<ApiResponse<Void>> withdrawStudy(
+      @PathVariable Long studyId,
+      @CurrentMember @Parameter(hidden = true) Long memberId,
+      @RequestBody WithdrawStudyRequest request
+  ) {
+    withdrawStudyService.withdrawStudy(studyId, memberId, request);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
+  }
+
+  @Operation(summary = "스터디원 신고", description = "스터디원(본인 제외)을 신고합니다.")
+  @PostMapping("/{studyId}/members/{targetMemberId}/report")
+  public ResponseEntity<ApiResponse<Void>> reportStudyMember(
+      @PathVariable Long studyId,
+      @PathVariable Long targetMemberId,
+      @CurrentMember @Parameter(hidden = true) Long memberId,
+      @RequestBody RepostStudyMemberRequest request
+  ) {
+    reportStudyMemberService.reportStudyMember(studyId, targetMemberId, request);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
   }
 }

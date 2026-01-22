@@ -10,7 +10,9 @@ public enum StudyMemberStatus {
   AWAITING_SELF_APPROVAL, // 본인 승인 대기
   APPROVED, // 신청 승인 완료
   SELF_REJECTED, // 본인 승인 거절
-  REJECTED; // 신청 거절
+  REJECTED, // 신청 거절
+  WITHDRAWN // 스터디 탈퇴
+  ;
 
   public static StudyMemberStatus convert(String status) {
     for (StudyMemberStatus memberStatus : StudyMemberStatus.values()) {

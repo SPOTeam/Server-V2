@@ -51,6 +51,10 @@ public enum ErrorStatus implements BaseErrorCode {
   _STUDY_ACCESS_DENIED(403, "STUDY4032", "스터디에 접근할 권한이 없습니다."),
   _INVALID_STUDY_ACCESS(403, "STUDY4033", "유효하지 않은 스터디 접근입니다."),
   _STUDY_IS_FULL(400, "STUDY4007", "스터디 정원이 가득 찼습니다."),
+  _NEXT_OWNER_ID_REQUIRED_FOR_OWNER_WITHDRAWAL(400, "STUDY4008",
+      "스터디장 탈퇴 시 다음 스터디장 ID가 필요합니다."),
+  _NEXT_OWNER_NOT_EXIST_IN_STUDY(400, "STUDY4009",
+      "다음 스터디장이 스터디 멤버에 존재하지 않습니다."),
 
   // 게시글 관련
   _POST_NOT_FOUND(404, "POST404", "게시글을 찾을 수 없습니다."),
