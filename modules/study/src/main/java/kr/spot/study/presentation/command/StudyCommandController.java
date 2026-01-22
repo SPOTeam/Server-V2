@@ -10,6 +10,7 @@ import kr.spot.ApiResponse;
 import kr.spot.annotations.CurrentMember;
 import kr.spot.code.status.SuccessStatus;
 import kr.spot.study.application.command.CreateStudyService;
+import kr.spot.study.application.command.ReportStudyMemberService;
 import kr.spot.study.application.command.StudyLikeService;
 import kr.spot.study.application.command.WithdrawStudyService;
 import kr.spot.study.presentation.command.dto.request.CreateStudyRequest;
@@ -34,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class StudyCommandController {
 
   private final CreateStudyService createStudyService;
+  private final ReportStudyMemberService reportStudyMemberService;
   private final StudyLikeService studyLikeService;
   private final WithdrawStudyService withdrawStudyService;
 
@@ -101,6 +103,7 @@ public class StudyCommandController {
       @CurrentMember @Parameter(hidden = true) Long memberId,
       @RequestBody RepostStudyMemberRequest request
   ) {
-
+    reportStudyMemberService.reportStudyMember(studyId, targetMemberId, request);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
   }
 }
