@@ -73,10 +73,19 @@ public class StudyMember extends BaseEntity {
     return this.studyMemberStatus == StudyMemberStatus.OWNER;
   }
 
+  public void promoteToOwner() {
+    this.studyMemberStatus = StudyMemberStatus.OWNER;
+  }
+
   public void withdrawStudy(WithdrawReason withdrawReason, StudyMember nextOwner) {
     if (studyMemberStatus.equals(StudyMemberStatus.OWNER) && nextOwner == null) {
       throw new GeneralException(ErrorStatus._NEXT_OWNER_ID_REQUIRED_FOR_OWNER_WITHDRAWAL);
     }
+
+    if (nextOwner != null) {
+      nextOwner.promoteToOwner();
+    }
+
     this.studyMemberStatus = StudyMemberStatus.WITHDRAWN;
   }
 }

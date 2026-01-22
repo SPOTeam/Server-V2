@@ -1,6 +1,8 @@
 package kr.spot.study.application.command;
 
 import jakarta.transaction.Transactional;
+import kr.spot.code.status.ErrorStatus;
+import kr.spot.exception.GeneralException;
 import kr.spot.study.domain.associations.StudyMember;
 import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
 import kr.spot.study.presentation.command.dto.request.WithdrawStudyRequest;
@@ -14,12 +16,20 @@ public class WithdrawStudyService {
 
   private final StudyMemberRepository studyMemberRepository;
 
-  public void withdrawStudy(Long studyId, Long memberId, WithdrawStudyRequest request) {
-    StudyMember studyMember = studyMemberRepository.getByMemberIdAndStudyId(memberId,
-        studyId);
+  public void withdrawStudy(long studyId, long memberId, WithdrawStudyRequest request) {
+    StudyMember studyMember = studyMemberRepository.getByMemberIdAndStudyId(memberId, studyId);
 
-    StudyMember nextOwner = studyMemberRepository.findById(request.nextOwnerId()).orElse(null);
+    StudyMember nextOwner = findNextOwner(studyId, request.nextOwnerId());
 
     studyMember.withdrawStudy(request.withdrawReason(), nextOwner);
+  }
+
+  private StudyMember findNextOwner(long studyId, Long nextOwnerId) {
+    if (nextOwnerId == null) {
+      return null;
+    }
+
+    return studyMemberRepository.findByMemberIdAndStudyId(nextOwnerId, studyId)
+        .orElseThrow(() -> new GeneralException(ErrorStatus._NEXT_OWNER_NOT_EXIST_IN_STUDY));
   }
 }
