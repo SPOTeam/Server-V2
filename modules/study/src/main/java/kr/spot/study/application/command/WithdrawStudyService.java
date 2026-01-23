@@ -29,6 +29,13 @@ public class WithdrawStudyService {
     study.decreaseMemberCount();
   }
 
+  public void deleteStudy(long studyId, long memberId) {
+    StudyMember studyMember = studyMemberRepository.getByMemberIdAndStudyId(memberId, studyId);
+    Study study = studyRepository.getStudyById(studyId);
+
+    study.finishStudy(studyMember);
+  }
+
   private StudyMember findNextOwner(long studyId, Long nextOwnerId) {
     if (nextOwnerId == null) {
       return null;

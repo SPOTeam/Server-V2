@@ -139,4 +139,18 @@ public class Study extends BaseEntity {
   public void updateImageUrl(String imageUrl) {
     this.imageUrl = imageUrl;
   }
+
+  public void finishStudy(StudyMember studyMember) {
+    validateIsStudyOwner(studyMember.getMemberId());
+    checkStudyCanDelete();
+    this.recruitingStatus = RecruitingStatus.COMPLETED;
+    this.currentMembers = 0;
+    super.delete();
+  }
+
+  private void checkStudyCanDelete() {
+    if (currentMembers > 1) {
+      throw new GeneralException(ErrorStatus._CANNOT_DELETE_STUDY_WITH_MEMBERS);
+    }
+  }
 }
