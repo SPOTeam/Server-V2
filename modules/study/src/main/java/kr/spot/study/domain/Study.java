@@ -114,6 +114,12 @@ public class Study extends BaseEntity {
     }
   }
 
+  public void decreaseMemberCount() {
+    if (this.currentMembers > 0) {
+      this.currentMembers -= 1;
+    }
+  }
+
   public void validateIsStudyOwner(Long requesterId) {
     if (!this.leaderId.equals(requesterId)) {
       throw new GeneralException(ErrorStatus._ONLY_LEADER_CAN_ACCESS);
