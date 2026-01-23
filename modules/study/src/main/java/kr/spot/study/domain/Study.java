@@ -114,6 +114,12 @@ public class Study extends BaseEntity {
     }
   }
 
+  public void decreaseMemberCount() {
+    if (this.currentMembers > 0) {
+      this.currentMembers -= 1;
+    }
+  }
+
   public void validateIsStudyOwner(Long requesterId) {
     if (!this.leaderId.equals(requesterId)) {
       throw new GeneralException(ErrorStatus._ONLY_LEADER_CAN_ACCESS);
@@ -132,5 +138,19 @@ public class Study extends BaseEntity {
 
   public void updateImageUrl(String imageUrl) {
     this.imageUrl = imageUrl;
+  }
+
+  public void finishStudy(StudyMember studyMember) {
+    validateIsStudyOwner(studyMember.getMemberId());
+    checkStudyCanDelete();
+    this.recruitingStatus = RecruitingStatus.COMPLETED;
+    this.currentMembers = 0;
+    super.delete();
+  }
+
+  private void checkStudyCanDelete() {
+    if (currentMembers > 1) {
+      throw new GeneralException(ErrorStatus._CANNOT_DELETE_STUDY_WITH_MEMBERS);
+    }
   }
 }

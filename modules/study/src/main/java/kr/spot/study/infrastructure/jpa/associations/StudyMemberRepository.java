@@ -44,4 +44,11 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
   Set<Long> findStudyIdsByMemberIdAndStudyMemberStatus(
       @Param("memberId") long memberId,
       @Param("studyMemberStatus") StudyMemberStatus studyMemberStatus);
+
+  @Query("SELECT sm.studyId FROM StudyMember sm "
+      + "JOIN Study s ON sm.studyId = s.id "
+      + "WHERE sm.memberId = :memberId "
+      + "AND sm.studyMemberStatus = 'OWNER' "
+      + "AND s.currentMembers = 1")
+  Set<Long> findAloneOwnerStudyIds(@Param("memberId") long memberId);
 }

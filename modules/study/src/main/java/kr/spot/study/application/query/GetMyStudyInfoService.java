@@ -200,7 +200,8 @@ public class GetMyStudyInfoService {
     Set<Long> likedStudyIds = studyLikeRepository.findStudyIdsByMemberId(viewerId);
     Set<Long> ownedStudyIds = studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(
         viewerId, StudyMemberStatus.OWNER);
-    return StudyDTOMapper.toDTO(result, likedStudyIds, ownedStudyIds, false, null,
+    Set<Long> aloneStudyIds = studyMemberRepository.findAloneOwnerStudyIds(viewerId);
+    return StudyDTOMapper.toDTO(result, likedStudyIds, ownedStudyIds, aloneStudyIds, false, null,
         (long) result.size());
   }
 
@@ -247,8 +248,9 @@ public class GetMyStudyInfoService {
     Set<Long> likedStudyIds = studyLikeRepository.findStudyIdsByMemberId(viewerId);
     Set<Long> ownedStudyIds = studyMemberRepository.findStudyIdsByMemberIdAndStudyMemberStatus(
         viewerId, StudyMemberStatus.OWNER);
-    return StudyDTOMapper.toDTO(pageContent, likedStudyIds, ownedStudyIds, hasNext, nextCursor,
-        totalElements);
+    Set<Long> aloneStudyIds = studyMemberRepository.findAloneOwnerStudyIds(viewerId);
+    return StudyDTOMapper.toDTO(pageContent, likedStudyIds, ownedStudyIds, aloneStudyIds, hasNext,
+        nextCursor, totalElements);
   }
 
   private List<String> filterPreferredRegionCodes(List<String> regionCodes,

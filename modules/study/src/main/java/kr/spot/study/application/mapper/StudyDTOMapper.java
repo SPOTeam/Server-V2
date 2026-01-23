@@ -13,12 +13,14 @@ public class StudyDTOMapper {
       List<Study> studies,
       Set<Long> likedStudyIds,
       Set<Long> ownedStudyIds,
+      Set<Long> aloneStudyIds,
       boolean hasNext,
       Long nextCursor,
       Long totalElements
   ) {
-    Set<Long> safelikedIds = likedStudyIds != null ? likedStudyIds : Collections.emptySet();
+    Set<Long> safeLikedIds = likedStudyIds != null ? likedStudyIds : Collections.emptySet();
     Set<Long> safeOwnedStudyIds = ownedStudyIds != null ? ownedStudyIds : Collections.emptySet();
+    Set<Long> safeAloneStudyIds = aloneStudyIds != null ? aloneStudyIds : Collections.emptySet();
 
     List<StudyOverview> list = studies.stream().map(
         study -> StudyOverview.of(
@@ -28,8 +30,9 @@ public class StudyDTOMapper {
             study.getMaxMembers(),
             study.getCurrentMembers(),
             0,
-            safelikedIds.contains(study.getId()),
+            safeLikedIds.contains(study.getId()),
             safeOwnedStudyIds.contains(study.getId()),
+            safeAloneStudyIds.contains(study.getId()),
             0,
             study.getImageUrl()
         )

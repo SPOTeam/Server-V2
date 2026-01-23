@@ -55,6 +55,8 @@ public enum ErrorStatus implements BaseErrorCode {
       "스터디장 탈퇴 시 다음 스터디장 ID가 필요합니다."),
   _NEXT_OWNER_NOT_EXIST_IN_STUDY(400, "STUDY4009",
       "다음 스터디장이 스터디 멤버에 존재하지 않습니다."),
+  _CANNOT_DELETE_STUDY_WITH_MEMBERS(400, "STUDY4010",
+      "스터디 멤버가 있는 상태에서는 스터디를 삭제할 수 없습니다."),
 
   // 게시글 관련
   _POST_NOT_FOUND(404, "POST404", "게시글을 찾을 수 없습니다."),

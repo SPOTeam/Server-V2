@@ -106,4 +106,14 @@ public class StudyCommandController {
     reportStudyMemberService.reportStudyMember(studyId, targetMemberId, request);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
   }
+
+  @Operation(summary = "스터디 삭제", description = "스터디를 삭제합니다.")
+  @DeleteMapping("/{studyId}")
+  public ResponseEntity<ApiResponse<Void>> deleteStudy(
+      @PathVariable Long studyId,
+      @CurrentMember @Parameter(hidden = true) Long memberId
+  ) {
+    withdrawStudyService.deleteStudy(studyId, memberId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
+  }
 }
