@@ -27,6 +27,7 @@ public record GetStudyOverviewResponse(
       long likeCount,
       boolean isLiked,
       boolean isOwner,
+      boolean isAlone,
       long hitCount,
       String profileImageUrl
   ) {
@@ -40,6 +41,7 @@ public record GetStudyOverviewResponse(
         long likeCount,
         boolean isLiked,
         boolean isOwner,
+        boolean isAlone,
         long hitCount,
         String profileImageUrl
     ) {
@@ -52,6 +54,7 @@ public record GetStudyOverviewResponse(
           likeCount,
           isLiked,
           isOwner,
+          isAlone,
           hitCount,
           profileImageUrl
       );
