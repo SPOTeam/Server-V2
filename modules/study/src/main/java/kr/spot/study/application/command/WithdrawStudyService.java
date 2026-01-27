@@ -1,6 +1,7 @@
 package kr.spot.study.application.command;
 
 import jakarta.transaction.Transactional;
+import java.util.List;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
 import kr.spot.study.domain.Study;
@@ -21,10 +22,10 @@ public class WithdrawStudyService {
   private final StudyMemberRepository studyMemberRepository;
 
   public void withdrawStudy(long studyId, long memberId, WithdrawStudyRequest request) {
-    StudyMember studyMember = studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusNot(
+    StudyMember studyMember = studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusIn(
         memberId,
         studyId,
-        StudyMemberStatus.WITHDRAWN);
+        List.of(StudyMemberStatus.APPROVED, StudyMemberStatus.OWNER));
     Study study = studyRepository.getStudyById(studyId);
 
     StudyMember nextOwner = findNextOwner(studyId, request.nextOwnerId());
