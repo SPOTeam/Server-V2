@@ -5,6 +5,7 @@ import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
 import kr.spot.study.domain.Study;
 import kr.spot.study.domain.associations.StudyMember;
+import kr.spot.study.domain.enums.StudyMemberStatus;
 import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
 import kr.spot.study.presentation.command.dto.request.WithdrawStudyRequest;
@@ -20,7 +21,10 @@ public class WithdrawStudyService {
   private final StudyMemberRepository studyMemberRepository;
 
   public void withdrawStudy(long studyId, long memberId, WithdrawStudyRequest request) {
-    StudyMember studyMember = studyMemberRepository.getByMemberIdAndStudyId(memberId, studyId);
+    StudyMember studyMember = studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusNot(
+        memberId,
+        studyId,
+        StudyMemberStatus.WITHDRAWN);
     Study study = studyRepository.getStudyById(studyId);
 
     StudyMember nextOwner = findNextOwner(studyId, request.nextOwnerId());
