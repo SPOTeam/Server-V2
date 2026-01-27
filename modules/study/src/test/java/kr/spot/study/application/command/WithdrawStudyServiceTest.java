@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 import kr.spot.exception.GeneralException;
 import kr.spot.study.domain.Study;
@@ -58,8 +59,8 @@ class WithdrawStudyServiceTest {
 
       WithdrawStudyRequest request = new WithdrawStudyRequest(WithdrawReason.NO_MORE_NEEDS, null);
 
-      when(studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusNot(memberId, STUDY_ID,
-          StudyMemberStatus.WITHDRAWN))
+      when(studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusIn(memberId, STUDY_ID,
+          List.of(StudyMemberStatus.APPROVED, StudyMemberStatus.OWNER)))
           .thenReturn(regularMember);
       when(studyRepository.getStudyById(STUDY_ID)).thenReturn(study);
 
@@ -87,9 +88,8 @@ class WithdrawStudyServiceTest {
 
       WithdrawStudyRequest request = new WithdrawStudyRequest(WithdrawReason.FINISHED, nextOwnerId);
 
-      when(studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusNot(ownerId, STUDY_ID,
-          StudyMemberStatus.WITHDRAWN))
-          .thenReturn(ownerMember);
+      when(studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusIn(ownerId, STUDY_ID,
+          List.of(StudyMemberStatus.APPROVED, StudyMemberStatus.OWNER))).thenReturn(ownerMember);
       when(studyMemberRepository.findByMemberIdAndStudyId(nextOwnerId, STUDY_ID)).thenReturn(
           Optional.of(nextOwner));
       when(studyRepository.getStudyById(STUDY_ID)).thenReturn(study);
@@ -115,9 +115,8 @@ class WithdrawStudyServiceTest {
 
       WithdrawStudyRequest request = new WithdrawStudyRequest(WithdrawReason.FINISHED, null);
 
-      when(studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusNot(ownerId, STUDY_ID,
-          StudyMemberStatus.WITHDRAWN))
-          .thenReturn(ownerMember);
+      when(studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusIn(ownerId, STUDY_ID,
+          List.of(StudyMemberStatus.APPROVED, StudyMemberStatus.OWNER))).thenReturn(ownerMember);
       when(studyRepository.getStudyById(STUDY_ID)).thenReturn(study);
 
       // when & then
@@ -139,9 +138,8 @@ class WithdrawStudyServiceTest {
 
       WithdrawStudyRequest request = new WithdrawStudyRequest(WithdrawReason.FINISHED, nextOwnerId);
 
-      when(studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusNot(ownerId, STUDY_ID,
-          StudyMemberStatus.WITHDRAWN))
-          .thenReturn(ownerMember);
+      when(studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusIn(ownerId, STUDY_ID,
+          List.of(StudyMemberStatus.APPROVED, StudyMemberStatus.OWNER))).thenReturn(ownerMember);
       when(studyMemberRepository.findByMemberIdAndStudyId(nextOwnerId, STUDY_ID)).thenReturn(
           Optional.empty());
       when(studyRepository.getStudyById(STUDY_ID)).thenReturn(study);
