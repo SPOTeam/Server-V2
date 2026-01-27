@@ -1,5 +1,6 @@
 package kr.spot.review.presentation.query.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record GetReviewListResponse(
@@ -15,7 +16,8 @@ public record GetReviewListResponse(
       ContentResponse content,
       ReactionCountResponse reactionCounts,
       ReactionResponse reactions,
-      boolean isPrivate
+      boolean isPrivate,
+      LocalDateTime createdAt
   ) {
 
     public static ReviewResponse from(
@@ -24,9 +26,12 @@ public record GetReviewListResponse(
         ContentResponse content,
         ReactionCountResponse reactionCounts,
         ReactionResponse reactions,
-        boolean isPrivate
+        boolean isPrivate,
+        LocalDateTime createdAt
     ) {
-      return new ReviewResponse(reviewId, writer, content, reactionCounts, reactions, isPrivate);
+      return new ReviewResponse(reviewId, writer, content, reactionCounts, reactions, isPrivate,
+          createdAt
+      );
     }
   }
 
