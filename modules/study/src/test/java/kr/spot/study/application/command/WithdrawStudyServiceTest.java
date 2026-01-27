@@ -58,7 +58,8 @@ class WithdrawStudyServiceTest {
 
       WithdrawStudyRequest request = new WithdrawStudyRequest(WithdrawReason.NO_MORE_NEEDS, null);
 
-      when(studyMemberRepository.getByMemberIdAndStudyId(memberId, STUDY_ID))
+      when(studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusNot(memberId, STUDY_ID,
+          StudyMemberStatus.WITHDRAWN))
           .thenReturn(regularMember);
       when(studyRepository.getStudyById(STUDY_ID)).thenReturn(study);
 
@@ -86,7 +87,8 @@ class WithdrawStudyServiceTest {
 
       WithdrawStudyRequest request = new WithdrawStudyRequest(WithdrawReason.FINISHED, nextOwnerId);
 
-      when(studyMemberRepository.getByMemberIdAndStudyId(ownerId, STUDY_ID))
+      when(studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusNot(ownerId, STUDY_ID,
+          StudyMemberStatus.WITHDRAWN))
           .thenReturn(ownerMember);
       when(studyMemberRepository.findByMemberIdAndStudyId(nextOwnerId, STUDY_ID)).thenReturn(
           Optional.of(nextOwner));
@@ -113,7 +115,8 @@ class WithdrawStudyServiceTest {
 
       WithdrawStudyRequest request = new WithdrawStudyRequest(WithdrawReason.FINISHED, null);
 
-      when(studyMemberRepository.getByMemberIdAndStudyId(ownerId, STUDY_ID))
+      when(studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusNot(ownerId, STUDY_ID,
+          StudyMemberStatus.WITHDRAWN))
           .thenReturn(ownerMember);
       when(studyRepository.getStudyById(STUDY_ID)).thenReturn(study);
 
@@ -136,7 +139,8 @@ class WithdrawStudyServiceTest {
 
       WithdrawStudyRequest request = new WithdrawStudyRequest(WithdrawReason.FINISHED, nextOwnerId);
 
-      when(studyMemberRepository.getByMemberIdAndStudyId(ownerId, STUDY_ID))
+      when(studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusNot(ownerId, STUDY_ID,
+          StudyMemberStatus.WITHDRAWN))
           .thenReturn(ownerMember);
       when(studyMemberRepository.findByMemberIdAndStudyId(nextOwnerId, STUDY_ID)).thenReturn(
           Optional.empty());
