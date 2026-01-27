@@ -84,7 +84,8 @@ public class GetReviewService {
             memberReactions.contains(Reaction.STAR),
             memberReactions.contains(Reaction.SMILE)
         ),
-        review.isPrivate()
+        review.isPrivate(),
+        review.getCreatedAt()
     );
   }
 
