@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/oauth")
 public class OAuthController {
-    
+
   private final OAuthService oAuthService;
 
   @Operation(summary = "소셜 로그인 리다이렉트 URL 반환",
@@ -39,8 +39,8 @@ public class OAuthController {
   })
   @GetMapping("/redirect-url/{type}")
   public ResponseEntity<ApiResponse<String>> getRedirectUrl(
-      @Parameter(description = "소셜 로그인 타입(naver, kakao)", required = true)
-      @PathVariable("type") String type) {
+      @PathVariable @Parameter(description =
+          "소셜 로그인 타입(naver, kakao)", required = true) String type) {
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,
         oAuthService.redirectURL(LoginType.valueOf(type.toUpperCase()))));
   }
@@ -58,8 +58,7 @@ public class OAuthController {
   })
   @GetMapping("/callback/{type}")
   public ResponseEntity<ApiResponse<TokenDTO>> socialLoginCallback(
-      @Parameter(description = "소셜 로그인 타입(naver, kakao)", required = true)
-      @PathVariable("type") String type,
+      @PathVariable @Parameter(description = "소셜 로그인 타입(naver, kakao)", required = true) String type,
       @Parameter(description = "소셜 로그인 후 발급받은 code", required = true)
       @RequestParam("code") String code) {
 
@@ -72,7 +71,7 @@ public class OAuthController {
           "예: /api/oauth/client/kakao?accessToken=YOUR_ACCESS_TOKEN")
   @GetMapping("/client/{type}")
   public ResponseEntity<ApiResponse<TokenDTO>> socialLoginForClient(
-      @PathVariable("type") String type,
+      @PathVariable String type,
       @RequestParam("accessToken") String accessToken
   ) {
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,
