@@ -8,8 +8,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import kr.spot.code.status.ErrorStatus;
 import kr.spot.domain.enums.NotificationStatus;
 import kr.spot.domain.enums.NotificationType;
+import kr.spot.exception.GeneralException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -161,7 +163,10 @@ public class Notification extends BaseEntity {
     return retryCount < maxRetry;
   }
 
-  public void markAsRead() {
+  public void markAsRead(long memberId) {
+    if (memberId != this.memberId) {
+      throw new GeneralException(ErrorStatus._NOTIFICATION_ACCESS_DENIED);
+    }
     this.isRead = true;
   }
 }

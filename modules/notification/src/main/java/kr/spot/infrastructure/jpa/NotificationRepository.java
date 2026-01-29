@@ -2,8 +2,10 @@ package kr.spot.infrastructure.jpa;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import kr.spot.code.status.ErrorStatus;
 import kr.spot.domain.Notification;
 import kr.spot.domain.enums.NotificationStatus;
+import kr.spot.exception.GeneralException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +16,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
   void deleteByMemberId(long memberId);
 
   List<Notification> findByMemberIdOrderByCreatedAtDesc(long memberId);
+
+  boolean existsByMemberIdAndIsReadFalse(long memberId);
 
   /**
    * 발송 대상 알림 선점 (FOR UPDATE SKIP LOCKED 사용) MySQL 8.0+에서 지원
@@ -46,4 +50,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
    * 특정 서버가 선점한 알림 목록 조회
    */
   List<Notification> findByPickedByAndDispatchStatus(String serverId, NotificationStatus status);
+
+  default Notification getById(long id) {
+    return findById(id).orElseThrow(
+        () -> new GeneralException(ErrorStatus._NOTIFICATION_NOT_FOUND));
+  }
 }
