@@ -1,5 +1,6 @@
 package kr.spot.schedule.application.query;
 
+import static kr.spot.schedule.common.ScheduleFixture.CREATOR_ID;
 import static kr.spot.schedule.common.ScheduleFixture.STUDY_ID;
 import static kr.spot.schedule.common.ScheduleFixture.schedule;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,7 +56,7 @@ class GetScheduleServiceTest {
           .thenReturn(schedules);
 
       // when
-      GetScheduleListResponse response = getScheduleService.getMonthlySchedules(STUDY_ID, year, month);
+      GetScheduleListResponse response = getScheduleService.getMonthlySchedules(STUDY_ID, year, month, CREATOR_ID);
 
       // then
       assertThat(response.schedules()).hasSize(2);
@@ -71,7 +72,7 @@ class GetScheduleServiceTest {
           .thenReturn(Collections.emptyList());
 
       // when
-      GetScheduleListResponse response = getScheduleService.getMonthlySchedules(STUDY_ID, 2025, 1);
+      GetScheduleListResponse response = getScheduleService.getMonthlySchedules(STUDY_ID, 2025, 1, CREATOR_ID);
 
       // then
       assertThat(response.schedules()).isEmpty();
@@ -94,7 +95,7 @@ class GetScheduleServiceTest {
           .thenReturn(schedules);
 
       // when
-      GetScheduleListResponse response = getScheduleService.getWeeklySchedules(STUDY_ID, date);
+      GetScheduleListResponse response = getScheduleService.getWeeklySchedules(STUDY_ID, date, CREATOR_ID);
 
       // then
       assertThat(response.schedules()).hasSize(1);
@@ -111,7 +112,7 @@ class GetScheduleServiceTest {
           .thenReturn(Collections.emptyList());
 
       // when
-      GetScheduleListResponse response = getScheduleService.getWeeklySchedules(STUDY_ID, date);
+      GetScheduleListResponse response = getScheduleService.getWeeklySchedules(STUDY_ID, date, CREATOR_ID);
 
       // then
       assertThat(response.schedules()).isEmpty();
@@ -136,7 +137,7 @@ class GetScheduleServiceTest {
           .thenReturn(schedules);
 
       // when
-      GetScheduleListResponse response = getScheduleService.getUpcomingSchedules(STUDY_ID);
+      GetScheduleListResponse response = getScheduleService.getUpcomingSchedules(STUDY_ID, CREATOR_ID);
 
       // then
       assertThat(response.schedules()).hasSize(2);
@@ -151,7 +152,7 @@ class GetScheduleServiceTest {
           .thenReturn(Collections.emptyList());
 
       // when
-      GetScheduleListResponse response = getScheduleService.getUpcomingSchedules(STUDY_ID);
+      GetScheduleListResponse response = getScheduleService.getUpcomingSchedules(STUDY_ID, CREATOR_ID);
 
       // then
       assertThat(response.schedules()).isEmpty();

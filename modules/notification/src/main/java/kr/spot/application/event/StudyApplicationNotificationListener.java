@@ -27,6 +27,12 @@ public class StudyApplicationNotificationListener {
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handle(StudyApplicationProcessedEvent event) {
+        if (!event.isApproved()) {
+            log.debug("Skipping notification for rejected application: studyId={}, applicantId={}",
+                event.studyId(), event.applicantId());
+            return;
+        }
+
         try {
             Notification notification = createNotification(event);
             notificationRepository.save(notification);
@@ -42,24 +48,15 @@ public class StudyApplicationNotificationListener {
     }
 
     private Notification createNotification(StudyApplicationProcessedEvent event) {
-        NotificationType type = event.isApproved()
-            ? NotificationType.STUDY_APPLICATION_APPROVED
-            : NotificationType.STUDY_APPLICATION_REJECTED;
-
-        String title = event.studyName();
-        String body = event.isApproved()
-            ? "스터디 가입이 승인되었습니다! 지금 바로 참여해보세요."
-            : "스터디 가입이 거절되었습니다.";
-
         String dedupeKey = String.format("%s:STUDY:%d:%d",
-            type.name(), event.studyId(), event.applicantId());
+            NotificationType.STUDY_APPLICATION_APPROVED.name(), event.studyId(), event.applicantId());
 
         return Notification.create(
             idGenerator.nextId(),
             event.applicantId(),
-            type,
-            title,
-            body,
+            NotificationType.STUDY_APPLICATION_APPROVED,
+            event.studyName(),
+            "스터디 가입이 승인되었습니다! 지금 바로 참여해보세요.",
             event.studyThumbnailUrl(),
             "STUDY",
             event.studyId(),

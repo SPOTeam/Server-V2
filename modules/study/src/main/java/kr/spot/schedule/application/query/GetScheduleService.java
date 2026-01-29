@@ -20,23 +20,23 @@ public class GetScheduleService {
 
   private final ScheduleQueryRepository scheduleQueryRepository;
 
-  public GetScheduleListResponse getMonthlySchedules(Long studyId, int year, int month) {
+  public GetScheduleListResponse getMonthlySchedules(long studyId, int year, int month, long memberId) {
     LocalDate date = LocalDate.of(year, month, 1);
     List<Schedule> schedules = scheduleQueryRepository.findMonthlySchedules(studyId, date);
-    return toResponse(schedules);
+    return toResponse(schedules, memberId);
   }
 
-  public GetScheduleListResponse getWeeklySchedules(Long studyId, LocalDate date) {
+  public GetScheduleListResponse getWeeklySchedules(long studyId, LocalDate date, long memberId) {
     List<Schedule> schedules = scheduleQueryRepository.findWeeklySchedules(studyId, date);
-    return toResponse(schedules);
+    return toResponse(schedules, memberId);
   }
 
-  public GetScheduleListResponse getUpcomingSchedules(Long studyId) {
+  public GetScheduleListResponse getUpcomingSchedules(long studyId, long memberId) {
     List<Schedule> schedules = scheduleQueryRepository.findUpcomingSchedules(studyId, UPCOMING_LIMIT);
-    return toResponse(schedules);
+    return toResponse(schedules, memberId);
   }
 
-  private GetScheduleListResponse toResponse(List<Schedule> schedules) {
+  private GetScheduleListResponse toResponse(List<Schedule> schedules, long memberId) {
     LocalDateTime now = LocalDateTime.now();
 
     List<ScheduleResponse> responses = schedules.stream()
@@ -45,7 +45,8 @@ public class GetScheduleService {
             schedule.getTitle(),
             schedule.getStartAt(),
             schedule.getEndAt(),
-            schedule.isOngoing(now)
+            schedule.isOngoing(now),
+            schedule.getCreatorId() != null && schedule.getCreatorId() == memberId
         ))
         .toList();
 

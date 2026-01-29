@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.spot.ApiResponse;
+import kr.spot.annotations.CurrentMember;
 import kr.spot.code.status.SuccessStatus;
 import kr.spot.schedule.application.command.ManageScheduleService;
 import kr.spot.schedule.presentation.command.dto.CreateScheduleRequest;
@@ -37,9 +38,10 @@ public class ScheduleCommandController {
   })
   @PostMapping
   public ResponseEntity<ApiResponse<CreateScheduleResponse>> createSchedule(
+      @CurrentMember @Parameter(hidden = true) Long memberId,
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
       @RequestBody CreateScheduleRequest request) {
-    long scheduleId = manageScheduleService.createSchedule(request, studyId);
+    long scheduleId = manageScheduleService.createSchedule(request, studyId, memberId);
     return ResponseEntity.ok(
         ApiResponse.onSuccess(SuccessStatus._CREATED, CreateScheduleResponse.from(scheduleId)));
   }

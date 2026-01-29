@@ -16,9 +16,9 @@ public class ManageScheduleService {
   private final IdGenerator idGenerator;
   private final ScheduleRepository scheduleRepository;
 
-  public long createSchedule(CreateScheduleRequest request, long studyId) {
+  public long createSchedule(CreateScheduleRequest request, long studyId, long creatorId) {
     long scheduleId = idGenerator.nextId();
-    Schedule schedule = Schedule.of(scheduleId, studyId, request.title(),
+    Schedule schedule = Schedule.of(scheduleId, studyId, creatorId, request.title(),
         request.locationInfo(),
         request.startAt(), request.endAt());
 

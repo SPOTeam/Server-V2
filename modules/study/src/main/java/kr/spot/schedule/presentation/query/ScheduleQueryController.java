@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import kr.spot.ApiResponse;
+import kr.spot.annotations.CurrentMember;
 import kr.spot.code.status.SuccessStatus;
 import kr.spot.schedule.application.query.GetScheduleService;
 import kr.spot.schedule.presentation.query.dto.GetScheduleListResponse;
@@ -36,10 +37,11 @@ public class ScheduleQueryController {
   })
   @GetMapping("/monthly")
   public ResponseEntity<ApiResponse<GetScheduleListResponse>> getMonthlySchedules(
+      @CurrentMember @Parameter(hidden = true) Long memberId,
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
       @Parameter(description = "연도", example = "2025") @RequestParam Integer year,
       @Parameter(description = "월", example = "1") @RequestParam Integer month) {
-    GetScheduleListResponse response = getScheduleService.getMonthlySchedules(studyId, year, month);
+    GetScheduleListResponse response = getScheduleService.getMonthlySchedules(studyId, year, month, memberId);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
   }
 
@@ -50,10 +52,11 @@ public class ScheduleQueryController {
   })
   @GetMapping("/weekly")
   public ResponseEntity<ApiResponse<GetScheduleListResponse>> getWeeklySchedules(
+      @CurrentMember @Parameter(hidden = true) Long memberId,
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
       @Parameter(description = "조회 기준 날짜 (해당 주 전체 조회), ISO 8601 표준 방식으로 입력해주세요. ", example = "2025-01-15")
       @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
-    GetScheduleListResponse response = getScheduleService.getWeeklySchedules(studyId, date);
+    GetScheduleListResponse response = getScheduleService.getWeeklySchedules(studyId, date, memberId);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
   }
 
@@ -64,8 +67,9 @@ public class ScheduleQueryController {
   })
   @GetMapping("/upcoming")
   public ResponseEntity<ApiResponse<GetScheduleListResponse>> getUpcomingSchedules(
+      @CurrentMember @Parameter(hidden = true) Long memberId,
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId) {
-    GetScheduleListResponse response = getScheduleService.getUpcomingSchedules(studyId);
+    GetScheduleListResponse response = getScheduleService.getUpcomingSchedules(studyId, memberId);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
   }
 }

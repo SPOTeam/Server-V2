@@ -1,5 +1,6 @@
 package kr.spot.schedule.domain;
 
+import static kr.spot.schedule.common.ScheduleFixture.CREATOR_ID;
 import static kr.spot.schedule.common.ScheduleFixture.END_AT;
 import static kr.spot.schedule.common.ScheduleFixture.ID;
 import static kr.spot.schedule.common.ScheduleFixture.LOCATION_MEMO;
@@ -27,12 +28,13 @@ class ScheduleTest {
     @DisplayName("일정 객체를 정상적으로 생성할 수 있다")
     void should_create_schedule_successfully() {
       // when
-      Schedule schedule = Schedule.of(ID, STUDY_ID, TITLE, LOCATION_MEMO, START_AT, END_AT);
+      Schedule schedule = Schedule.of(ID, STUDY_ID, CREATOR_ID, TITLE, LOCATION_MEMO, START_AT, END_AT);
 
       // then
       assertThat(schedule).isNotNull();
       assertThat(schedule.getId()).isEqualTo(ID);
       assertThat(schedule.getStudyId()).isEqualTo(STUDY_ID);
+      assertThat(schedule.getCreatorId()).isEqualTo(CREATOR_ID);
       assertThat(schedule.getTitle()).isEqualTo(TITLE);
       assertThat(schedule.getLocationMemo()).isEqualTo(LOCATION_MEMO);
       assertThat(schedule.getStartAt()).isEqualTo(START_AT);
@@ -43,7 +45,7 @@ class ScheduleTest {
     @DisplayName("위치 정보 없이 일정 객체를 생성할 수 있다")
     void should_create_schedule_without_location() {
       // when
-      Schedule schedule = Schedule.of(ID, STUDY_ID, TITLE, null, START_AT, END_AT);
+      Schedule schedule = Schedule.of(ID, STUDY_ID, CREATOR_ID, TITLE, null, START_AT, END_AT);
 
       // then
       assertThat(schedule).isNotNull();
@@ -54,7 +56,7 @@ class ScheduleTest {
     @DisplayName("시작/종료 시간 없이 일정 객체를 생성할 수 있다")
     void should_create_schedule_without_time() {
       // when
-      Schedule schedule = Schedule.of(ID, STUDY_ID, TITLE, LOCATION_MEMO, null, null);
+      Schedule schedule = Schedule.of(ID, STUDY_ID, CREATOR_ID, TITLE, LOCATION_MEMO, null, null);
 
       // then
       assertThat(schedule).isNotNull();
@@ -167,7 +169,7 @@ class ScheduleTest {
     @DisplayName("시작 시간이 null이면 false를 반환한다")
     void should_return_false_when_start_time_is_null() {
       // given
-      Schedule schedule = Schedule.of(ID, STUDY_ID, TITLE, LOCATION_MEMO, null, END_AT);
+      Schedule schedule = Schedule.of(ID, STUDY_ID, CREATOR_ID, TITLE, LOCATION_MEMO, null, END_AT);
       LocalDateTime now = LocalDateTime.now();
 
       // when
@@ -181,7 +183,7 @@ class ScheduleTest {
     @DisplayName("종료 시간이 null이면 false를 반환한다")
     void should_return_false_when_end_time_is_null() {
       // given
-      Schedule schedule = Schedule.of(ID, STUDY_ID, TITLE, LOCATION_MEMO, START_AT, null);
+      Schedule schedule = Schedule.of(ID, STUDY_ID, CREATOR_ID, TITLE, LOCATION_MEMO, START_AT, null);
       LocalDateTime now = LocalDateTime.now();
 
       // when
