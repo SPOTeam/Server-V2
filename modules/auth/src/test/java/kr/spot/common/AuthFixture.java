@@ -19,6 +19,6 @@ public class AuthFixture {
   }
 
   public static TokenDTO newTokenDTO() {
-    return new TokenDTO(NEW_ACCESS, NEW_REFRESH);
+    return new TokenDTO(MEMBER_ID, NEW_ACCESS, NEW_REFRESH);
   }
 }
