@@ -49,7 +49,7 @@ public class JwtTokenProvider implements TokenProvider {
         REFRESH); // 리프레시 토큰 생성
 
     // 토큰 DTO 반환
-    return TokenDTO.of(accessToken, refreshToken);
+    return TokenDTO.of(memberId, accessToken, refreshToken);
   }
 
   private String generateToken(final Long memberId, Date now, final long expirationTime,
@@ -92,7 +92,7 @@ public class JwtTokenProvider implements TokenProvider {
     long oneYearInMillis = 365L * 24 * 60 * 60 * 1000;
     String accessToken = generateToken(memberId, now, oneYearInMillis, ACCESS);
     String refreshToken = generateToken(memberId, now, oneYearInMillis, REFRESH);
-    return TokenDTO.of(accessToken, refreshToken);
+    return TokenDTO.of(memberId, accessToken, refreshToken);
   }
 
   private Claims getClaims(final String token) {
