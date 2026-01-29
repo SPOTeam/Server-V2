@@ -11,6 +11,7 @@ import kr.spot.annotations.CurrentMember;
 import kr.spot.application.query.GetNotificationService;
 import kr.spot.code.status.SuccessStatus;
 import kr.spot.presentation.query.dto.GetNotificationListResponse;
+import kr.spot.presentation.query.dto.GetUnreadNotificationResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +36,15 @@ public class NotificationQueryController {
   public ResponseEntity<ApiResponse<GetNotificationListResponse>> getMyNotifications(
       @CurrentMember @Parameter(hidden = true) Long memberId) {
     GetNotificationListResponse response = getNotificationService.getMyNotifications(memberId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
+  }
+
+  @Operation(summary = "읽지 않은 알림 존재 여부 조회", description = "로그인한 사용자의 읽지 않은 알림이 있는지 여부를 조회합니다.")
+  @GetMapping("/me/unread")
+  public ResponseEntity<ApiResponse<GetUnreadNotificationResponse>> hasUnreadNotifications(
+      @CurrentMember @Parameter(hidden = true) Long memberId) {
+    GetUnreadNotificationResponse response = getNotificationService.hasUnreadNotifications(
+        memberId);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
   }
 }
