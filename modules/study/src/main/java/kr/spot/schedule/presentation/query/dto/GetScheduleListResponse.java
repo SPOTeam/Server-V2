@@ -17,12 +17,13 @@ public record GetScheduleListResponse(
       String title,
       LocalDateTime startAt,
       LocalDateTime endAt,
-      boolean isNow
+      boolean isNow,
+      boolean isMine
   ) {
 
     public static ScheduleResponse from(Long scheduleId, String title,
-        LocalDateTime startAt, LocalDateTime endAt, boolean isNow) {
-      return new ScheduleResponse(scheduleId, title, startAt, endAt, isNow);
+        LocalDateTime startAt, LocalDateTime endAt, boolean isNow, boolean isMine) {
+      return new ScheduleResponse(scheduleId, title, startAt, endAt, isNow, isMine);
     }
 
   }

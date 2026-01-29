@@ -8,10 +8,13 @@ dependencies {
     implementation project(":common:snowflake")
 
     implementation project(":modules:shared")
+    implementation project(":modules:auth-api")
     implementation project(":modules:study-api")
     implementation project(":modules:notification-api")
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.4'
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 

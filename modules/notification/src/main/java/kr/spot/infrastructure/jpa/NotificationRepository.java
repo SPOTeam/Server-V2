@@ -13,6 +13,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
   void deleteByMemberId(long memberId);
 
+  List<Notification> findByMemberIdOrderByCreatedAtDesc(long memberId);
+
   /**
    * 발송 대상 알림 선점 (FOR UPDATE SKIP LOCKED 사용) MySQL 8.0+에서 지원
    */

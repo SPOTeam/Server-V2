@@ -27,6 +27,8 @@ public class Schedule extends BaseEntity {
 
   private Long studyId;
 
+  private Long creatorId;
+
   @Column(nullable = false)
   private String title;
 
@@ -40,10 +42,10 @@ public class Schedule extends BaseEntity {
 
   private String attendanceQrCodeImageUrl;
 
-  public static Schedule of(Long id, Long studyId, String title, String locationMemo,
+  public static Schedule of(Long id, Long studyId, long creatorId, String title, String locationMemo,
       LocalDateTime startAt, LocalDateTime endAt
   ) {
-    return new Schedule(id, studyId, title, locationMemo, startAt, endAt, false, null);
+    return new Schedule(id, studyId, creatorId, title, locationMemo, startAt, endAt, false, null);
   }
 
   public void delete(long studyId) {
