@@ -11,6 +11,7 @@ public class AttendanceFixture {
   public static final long SCHEDULE_ID = 100L;
   public static final long ATTENDANCE_ID = 200L;
   public static final long MEMBER_ID = 42L;
+  public static final long CREATOR_ID = 10L;
   public static final long OTHER_MEMBER_ID = 99L;
 
   public static final String MEMBER_NAME = "테스터";
@@ -34,6 +35,7 @@ public class AttendanceFixture {
     return Schedule.of(
         SCHEDULE_ID,
         STUDY_ID,
+        CREATOR_ID,
         "테스트 일정",
         "테스트 장소",
         now.minusHours(1),
@@ -52,6 +54,7 @@ public class AttendanceFixture {
     return Schedule.of(
         SCHEDULE_ID,
         STUDY_ID,
+        CREATOR_ID,
         "지난 일정",
         "테스트 장소",
         now.minusHours(3),
@@ -64,6 +67,7 @@ public class AttendanceFixture {
     return Schedule.of(
         SCHEDULE_ID,
         STUDY_ID,
+        CREATOR_ID,
         "미래 일정",
         "테스트 장소",
         now.plusHours(1),

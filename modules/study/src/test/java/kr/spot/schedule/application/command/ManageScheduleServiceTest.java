@@ -1,5 +1,6 @@
 package kr.spot.schedule.application.command;
 
+import static kr.spot.schedule.common.ScheduleFixture.CREATOR_ID;
 import static kr.spot.schedule.common.ScheduleFixture.LOCATION_MEMO;
 import static kr.spot.schedule.common.ScheduleFixture.STUDY_ID;
 import static kr.spot.schedule.common.ScheduleFixture.TITLE;
@@ -63,7 +64,7 @@ class ManageScheduleServiceTest {
           .thenAnswer(invocation -> invocation.getArgument(0));
 
       // when
-      manageScheduleService.createSchedule(request, STUDY_ID);
+      manageScheduleService.createSchedule(request, STUDY_ID, CREATOR_ID);
 
       // then
       verify(scheduleRepository).save(scheduleCaptor.capture());
@@ -71,6 +72,7 @@ class ManageScheduleServiceTest {
       Schedule capturedSchedule = scheduleCaptor.getValue();
       assertThat(capturedSchedule.getId()).isEqualTo(generatedId);
       assertThat(capturedSchedule.getStudyId()).isEqualTo(STUDY_ID);
+      assertThat(capturedSchedule.getCreatorId()).isEqualTo(CREATOR_ID);
       assertThat(capturedSchedule.getTitle()).isEqualTo(TITLE);
       assertThat(capturedSchedule.getLocationMemo()).isEqualTo(LOCATION_MEMO);
       assertThat(capturedSchedule.getStartAt()).isEqualTo(request.startAt());
@@ -91,7 +93,7 @@ class ManageScheduleServiceTest {
           .thenAnswer(invocation -> invocation.getArgument(0));
 
       // when
-      manageScheduleService.createSchedule(request, STUDY_ID);
+      manageScheduleService.createSchedule(request, STUDY_ID, CREATOR_ID);
 
       // then
       verify(scheduleRepository).save(scheduleCaptor.capture());
