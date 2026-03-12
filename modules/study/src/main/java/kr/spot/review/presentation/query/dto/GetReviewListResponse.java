@@ -50,12 +50,12 @@ public record GetReviewListResponse(
       String activity,
       String learned,
       String encouragement,
-      String imageUrl
+      List<String> imageUrls
   ) {
 
     public static ContentResponse from(String activity, String learned, String encouragement,
-        String imageUrl) {
-      return new ContentResponse(activity, learned, encouragement, imageUrl);
+        List<String> imageUrls) {
+      return new ContentResponse(activity, learned, encouragement, imageUrls);
     }
   }
 

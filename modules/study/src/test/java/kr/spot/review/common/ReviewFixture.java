@@ -1,5 +1,6 @@
 package kr.spot.review.common;
 
+import java.util.List;
 import kr.spot.review.domain.Review;
 import kr.spot.review.domain.associations.ReviewReaction;
 import kr.spot.review.domain.enums.Reaction;
@@ -21,6 +22,8 @@ public class ReviewFixture {
   public static final String LEARNED = "다이나믹 프로그래밍의 개념을 이해했습니다.";
   public static final String ENCOURAGEMENT = "오늘도 수고했어!";
   public static final String IMAGE_URL = "https://example.com/review-image.jpg";
+  public static final String IMAGE_URL_2 = "https://example.com/review-image-2.jpg";
+  public static final String IMAGE_URL_3 = "https://example.com/review-image-3.jpg";
 
   public static WriterInfo writerInfo() {
     return WriterInfo.of(MEMBER_ID, WRITER_NAME, WRITER_PROFILE_IMAGE_URL);
@@ -31,11 +34,17 @@ public class ReviewFixture {
   }
 
   public static Content content() {
-    return Content.of(ACTIVITY, LEARNED, ENCOURAGEMENT, IMAGE_URL);
+    return Content.of(ACTIVITY, LEARNED, ENCOURAGEMENT, List.of(IMAGE_URL));
   }
 
   public static Content content(String imageUrl) {
-    return Content.of(ACTIVITY, LEARNED, ENCOURAGEMENT, imageUrl);
+    return Content.of(ACTIVITY, LEARNED, ENCOURAGEMENT, imageUrl == null
+        ? List.of()
+        : List.of(imageUrl));
+  }
+
+  public static Content content(List<String> imageUrls) {
+    return Content.of(ACTIVITY, LEARNED, ENCOURAGEMENT, imageUrls);
   }
 
   public static Review review() {
