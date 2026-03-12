@@ -231,7 +231,7 @@ class GetReviewServiceTest {
       assertThat(reviewResponse.content().activity()).isEqualTo(PRIVATE_CONTENT_MESSAGE);
       assertThat(reviewResponse.content().learned()).isEqualTo(PRIVATE_CONTENT_MESSAGE);
       assertThat(reviewResponse.content().encouragement()).isEqualTo(PRIVATE_CONTENT_MESSAGE);
-      assertThat(reviewResponse.content().imageUrl()).isNull();
+      assertThat(reviewResponse.content().imageUrls()).isEmpty();
     }
 
     @Test

@@ -19,9 +19,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import kr.spot.IdGenerator;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
@@ -154,12 +156,82 @@ class ManageReviewServiceTest {
           .thenAnswer(invocation -> invocation.getArgument(0));
 
       // when
-      manageReviewService.createReview(STUDY_ID, MEMBER_ID, request, imageFile);
+      manageReviewService.createReview(STUDY_ID, MEMBER_ID, request, List.of(imageFile));
 
       // then
       verify(fileStoragePort).upload(imageFile, "reviews");
       verify(reviewRepository).save(reviewCaptor.capture());
-      assertThat(reviewCaptor.getValue().getContent().getImageUrl()).isEqualTo(uploadedImageUrl);
+      assertThat(reviewCaptor.getValue().getContent().getImageUrls()).containsExactly(uploadedImageUrl);
+    }
+
+    @Test
+    @DisplayName("이미지는 최대 3개까지만 등록할 수 있다")
+    void should_throw_exception_when_images_exceed_limit() {
+      // given
+      CreateReviewRequest request = createReviewRequest();
+      WriterInfoResponse writerInfoResponse = WriterInfoResponse.of(MEMBER_ID, WRITER_NAME,
+          WRITER_PROFILE_IMAGE_URL);
+      MultipartFile imageFile1 = new MockMultipartFile("image1", "1.jpg", "image/jpeg",
+          "1".getBytes());
+      MultipartFile imageFile2 = new MockMultipartFile("image2", "2.jpg", "image/jpeg",
+          "2".getBytes());
+      MultipartFile imageFile3 = new MockMultipartFile("image3", "3.jpg", "image/jpeg",
+          "3".getBytes());
+      MultipartFile imageFile4 = new MockMultipartFile("image4", "4.jpg", "image/jpeg",
+          "4".getBytes());
+
+      doNothing().when(studyAccessValidator).validateStudyMember(anyLong(), anyLong());
+      when(getWriterInfoPort.get(anyLong())).thenReturn(writerInfoResponse);
+
+      // when & then
+      assertThatThrownBy(() -> manageReviewService.createReview(STUDY_ID, MEMBER_ID, request,
+          List.of(imageFile1, imageFile2, imageFile3, imageFile4)))
+          .isInstanceOf(GeneralException.class)
+          .hasFieldOrPropertyWithValue("status", ErrorStatus._BAD_REQUEST);
+
+      verify(fileStoragePort, never()).upload(any(MultipartFile.class), anyString());
+      verify(reviewRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("이미지 3개를 모두 등록할 수 있다")
+    void should_create_review_with_three_images() {
+      // given
+      Long generatedId = 1L;
+      CreateReviewRequest request = createReviewRequest();
+      WriterInfoResponse writerInfoResponse = WriterInfoResponse.of(MEMBER_ID, WRITER_NAME,
+          WRITER_PROFILE_IMAGE_URL);
+      MultipartFile imageFile1 = new MockMultipartFile("image1", "1.jpg", "image/jpeg",
+          "1".getBytes());
+      MultipartFile imageFile2 = new MockMultipartFile("image2", "2.jpg", "image/jpeg",
+          "2".getBytes());
+      MultipartFile imageFile3 = new MockMultipartFile("image3", "3.jpg", "image/jpeg",
+          "3".getBytes());
+      String uploadedImageUrl1 = "https://s3.example.com/reviews/1.jpg";
+      String uploadedImageUrl2 = "https://s3.example.com/reviews/2.jpg";
+      String uploadedImageUrl3 = "https://s3.example.com/reviews/3.jpg";
+
+      doNothing().when(studyAccessValidator).validateStudyMember(anyLong(), anyLong());
+      when(idGenerator.nextId()).thenReturn(generatedId);
+      when(getWriterInfoPort.get(anyLong())).thenReturn(writerInfoResponse);
+      when(fileStoragePort.upload(any(MultipartFile.class), anyString()))
+          .thenReturn(
+              new UploadResult(uploadedImageUrl1, "1.jpg"),
+              new UploadResult(uploadedImageUrl2, "2.jpg"),
+              new UploadResult(uploadedImageUrl3, "3.jpg")
+          );
+      when(reviewRepository.save(any(Review.class)))
+          .thenAnswer(invocation -> invocation.getArgument(0));
+
+      // when
+      manageReviewService.createReview(STUDY_ID, MEMBER_ID, request,
+          List.of(imageFile1, imageFile2, imageFile3));
+
+      // then
+      verify(fileStoragePort, times(3)).upload(any(MultipartFile.class), anyString());
+      verify(reviewRepository).save(reviewCaptor.capture());
+      assertThat(reviewCaptor.getValue().getContent().getImageUrls())
+          .containsExactly(uploadedImageUrl1, uploadedImageUrl2, uploadedImageUrl3);
     }
 
     @Test

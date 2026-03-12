@@ -96,14 +96,14 @@ public class GetReviewService {
           PRIVATE_CONTENT_MESSAGE,
           PRIVATE_CONTENT_MESSAGE,
           PRIVATE_CONTENT_MESSAGE,
-          null
+          List.of()
       );
     }
     return ContentResponse.from(
         content.getActivity(),
         content.getLearned(),
         content.getEncouragement(),
-        content.getImageUrl()
+        content.getImageUrls()
     );
   }
 }

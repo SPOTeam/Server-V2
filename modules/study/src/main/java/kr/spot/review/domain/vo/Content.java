@@ -1,6 +1,8 @@
 package kr.spot.review.domain.vo;
 
 import jakarta.persistence.Embeddable;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -24,9 +26,40 @@ public class Content {
   private String encouragement;
 
   private String imageUrl;
+  private String imageUrl2;
+  private String imageUrl3;
 
   public static Content of(String activity, String learned,
-      String encouragement, String imageUrl) {
-    return new Content(activity, learned, encouragement, imageUrl);
+      String encouragement, List<String> imageUrls) {
+    List<String> safeImageUrls = imageUrls == null ? List.of() : imageUrls;
+    return new Content(
+        activity,
+        learned,
+        encouragement,
+        getImageUrlByIndex(safeImageUrls, 0),
+        getImageUrlByIndex(safeImageUrls, 1),
+        getImageUrlByIndex(safeImageUrls, 2)
+    );
+  }
+
+  public List<String> getImageUrls() {
+    List<String> imageUrls = new ArrayList<>();
+    if (imageUrl != null) {
+      imageUrls.add(imageUrl);
+    }
+    if (imageUrl2 != null) {
+      imageUrls.add(imageUrl2);
+    }
+    if (imageUrl3 != null) {
+      imageUrls.add(imageUrl3);
+    }
+    return List.copyOf(imageUrls);
+  }
+
+  private static String getImageUrlByIndex(List<String> imageUrls, int index) {
+    if (index >= imageUrls.size()) {
+      return null;
+    }
+    return imageUrls.get(index);
   }
 }

@@ -3,6 +3,8 @@ package kr.spot.review.presentation.command;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.ArrayList;
+import java.util.List;
 import kr.spot.ApiResponse;
 import kr.spot.annotations.CurrentMember;
 import kr.spot.code.status.SuccessStatus;
@@ -37,9 +39,11 @@ public class ReviewCommandController {
       @PathVariable Long studyId,
       @CurrentMember @Parameter(hidden = true) Long memberId,
       @RequestPart CreateReviewRequest request,
-      @RequestPart(required = false) MultipartFile imageFile
+      @RequestPart(required = false) MultipartFile imageFile,
+      @RequestPart(required = false) List<MultipartFile> imageFiles
   ) {
-    long reviewId = manageReviewService.createReview(studyId, memberId, request, imageFile);
+    long reviewId = manageReviewService.createReview(studyId, memberId, request,
+        mergeImageFiles(imageFile, imageFiles));
     return ResponseEntity.ok(
         ApiResponse.onSuccess(SuccessStatus._CREATED, CreateReviewResponse.from(reviewId)));
   }
@@ -77,5 +81,17 @@ public class ReviewCommandController {
   ) {
     manageReviewReactionService.removeReaction(studyId, reviewId, memberId, reaction);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._NO_CONTENT));
+  }
+
+  private List<MultipartFile> mergeImageFiles(MultipartFile imageFile,
+      List<MultipartFile> imageFiles) {
+    List<MultipartFile> mergedFiles = new ArrayList<>();
+    if (imageFiles != null) {
+      mergedFiles.addAll(imageFiles);
+    }
+    if (imageFile != null) {
+      mergedFiles.add(imageFile);
+    }
+    return mergedFiles;
   }
 }
