@@ -10,9 +10,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
 import kr.spot.IdGenerator;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
@@ -60,6 +62,8 @@ class ManageScheduleServiceTest {
       CreateScheduleRequest request = createScheduleRequest();
 
       when(idGenerator.nextId()).thenReturn(generatedId);
+      when(scheduleRepository.existsByStudyIdAndStartAtLessThanAndEndAtGreaterThan(
+          STUDY_ID, request.endAt(), request.startAt())).thenReturn(false);
       when(scheduleRepository.save(any(Schedule.class)))
           .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -89,6 +93,8 @@ class ManageScheduleServiceTest {
       );
 
       when(idGenerator.nextId()).thenReturn(generatedId);
+      when(scheduleRepository.existsByStudyIdAndStartAtLessThanAndEndAtGreaterThan(
+          STUDY_ID, request.endAt(), request.startAt())).thenReturn(false);
       when(scheduleRepository.save(any(Schedule.class)))
           .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -100,6 +106,29 @@ class ManageScheduleServiceTest {
 
       Schedule capturedSchedule = scheduleCaptor.getValue();
       assertThat(capturedSchedule.getLocationMemo()).isNull();
+    }
+
+    @Test
+    @DisplayName("동일한 시간대에 일정이 있으면 예외가 발생한다")
+    void should_throw_exception_when_schedule_time_conflicts() {
+      // given
+      CreateScheduleRequest request = new CreateScheduleRequest(
+          TITLE,
+          LOCATION_MEMO,
+          LocalDateTime.of(2025, 1, 15, 15, 0),
+          LocalDateTime.of(2025, 1, 15, 17, 0)
+      );
+
+      when(scheduleRepository.existsByStudyIdAndStartAtLessThanAndEndAtGreaterThan(
+          STUDY_ID, request.endAt(), request.startAt())).thenReturn(true);
+
+      // when & then
+      assertThatThrownBy(() -> manageScheduleService.createSchedule(request, STUDY_ID, CREATOR_ID))
+          .isInstanceOf(GeneralException.class)
+          .extracting(ex -> ((GeneralException) ex).getStatus())
+          .isEqualTo(ErrorStatus._SCHEDULE_TIME_CONFLICT);
+
+      verify(scheduleRepository, never()).save(any(Schedule.class));
     }
   }
 
