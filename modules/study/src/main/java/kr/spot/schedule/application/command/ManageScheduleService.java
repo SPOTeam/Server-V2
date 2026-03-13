@@ -1,6 +1,8 @@
 package kr.spot.schedule.application.command;
 
 import kr.spot.IdGenerator;
+import kr.spot.code.status.ErrorStatus;
+import kr.spot.exception.GeneralException;
 import kr.spot.schedule.domain.Schedule;
 import kr.spot.schedule.infrastructure.jpa.ScheduleRepository;
 import kr.spot.schedule.presentation.command.dto.CreateScheduleRequest;
@@ -17,6 +19,8 @@ public class ManageScheduleService {
   private final ScheduleRepository scheduleRepository;
 
   public long createSchedule(CreateScheduleRequest request, long studyId, long creatorId) {
+    validateScheduleTimeConflict(request, studyId);
+
     long scheduleId = idGenerator.nextId();
     Schedule schedule = Schedule.of(scheduleId, studyId, creatorId, request.title(),
         request.locationInfo(),
@@ -29,5 +33,14 @@ public class ManageScheduleService {
   public void deleteSchedule(long studyId, long scheduleId) {
     Schedule schedule = scheduleRepository.getById(scheduleId);
     schedule.delete(studyId);
+  }
+
+  private void validateScheduleTimeConflict(CreateScheduleRequest request, long studyId) {
+    boolean hasConflict = scheduleRepository.existsByStudyIdAndStartAtLessThanAndEndAtGreaterThan(
+        studyId, request.endAt(), request.startAt());
+
+    if (hasConflict) {
+      throw new GeneralException(ErrorStatus._SCHEDULE_TIME_CONFLICT);
+    }
   }
 }

@@ -74,6 +74,7 @@ public enum ErrorStatus implements BaseErrorCode {
   // 일정 관련
   _SCHEDULE_NOT_FOUND(404, "SCHEDULE404", "일정을 찾을 수 없습니다."),
   _SCHEDULE_ACCESS_DENIED(403, "SCHEDULE403", "해당 스터디에 속하는 일정이 아닙니다."),
+  _SCHEDULE_TIME_CONFLICT(400, "SCHEDULE4001", "동일한 시간대에 이미 일정이 존재합니다."),
   _SCHEDULE_QR_CODE_ALREADY_ASSIGNED(400, "SCHEDULE4000", "이미 출석 QR 코드가 할당된 일정입니다."),
 
   // 출석 관련
