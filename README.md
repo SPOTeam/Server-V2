@@ -1,49 +1,47 @@
-# 📚 스터디 매칭 및 관리 플랫폼, 스팟
+# SPOT
 
-> **기간**: 2025.09 - 진행 중
-> 
+## Summary
 
-> **팀 구성**: P.O 1명, 디자인 1명, AOS 2명, 백엔드 1명
-> 
-
-> **역할**: 백엔드 개발, 인프라 관리 (기여도 100%)
-> 
+- 스터디 탐색, 운영, 커뮤니티 기능을 하나의 서비스로 묶은 멀티 모듈 백엔드 프로젝트
+- `Java 21`, `Spring Boot`, `JPA`, `QueryDSL`, `MySQL`, `Redis`, `AWS S3`
+- 모듈러 모놀리식 구조 기반으로 도메인 경계를 분리하고, 이벤트 기반 후처리와 배치 구조를 함께 운영
+- 백엔드 개발 및 인프라 운영 전반 담당
 
 ---
 
-<img width="100" height="100" alt="Logo" src="https://github.com/user-attachments/assets/a81aef66-058a-4f9b-bc60-ed0901a01d7e" />
+## What I Did
 
-
----
-
-# 📝 프로젝트 개요
-
-- 스터디 매칭 및 관리 플랫폼
-- 현재 Ver.1 출시 완료, Ver.2 개발 진행 중
+- 대규모 데이터 환경에서 스터디 검색 API의 병목을 분석하고, 데이터 구조와 인덱스 설계를 조정해 응답 시간을 큰 폭으로 단축
+- 조회수와 좋아요를 같은 통계성 데이터로 보지 않고, 쓰기 패턴 차이에 맞춰 Redis Write-Behind와 RDB 즉시 반영 전략으로 분리
+- 외부 알림 호출이 비즈니스 API 안정성에 영향을 주지 않도록 트랜잭셔널 아웃박스 기반 비동기 발송 구조 설계
+- OAuth 로그인 로직에 전략 패턴을 적용해 소셜 로그인 타입별 구현을 분리하고, 공통 처리 흐름을 재구성
 
 ---
 
-# 🛠 주요 기술 스택 및 아키텍처
+## Highlights
 
-### 모듈러 모놀리식 (Modular Monolith) 아키텍처
+- 검색 성능 개선: `10,986ms → 2.86ms`
+- 대규모 조건 검색 환경에서 `300 RPS` 수준 처리
+- 조회수 반영 구조 개선으로 DB 부하 대폭 감소
+- 좋아요 처리에서 정합성을 유지하면서 동시성 처리 성능 개선
+- 알림 시스템을 비동기화해 외부 장애 전파 차단
+- 확장 가능한 로그인 구조로 유지보수성과 테스트 용이성 개선
 
-**▼ 전체 아키텍처 개요**
-
-<img width="3412" height="1792" alt="image" src="https://github.com/user-attachments/assets/7d9d7c64-37b2-469e-b0eb-de32c54f3ab6" />
-
-
-**▼ 모듈 간 소통 방법**
-
-<img width="3034" height="360" alt="image" src="https://github.com/user-attachments/assets/d78cb376-0d88-4d79-9ea5-801f8d8e30a4" />
-
-
-- 도메인 격리:
-    - 모듈 간 클래스/엔티티 직접 참조 금지
-- DB 격리:
-    - 도메인 간 JOIN 금지, 타 도메인 엔티티는 ID(PK)로만 간접 참조
- 
 ---
 
-### 인프라 아키텍처 다이어그램
-<img width="672" height="686" alt="스크린샷 2025-12-26 오후 4 43 29" src="https://github.com/user-attachments/assets/b29cedca-5a0e-493c-afe9-fafa5b20ae1b" />
+## Architecture
 
+- `Modular Monolith`
+- 도메인별 모듈 분리: `auth`, `member`, `study`, `post`, `notification`, `region`
+- 모듈 간 계약은 `*-api` 모듈로 분리
+- Redis 기반 캐시/집계/쓰기 완충
+- 스케줄러와 이벤트 리스너를 활용한 비동기 후처리
+
+---
+
+## Role & Contribution
+
+- 백엔드 설계와 구현 전반 담당
+- 성능 병목 분석, 데이터 구조 개선, 동시성 처리 전략 수립 주도
+- Redis, 배치, 비동기 이벤트 기반 운영 구조 설계 및 적용
+- 인증, 검색, 알림, 통계성 데이터 처리까지 핵심 기능 직접 구현
