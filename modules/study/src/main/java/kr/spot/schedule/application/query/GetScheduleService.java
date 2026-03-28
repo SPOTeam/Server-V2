@@ -1,7 +1,6 @@
 package kr.spot.schedule.application.query;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import kr.spot.schedule.domain.Schedule;
 import kr.spot.schedule.infrastructure.jpa.querydsl.ScheduleQueryRepository;
@@ -37,15 +36,13 @@ public class GetScheduleService {
   }
 
   private GetScheduleListResponse toResponse(List<Schedule> schedules, long memberId) {
-    LocalDateTime now = LocalDateTime.now();
-
     List<ScheduleResponse> responses = schedules.stream()
         .map(schedule -> ScheduleResponse.from(
             schedule.getId(),
             schedule.getTitle(),
             schedule.getStartAt(),
             schedule.getEndAt(),
-            schedule.isOngoing(now),
+            schedule.isAttendanceActive(),
             schedule.getCreatorId() != null && schedule.getCreatorId() == memberId
         ))
         .toList();
