@@ -16,12 +16,12 @@ public record PostOverviewResponse(
       Long postId,
       String title,
       String content,
-      Long commentCount,
+      long commentCount,
       PostType postType
   ) {
 
     public static PostOverview of(Long postId, String title, String content,
-        Long commentCount, PostType postType) {
+        long commentCount, PostType postType) {
       return new PostOverview(postId, title, content, commentCount, postType);
     }
   }

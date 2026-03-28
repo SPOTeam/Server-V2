@@ -14,11 +14,11 @@ public record RecentPostResponse(
   public record RecentPost(
       Long postId,
       String title,
-      Long commentCount,
+      long commentCount,
       PostType postType
   ) {
 
-    public static RecentPost of(Long postId, String title, Long commentCount, PostType postType) {
+    public static RecentPost of(Long postId, String title, long commentCount, PostType postType) {
       return new RecentPost(postId, title, commentCount, postType);
     }
   }

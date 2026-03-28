@@ -19,9 +19,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   @Query("select p from Post p where p.id = :id")
   Optional<Post> findByIdWithLock(long id);
 
-  @Query("select p from Post p where p.postType = :postType order by p.id desc")
-  Optional<Post> findTopByPostTypeOrderByIdDesc(PostType postType);
-
   @Modifying
   @Query("""
         update Post p
@@ -62,4 +59,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   default Post getPostById(long id) {
     return findById(id).orElseThrow(() -> new GeneralException(ErrorStatus._POST_NOT_FOUND));
   }
+
+  default void validateExists(long postId) {
+    if (!existsById(postId)) {
+      throw new GeneralException(ErrorStatus._POST_NOT_FOUND);
+    }
+  }
+
+  void deleteByWriterInfoWriterId(long writerId);
 }

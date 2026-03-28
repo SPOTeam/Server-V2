@@ -13,6 +13,7 @@ import kr.spot.application.command.LikePostService;
 import kr.spot.application.command.ManagePostService;
 import kr.spot.code.status.SuccessStatus;
 import kr.spot.presentation.command.dto.request.ManagePostRequest;
+import kr.spot.presentation.command.dto.request.ReportPostRequest;
 import kr.spot.presentation.command.dto.response.CreatePostResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -111,6 +113,21 @@ public class PostCommandController {
       @PathVariable Long postId,
       @CurrentMember @Parameter(hidden = true) Long writerId) {
     likePostService.unlikePost(postId, writerId);
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._NO_CONTENT));
+  }
+
+  @Operation(summary = "게시글 신고", description = "특정 게시글을 신고합니다.")
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "신고 성공"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자입니다.", content = @Content(schema = @Schema(implementation = kr.spot.ApiResponse.class))),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "`POST404`: 게시글을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = kr.spot.ApiResponse.class)))
+  })
+  @PostMapping("/{postId}/report")
+  public ResponseEntity<ApiResponse<Void>> reportPost(
+      @PathVariable Long postId,
+      @CurrentMember @Parameter(hidden = true) Long reporterId,
+      @RequestBody ReportPostRequest request) {
+    managePostService.reportPost(postId, reporterId, request);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._NO_CONTENT));
   }
 }

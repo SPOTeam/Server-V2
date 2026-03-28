@@ -4,17 +4,20 @@ import kr.spot.IdGenerator;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.domain.Post;
 import kr.spot.domain.PostStats;
+import kr.spot.domain.Report;
 import kr.spot.domain.association.PostImage;
 import kr.spot.domain.vo.WriterInfo;
 import kr.spot.exception.GeneralException;
 import kr.spot.infrastructure.jpa.PostImageRepository;
 import kr.spot.infrastructure.jpa.PostRepository;
 import kr.spot.infrastructure.jpa.PostStatsRepository;
+import kr.spot.infrastructure.jpa.ReportRepository;
 import kr.spot.ports.FileStoragePort;
 import kr.spot.ports.GetWriterInfoPort;
 import kr.spot.ports.dto.UploadResult;
 import kr.spot.ports.dto.WriterInfoResponse;
 import kr.spot.presentation.command.dto.request.ManagePostRequest;
+import kr.spot.presentation.command.dto.request.ReportPostRequest;
 import kr.spot.presentation.command.dto.response.CreatePostResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +37,7 @@ public class ManagePostService {
   private final PostRepository postRepository;
   private final PostStatsRepository postStatsRepository;
   private final PostImageRepository postImageRepository;
+  private final ReportRepository reportRepository;
 
   public CreatePostResponse createPost(ManagePostRequest request, Long writerId,
       MultipartFile imageFile) {
@@ -62,6 +66,12 @@ public class ManagePostService {
     }
   }
 
+  public void reportPost(long postId, long reporterId, ReportPostRequest request) {
+    postRepository.validateExists(postId);
+    Report report = Report.of(idGenerator.nextId(), postId, reporterId, request.reason());
+    reportRepository.save(report);
+  }
+
   private WriterInfo getWriterInfo(Long writerId) {
     WriterInfoResponse writerInfoResponse = getWriterInfoPort.get(writerId);
     return WriterInfo.of(writerInfoResponse.writerId(), writerInfoResponse.nickname(),
@@ -79,7 +89,7 @@ public class ManagePostService {
     if (imageFiles == null || imageFiles.isEmpty()) {
       return;
     }
-    
+
     UploadResult upload = fileStoragePort.upload(imageFiles, FILE_DIR);
     postImageRepository.deleteByPostId(postId);
     PostImage postImage = PostImage.of(idGenerator.nextId(), postId, upload.url());

@@ -32,6 +32,7 @@ public enum ErrorStatus implements BaseErrorCode {
   _MEMBER_UNSUPPORTED_LOGIN_TYPE(400, "MEMBER4003", "지원하지 않는 로그인 타입입니다."),
   _MEMBER_EMAIL_EXIST(400, "MEMBER4004", "이미 해당 방식으로 가입 내역이 존재하는 이메일입니다."),
   _FAIL_TO_UPDATE_NAME(400, "MEMBER4005", "이름 변경에 실패했습니다."),
+  _CANNOT_WITHDRAW_WITH_ACTIVE_STUDY(400, "MEMBER4006", "운영 중인 스터디가 있어 탈퇴할 수 없습니다."),
 
   // 스터디 관련
   _MAX_MEMBERS_MUST_BE_POSITIVE(400, "STUDY4000", "최대 인원 수는 양수여야 합니다."),
@@ -48,11 +49,20 @@ public enum ErrorStatus implements BaseErrorCode {
       "셀프 승인을 위한 유효하지 않은 스터디 멤버 상태입니다."),
   _STUDY_ALREADY_APPLIED(400, "STUDY4006", "이미 해당 스터디에 지원한 상태입니다."),
   _STUDY_ACCESS_DENIED(403, "STUDY4032", "스터디에 접근할 권한이 없습니다."),
+  _INVALID_STUDY_ACCESS(403, "STUDY4033", "유효하지 않은 스터디 접근입니다."),
+  _STUDY_IS_FULL(400, "STUDY4007", "스터디 정원이 가득 찼습니다."),
+  _NEXT_OWNER_ID_REQUIRED_FOR_OWNER_WITHDRAWAL(400, "STUDY4008",
+      "스터디장 탈퇴 시 다음 스터디장 ID가 필요합니다."),
+  _NEXT_OWNER_NOT_EXIST_IN_STUDY(400, "STUDY4009",
+      "다음 스터디장이 스터디 멤버에 존재하지 않습니다."),
+  _CANNOT_DELETE_STUDY_WITH_MEMBERS(400, "STUDY4010",
+      "스터디 멤버가 있는 상태에서는 스터디를 삭제할 수 없습니다."),
 
   // 게시글 관련
   _POST_NOT_FOUND(404, "POST404", "게시글을 찾을 수 없습니다."),
   _COMMENT_NOT_FOUND(404, "COMMENT404", "댓글을 찾을 수 없습니다."),
   _ONLY_AUTHOR_CAN_MODIFY(403, "POST403", "게시글 및 댓글 수정은 작성자만 가능합니다."),
+  _PRIVATE_POST_ACCESS_DENIED(403, "POST4030", "스터디원 전용 게시글입니다."),
   _ALREADY_LIKED(400, "POST4000", "이미 좋아요를 누른 게시글입니다."),
   _ALREADY_UNLIKED(400, "POST4001", "좋아요를 누르지 않은 게시글입니다."),
   _SORT_TYPE_INVALID(400, "POST4002", "유효하지 않은 정렬 타입입니다."),
@@ -60,7 +70,38 @@ public enum ErrorStatus implements BaseErrorCode {
   // 지역 관련
   _REGION_NOT_FOUND(404, "REGION404", "지역을 찾을 수 없습니다."),
   _NO_SUCH_REGION(400, "REGION4000", "존재하지 않는 지역 코드입니다."),
-  ;
+
+  // 일정 관련
+  _SCHEDULE_NOT_FOUND(404, "SCHEDULE404", "일정을 찾을 수 없습니다."),
+  _SCHEDULE_ACCESS_DENIED(403, "SCHEDULE403", "해당 스터디에 속하는 일정이 아닙니다."),
+  _SCHEDULE_TIME_CONFLICT(400, "SCHEDULE4001", "동일한 시간대에 이미 일정이 존재합니다."),
+  _SCHEDULE_QR_CODE_ALREADY_ASSIGNED(400, "SCHEDULE4000", "이미 출석 QR 코드가 할당된 일정입니다."),
+
+  // 출석 관련
+  _ATTENDANCE_NOT_IN_SCHEDULE_TIME(400, "ATTENDANCE4000", "일정 시간 외에는 출석체크를 진행할 수 없습니다."),
+  _ATTENDANCE_NOT_STARTED(400, "ATTENDANCE4001", "출석체크가 시작되지 않았습니다."),
+  _ATTENDANCE_ALREADY_CHECKED(400, "ATTENDANCE4002", "이미 출석체크를 완료했습니다."),
+  _INVALID_ATTENDANCE_TOKEN(400, "ATTENDANCE4003", "유효하지 않은 출석 토큰입니다."),
+
+  // 투두 관련
+  _TODO_NOT_FOUND(404, "TODO404", "투두를 찾을 수 없습니다."),
+  _TODO_ACCESS_DENIED(403, "TODO403", "해당 스터디에 속하는 투두가 아닙니다."),
+  _ONLY_TODO_OWNER_CAN_MODIFY(403, "TODO4030", "투두 수정은 작성자만 가능합니다."),
+
+  // 회고 관련
+  _REVIEW_NOT_FOUND(404, "REVIEW404", "회고를 찾을 수 없습니다."),
+  _REVIEW_ACCESS_DENIED(403, "REVIEW403", "해당 스터디에 속하는 회고가 아닙니다."),
+  _ALREADY_REACTED(400, "REVIEW4000", "이미 반응을 누른 회고입니다."),
+  _REACTION_NOT_FOUND(404, "REVIEW4040", "반응을 찾을 수 없습니다."),
+
+  // 알림 관련
+  _NOTIFICATION_NOT_FOUND(404, "NOTIFICATION404", "알림을 찾을 수 없습니다."),
+  _INVALID_NOTIFICATION_TYPE(400, "NOTIFICATION4000", "유효하지 않은 알림 유형입니다."),
+  _NOTIFICATION_PAYLOAD_MISSING_MEMBER_ID(400, "NOTIFICATION4001", "알림 페이로드에 memberId가 필요합니다."),
+  _NOTIFICATION_PAYLOAD_MISSING_STUDY_ID(400, "NOTIFICATION4002", "알림 페이로드에 studyId가 필요합니다."),
+  _NOTIFICATION_TEMPLATE_NOT_FOUND(500, "NOTIFICATION5000", "알림 템플릿을 찾을 수 없습니다."),
+  _PUSH_NOTIFICATION_FAILED(500, "NOTIFICATION5001", "푸시 알림 발송에 실패했습니다."),
+  _NOTIFICATION_ACCESS_DENIED(403, "NOTIFICATION403", "해당 알림에 접근할 권한이 없습니다.");
 
   private final int httpStatus;
   private final String code;

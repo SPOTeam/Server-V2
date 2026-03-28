@@ -1,0 +1,181 @@
+package kr.spot.study.presentation.query;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import java.util.List;
+import kr.spot.ApiResponse;
+import kr.spot.annotations.CurrentMember;
+import kr.spot.code.status.SuccessStatus;
+import kr.spot.study.application.query.GetMyStudyInfoService;
+import kr.spot.study.domain.enums.Category;
+import kr.spot.study.domain.enums.FeeCategory;
+import kr.spot.study.domain.enums.RecruitingStatus;
+import kr.spot.study.domain.enums.SortBy;
+import kr.spot.study.domain.enums.StudyMemberStatus;
+import kr.spot.study.presentation.query.dto.response.GetStudyOverviewResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@Tag(name = "스터디 조회")
+@RestController
+@RequestMapping("/api/studies")
+@RequiredArgsConstructor
+public class StudySearchController {
+
+  private final GetMyStudyInfoService getMyStudyInfoService;
+
+  @Operation(summary = "마이페이지 스터디 조회",
+      description = "마이페이지에 필요한 스터디를 조회합니다.\n "
+          + "\n 모집 중인 스터디 : status = OWNER (기본값) \n"
+          + "\n 참여 중인 스터디 : statuses = {OWNER, APPROVED} \n "
+          + "\n 대기 중인 스터디 : status = APPLIED")
+  @GetMapping("/me")
+  public ResponseEntity<ApiResponse<GetStudyOverviewResponse>> getMyStudies(
+      @CurrentMember @Parameter(hidden = true) Long viewerId,
+      @RequestParam(required = false, defaultValue = "OWNER") List<StudyMemberStatus> statuses,
+      @RequestParam(required = false) Long cursor,
+      @RequestParam(defaultValue = "10") @Min(1) @Max(50) Integer size
+  ) {
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,
+        getMyStudyInfoService.getMyStudyOverview(viewerId, statuses, cursor, size)));
+  }
+
+  @Operation(summary = "전공/진로학습 이건 어때요? 스터디 조회",
+      description = "회원의 선호 카테고리에 해당하는 스터디 중 랜덤하게 3개를 조회합니다. 매 요청마다 결과가 달라질 수 있습니다.")
+  @GetMapping("/recommended")
+  public ResponseEntity<ApiResponse<GetStudyOverviewResponse>> getRecommendedStudies(
+      @CurrentMember @Parameter(hidden = true) Long memberId
+  ) {
+    return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,
+        getMyStudyInfoService.getRecommendedStudies(memberId)));
+  }
+
+  // 필터링 O
+  @Operation(summary = "내 관심 지역 스터디 조회",
+      description = "내 관심 지역 스터디를 조회합니다. 지역 코드를 리스트 형태로 입력해주세요."
+          + "아무 값도 입력하지 않는 경우에는 회원의 전체 관심 지역 스터디로 조회합니다.")
+  @GetMapping("/by-region")
+  public ResponseEntity<ApiResponse<GetStudyOverviewResponse>> getRegionStudies(
+      @CurrentMember @Parameter(hidden = true) Long viewerId,
+      @RequestParam(required = false) RecruitingStatus recruitingStatus,
+      @RequestParam(required = false) FeeCategory feeCategory,
+      @RequestParam(required = false) List<Category> categories,
+      @RequestParam(required = false) Boolean isOnline,
+      @RequestParam(required = false) SortBy sortBy,
+      @RequestParam(required = false) Long cursor,
+      @RequestParam(defaultValue = "10") @Min(1) @Max(50) Integer size,
+      @RequestParam(required = false) List<String> regionCodes
+  ) {
+    return ResponseEntity.ok(
+        ApiResponse.onSuccess(SuccessStatus._OK, getMyStudyInfoService.getMyPreferredRegionStudies(
+            viewerId,
+            recruitingStatus,
+            feeCategory,
+            categories,
+            isOnline,
+            sortBy,
+            cursor,
+            size,
+            regionCodes
+        )));
+  }
+
+  @Operation(summary = "내 관심사 스터디 조회",
+      description = "내 관심사 스터디를 조회합니다. 관심 카테고리를 입력해주세요."
+          + "아무 값도 입력하지 않는 경우에는 회원의 전체 관심 카테고리 스터디로 조회합니다.")
+  @GetMapping("/by-category")
+  public ResponseEntity<ApiResponse<GetStudyOverviewResponse>> getMyPreferredCategoriesStudies(
+      @CurrentMember @Parameter(hidden = true) Long viewerId,
+      @RequestParam(required = false) Category category,
+      @RequestParam(required = false) RecruitingStatus recruitingStatus,
+      @RequestParam(required = false) FeeCategory feeCategory,
+      @RequestParam(required = false) Boolean isOnline,
+      @RequestParam(required = false) SortBy sortBy,
+      @RequestParam(required = false) Long cursor,
+      @RequestParam(defaultValue = "10") @Min(1) @Max(50) Integer size
+  ) {
+    return ResponseEntity.ok(
+        ApiResponse.onSuccess(SuccessStatus._OK,
+            getMyStudyInfoService.getMyPreferredCategoryStudies(
+                viewerId,
+                category,
+                recruitingStatus,
+                feeCategory,
+                isOnline,
+                sortBy,
+                cursor,
+                size
+            )));
+  }
+
+  @Operation(summary = "내가 좋아요한 스터디 조회",
+      description = "내가 좋아요한 스터디를 조회합니다. (page, size 파라미터로 페이징 처리 가능)")
+  @GetMapping("/liked")
+  public ResponseEntity<ApiResponse<GetStudyOverviewResponse>> getLikedStudies(
+      @CurrentMember @Parameter(hidden = true) Long viewerId,
+      @RequestParam(required = false) Long cursor,
+      @RequestParam(defaultValue = "10") @Min(1) @Max(50) Integer size
+  ) {
+    return ResponseEntity.ok(
+        ApiResponse.onSuccess(SuccessStatus._OK,
+            getMyStudyInfoService.getLikedStudies(viewerId, cursor, size)));
+  }
+
+  @Operation(summary = "모집 중 스터디 조회",
+      description = "모집 중인 스터디를 조회합니다. 카테고리, 정렬 방식 등을 필터링할 수 있습니다.")
+  @GetMapping("/recruiting")
+  public ResponseEntity<ApiResponse<GetStudyOverviewResponse>> getRecruitingStudies(
+      @CurrentMember @Parameter(hidden = true) Long viewerId,
+      @RequestParam(required = false) FeeCategory feeCategory,
+      @RequestParam(required = false) List<Category> categories,
+      @RequestParam(required = false) Boolean isOnline,
+      @RequestParam(required = false) SortBy sortBy,
+      @RequestParam(required = false) Long cursor,
+      @RequestParam(defaultValue = "10") @Min(1) @Max(50) Integer size
+  ) {
+    return ResponseEntity.ok(
+        ApiResponse.onSuccess(SuccessStatus._OK, getMyStudyInfoService.getRecruitingStudies(
+            viewerId,
+            feeCategory,
+            categories,
+            isOnline,
+            sortBy,
+            cursor,
+            size
+        )));
+  }
+
+  @Operation(summary = "카테고리 별 스터디 조회",
+      description = "카테고리 별 스터디를 조회합니다. 모집 상태, 정렬 방식 등을 필터링할 수 있습니다.")
+  @GetMapping("/categories")
+  public ResponseEntity<ApiResponse<GetStudyOverviewResponse>> getStudiesByCategory(
+      @CurrentMember @Parameter(hidden = true) Long viewerId,
+      @RequestParam(required = false) RecruitingStatus recruitingStatus,
+      @RequestParam(required = false) FeeCategory feeCategory,
+      @RequestParam(required = false) Category category,
+      @RequestParam(required = false) Boolean isOnline,
+      @RequestParam(required = false) SortBy sortBy,
+      @RequestParam(required = false) Long cursor,
+      @RequestParam(defaultValue = "10") @Min(1) @Max(50) Integer size
+  ) {
+    return ResponseEntity.ok(
+        ApiResponse.onSuccess(SuccessStatus._OK, getMyStudyInfoService.getStudiesByCategory(
+            viewerId,
+            recruitingStatus,
+            feeCategory,
+            category,
+            isOnline,
+            sortBy,
+            cursor,
+            size
+        )));
+  }
+
+}

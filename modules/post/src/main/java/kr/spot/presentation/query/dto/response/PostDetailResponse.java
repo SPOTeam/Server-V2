@@ -18,7 +18,7 @@ public record PostDetailResponse(
     PostStatsResponse stats,
     LocalDateTime createdAt,
     List<CommentResponse> comments,
-    Integer commentCount
+    int commentCount
 ) {
 
   public record CommentResponse(
@@ -44,5 +44,4 @@ public record PostDetailResponse(
       return new WriterInfoResponse(writerId, nickname, profileImageUrl);
     }
   }
-
 }

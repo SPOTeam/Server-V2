@@ -2,10 +2,12 @@ package kr.spot.common;
 
 import kr.spot.domain.Post;
 import kr.spot.domain.PostStats;
+import kr.spot.domain.Report;
 import kr.spot.domain.association.PostImage;
 import kr.spot.domain.enums.PostType;
 import kr.spot.domain.vo.WriterInfo;
 import kr.spot.presentation.command.dto.request.ManagePostRequest;
+import kr.spot.presentation.command.dto.request.ReportPostRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class PostFixture {
@@ -58,5 +60,22 @@ public class PostFixture {
 
   public static ManagePostRequest updatePostRequest() {
     return new ManagePostRequest(UPDATED_TITLE, UPDATED_CONTENT, PostType.COUNSELING);
+  }
+
+  // Report 관련
+  public static Long REPORT_ID = 100L;
+  public static Long REPORTER_ID = 3L;
+  public static String REPORT_REASON = "부적절한 내용입니다.";
+
+  public static ReportPostRequest reportPostRequest() {
+    return new ReportPostRequest(REPORT_REASON);
+  }
+
+  public static Report report() {
+    return Report.of(REPORT_ID, POST_ID, REPORTER_ID, REPORT_REASON);
+  }
+
+  public static Report report(Long reportId, Long postId, Long reporterId) {
+    return Report.of(reportId, postId, reporterId, REPORT_REASON);
   }
 }

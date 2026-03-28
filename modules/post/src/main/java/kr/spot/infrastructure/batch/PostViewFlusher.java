@@ -17,6 +17,6 @@ public class PostViewFlusher {
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void updateViewCount(Long postId, long delta) {
     postStatsRepository.increaseViewBy(postId, delta);
-    log.debug("DB 업데이트: postId={}, delta={}", postId, delta);
+    log.debug("게시글 조회수 DB 업데이트: postId={}, delta={}", postId, delta);
   }
 }

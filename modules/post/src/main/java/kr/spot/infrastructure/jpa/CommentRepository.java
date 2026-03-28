@@ -17,4 +17,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     return findById(id)
         .orElseThrow(() -> new GeneralException(ErrorStatus._COMMENT_NOT_FOUND));
   }
+
+  void deleteByWriterInfoWriterId(long writerId);
 }
