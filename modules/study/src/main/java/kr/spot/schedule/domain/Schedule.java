@@ -38,6 +38,7 @@ public class Schedule extends BaseEntity {
 
   private LocalDateTime endAt;
 
+  @Getter(AccessLevel.NONE)
   private boolean attendanceActive;
 
   private String attendanceQrCodeImageUrl;
@@ -58,6 +59,10 @@ public class Schedule extends BaseEntity {
       return false;
     }
     return !now.isBefore(startAt) && !now.isAfter(endAt);
+  }
+
+  public boolean isAttendanceActive() {
+    return attendanceActive && isOngoing(LocalDateTime.now());
   }
 
   public void startAttendance(long studyId) {
