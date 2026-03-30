@@ -48,6 +48,11 @@ public class Attendance extends BaseEntity {
     this.attendedAt = LocalDateTime.now();
   }
 
+  public void resetToPending() {
+    this.attendanceStatus = AttendanceStatus.UNDECIDED;
+    this.attendedAt = null;
+  }
+
   public void markAbsentIfUndecided() {
     if (this.attendanceStatus == AttendanceStatus.UNDECIDED) {
       this.attendanceStatus = AttendanceStatus.ABSENT;

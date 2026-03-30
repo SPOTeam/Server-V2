@@ -11,6 +11,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
   boolean existsByScheduleIdAndMemberInfoMemberId(Long scheduleId, Long memberId);
 
+  boolean existsByScheduleId(long scheduleId);
+
   List<Attendance> findAllByScheduleId(Long scheduleId);
 
   void deleteByMemberInfoMemberId(long memberId);

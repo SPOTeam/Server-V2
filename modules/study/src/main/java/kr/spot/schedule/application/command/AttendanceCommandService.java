@@ -48,7 +48,11 @@ public class AttendanceCommandService {
     Schedule schedule = scheduleRepository.getById(scheduleId);
     schedule.startAttendance(studyId);
 
-    createAttendancesForAllMembers(studyId, scheduleId);
+    if (!attendanceRepository.existsByScheduleId(scheduleId)) {
+      createAttendancesForAllMembers(studyId, scheduleId);
+    } else {
+      resetAttendancesForRestart(scheduleId);
+    }
 
     String qrContent = generateEncryptedToken(studyId, scheduleId);
     eventPublisher.publishEvent(AttendanceStartedEvent.of(studyId, scheduleId, qrContent));
@@ -61,6 +65,11 @@ public class AttendanceCommandService {
     schedule.stopAttendance(studyId);
 
     markAbsentForUndecidedAttendances(scheduleId);
+  }
+
+  private void resetAttendancesForRestart(long scheduleId) {
+    List<Attendance> attendances = attendanceRepository.findAllByScheduleId(scheduleId);
+    attendances.forEach(Attendance::resetToPending);
   }
 
   private void markAbsentForUndecidedAttendances(long scheduleId) {
