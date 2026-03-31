@@ -6,6 +6,7 @@ import static kr.spot.schedule.common.ScheduleFixture.schedule;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import kr.spot.schedule.domain.Schedule;
+import kr.spot.schedule.infrastructure.jpa.ScheduleExclusionRepository;
 import kr.spot.schedule.infrastructure.jpa.querydsl.ScheduleQueryRepository;
 import kr.spot.schedule.presentation.query.dto.GetScheduleListResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,11 +32,14 @@ class GetScheduleServiceTest {
   @Mock
   ScheduleQueryRepository scheduleQueryRepository;
 
+  @Mock
+  ScheduleExclusionRepository scheduleExclusionRepository;
+
   GetScheduleService getScheduleService;
 
   @BeforeEach
   void setUp() {
-    getScheduleService = new GetScheduleService(scheduleQueryRepository);
+    getScheduleService = new GetScheduleService(scheduleQueryRepository, scheduleExclusionRepository);
   }
 
   @Nested
@@ -54,6 +59,8 @@ class GetScheduleServiceTest {
 
       when(scheduleQueryRepository.findMonthlySchedules(anyLong(), any(LocalDate.class)))
           .thenReturn(schedules);
+      when(scheduleExclusionRepository.findExcludedScheduleIds(anyLong(), anyList()))
+          .thenReturn(Collections.emptyList());
 
       // when
       GetScheduleListResponse response = getScheduleService.getMonthlySchedules(STUDY_ID, year, month, CREATOR_ID);
@@ -69,6 +76,8 @@ class GetScheduleServiceTest {
     void should_return_empty_list_when_no_schedules() {
       // given
       when(scheduleQueryRepository.findMonthlySchedules(anyLong(), any(LocalDate.class)))
+          .thenReturn(Collections.emptyList());
+      when(scheduleExclusionRepository.findExcludedScheduleIds(anyLong(), anyList()))
           .thenReturn(Collections.emptyList());
 
       // when
@@ -93,6 +102,8 @@ class GetScheduleServiceTest {
 
       when(scheduleQueryRepository.findWeeklySchedules(anyLong(), any(LocalDate.class)))
           .thenReturn(schedules);
+      when(scheduleExclusionRepository.findExcludedScheduleIds(anyLong(), anyList()))
+          .thenReturn(Collections.emptyList());
 
       // when
       GetScheduleListResponse response = getScheduleService.getWeeklySchedules(STUDY_ID, date, CREATOR_ID);
@@ -109,6 +120,8 @@ class GetScheduleServiceTest {
       LocalDate date = LocalDate.of(2025, 1, 15);
 
       when(scheduleQueryRepository.findWeeklySchedules(anyLong(), any(LocalDate.class)))
+          .thenReturn(Collections.emptyList());
+      when(scheduleExclusionRepository.findExcludedScheduleIds(anyLong(), anyList()))
           .thenReturn(Collections.emptyList());
 
       // when
@@ -135,6 +148,8 @@ class GetScheduleServiceTest {
 
       when(scheduleQueryRepository.findUpcomingSchedules(anyLong(), anyInt()))
           .thenReturn(schedules);
+      when(scheduleExclusionRepository.findExcludedScheduleIds(anyLong(), anyList()))
+          .thenReturn(Collections.emptyList());
 
       // when
       GetScheduleListResponse response = getScheduleService.getUpcomingSchedules(STUDY_ID, CREATOR_ID);
@@ -149,6 +164,8 @@ class GetScheduleServiceTest {
     void should_return_empty_list_when_no_schedules() {
       // given
       when(scheduleQueryRepository.findUpcomingSchedules(anyLong(), anyInt()))
+          .thenReturn(Collections.emptyList());
+      when(scheduleExclusionRepository.findExcludedScheduleIds(anyLong(), anyList()))
           .thenReturn(Collections.emptyList());
 
       // when

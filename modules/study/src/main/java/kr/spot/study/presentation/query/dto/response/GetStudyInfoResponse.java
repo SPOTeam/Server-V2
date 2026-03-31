@@ -9,7 +9,8 @@ public record GetStudyInfoResponse(
     String description,
     String thumbnailUrl,
     List<Category> categories,
-    Statistics statistics
+    Statistics statistics,
+    String viewerStatus
 ) {
 
   public static GetStudyInfoResponse of(
@@ -18,7 +19,8 @@ public record GetStudyInfoResponse(
       String description,
       String thumbnailUrl,
       List<Category> categories,
-      Statistics statistics
+      Statistics statistics,
+      String viewerStatus
   ) {
     return new GetStudyInfoResponse(
         id,
@@ -26,7 +28,8 @@ public record GetStudyInfoResponse(
         description,
         thumbnailUrl,
         categories,
-        statistics
+        statistics,
+        viewerStatus
     );
   }
 

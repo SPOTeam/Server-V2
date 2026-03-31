@@ -55,9 +55,10 @@ public class ScheduleCommandController {
   })
   @DeleteMapping("/{scheduleId}")
   public ResponseEntity<ApiResponse<Void>> deleteSchedule(
+      @CurrentMember @Parameter(hidden = true) Long memberId,
       @Parameter(description = "스터디 ID", required = true) @PathVariable Long studyId,
       @Parameter(description = "일정 ID", required = true) @PathVariable Long scheduleId) {
-    manageScheduleService.deleteSchedule(studyId, scheduleId);
+    manageScheduleService.deleteSchedule(studyId, scheduleId, memberId);
     return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK));
   }
 }

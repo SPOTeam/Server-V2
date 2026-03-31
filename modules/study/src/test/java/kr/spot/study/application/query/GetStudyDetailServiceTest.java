@@ -5,6 +5,7 @@ import static org.mockito.BDDMockito.given;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import kr.spot.ports.GetMemberInfoPort;
 import kr.spot.ports.dto.MemberInfoResponse;
 import kr.spot.study.domain.Study;
@@ -72,6 +73,8 @@ class GetStudyDetailServiceTest {
       given(studyCategoryRepository.findAllByStudyId(studyId)).willReturn(categories);
       given(studyViewCountService.calculateDisplayViewCount(study, studyId, viewerId))
           .willReturn(displayViewCount);
+      given(studyMemberRepository.findByMemberIdAndStudyId(viewerId, studyId))
+          .willReturn(Optional.empty());
 
       // when
       GetStudyInfoResponse result = sut.getStudyInfo(studyId, viewerId);
@@ -84,6 +87,7 @@ class GetStudyDetailServiceTest {
       assertThat(result.statistics().currentMembers()).isEqualTo(5);
       assertThat(result.statistics().likeCount()).isEqualTo(50L);
       assertThat(result.statistics().hitCount()).isEqualTo(displayViewCount);
+      assertThat(result.viewerStatus()).isEqualTo("NOT_APPLIED");
     }
 
     @Test
@@ -97,6 +101,8 @@ class GetStudyDetailServiceTest {
       given(studyCategoryRepository.findAllByStudyId(studyId)).willReturn(List.of());
       given(studyViewCountService.calculateDisplayViewCount(study, studyId, viewerId))
           .willReturn(displayViewCount);
+      given(studyMemberRepository.findByMemberIdAndStudyId(viewerId, studyId))
+          .willReturn(Optional.empty());
 
       // when
       GetStudyInfoResponse result = sut.getStudyInfo(studyId, viewerId);

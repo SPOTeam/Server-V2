@@ -3,6 +3,7 @@ package kr.spot.schedule.application.command;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import kr.spot.IdGenerator;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
@@ -15,8 +16,10 @@ import kr.spot.schedule.domain.enums.AttendanceStatus;
 import kr.spot.schedule.domain.vo.MemberInfo;
 import kr.spot.schedule.infrastructure.crypto.AttendanceTokenEncryptor;
 import kr.spot.schedule.infrastructure.jpa.AttendanceRepository;
+import kr.spot.schedule.infrastructure.jpa.ScheduleExclusionRepository;
 import kr.spot.schedule.infrastructure.jpa.ScheduleRepository;
 import kr.spot.study.application.validator.StudyAccessValidator;
+import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.study.domain.associations.StudyMember;
 import kr.spot.study.domain.enums.StudyMemberStatus;
 import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
@@ -35,7 +38,9 @@ public class AttendanceCommandService {
 
   private final IdGenerator idGenerator;
   private final ScheduleRepository scheduleRepository;
+  private final StudyRepository studyRepository;
   private final AttendanceRepository attendanceRepository;
+  private final ScheduleExclusionRepository scheduleExclusionRepository;
   private final StudyMemberRepository studyMemberRepository;
   private final StudyAccessValidator studyAccessValidator;
   private final GetMemberInfoPort getMemberInfoPort;
@@ -51,7 +56,7 @@ public class AttendanceCommandService {
     if (!attendanceRepository.existsByScheduleId(scheduleId)) {
       createAttendancesForAllMembers(studyId, scheduleId);
     } else {
-      resetAttendancesForRestart(scheduleId);
+      resetAttendancesForRestart(studyId, scheduleId);
     }
 
     String qrContent = generateEncryptedToken(studyId, scheduleId);
@@ -67,9 +72,16 @@ public class AttendanceCommandService {
     markAbsentForUndecidedAttendances(scheduleId);
   }
 
-  private void resetAttendancesForRestart(long scheduleId) {
+  private void resetAttendancesForRestart(long studyId, long scheduleId) {
     List<Attendance> attendances = attendanceRepository.findAllByScheduleId(scheduleId);
-    attendances.forEach(Attendance::resetToPending);
+    long leaderId = studyRepository.getStudyById(studyId).getLeaderId();
+
+    attendances.forEach(attendance -> {
+      attendance.resetToPending();
+      if (attendance.getMemberInfo().getMemberId() == leaderId) {
+        attendance.markAttendance(AttendanceStatus.PRESENT);
+      }
+    });
   }
 
   private void markAbsentForUndecidedAttendances(long scheduleId) {
@@ -93,8 +105,15 @@ public class AttendanceCommandService {
   }
 
   private void createAttendancesForAllMembers(long studyId, long scheduleId) {
-    List<StudyMember> activeMembers = studyMemberRepository
+    List<StudyMember> allActiveMembers = studyMemberRepository
         .findAllByStudyIdAndStudyMemberStatusIn(studyId, ACTIVE_MEMBER_STATUSES);
+
+    Set<Long> excludedMemberIds = Set.copyOf(
+        scheduleExclusionRepository.findExcludedMemberIds(scheduleId));
+
+    List<StudyMember> activeMembers = allActiveMembers.stream()
+        .filter(sm -> !excludedMemberIds.contains(sm.getMemberId()))
+        .toList();
 
     List<Long> memberIds = activeMembers.stream()
         .map(StudyMember::getMemberId)

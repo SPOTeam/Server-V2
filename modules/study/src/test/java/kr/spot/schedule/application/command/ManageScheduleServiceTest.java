@@ -19,7 +19,10 @@ import kr.spot.IdGenerator;
 import kr.spot.code.status.ErrorStatus;
 import kr.spot.exception.GeneralException;
 import kr.spot.schedule.domain.Schedule;
+import kr.spot.schedule.infrastructure.jpa.ScheduleExclusionRepository;
 import kr.spot.schedule.infrastructure.jpa.ScheduleRepository;
+import kr.spot.study.domain.Study;
+import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.schedule.presentation.command.dto.CreateScheduleRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +43,12 @@ class ManageScheduleServiceTest {
   @Mock
   ScheduleRepository scheduleRepository;
 
+  @Mock
+  ScheduleExclusionRepository scheduleExclusionRepository;
+
+  @Mock
+  StudyRepository studyRepository;
+
   @Captor
   ArgumentCaptor<Schedule> scheduleCaptor;
 
@@ -47,7 +56,8 @@ class ManageScheduleServiceTest {
 
   @BeforeEach
   void setUp() {
-    manageScheduleService = new ManageScheduleService(idGenerator, scheduleRepository);
+    manageScheduleService = new ManageScheduleService(idGenerator, scheduleRepository,
+        scheduleExclusionRepository, studyRepository);
   }
 
   @Nested
@@ -137,19 +147,42 @@ class ManageScheduleServiceTest {
   class DeleteSchedule {
 
     @Test
-    @DisplayName("일정을 정상적으로 삭제할 수 있다")
+    @DisplayName("호스트가 일정을 정상적으로 삭제할 수 있다")
     void should_delete_schedule_successfully() {
       // given
       long scheduleId = 1L;
       Schedule schedule = schedule(scheduleId, STUDY_ID);
+      Study study = Study.of(STUDY_ID, CREATOR_ID, "테스트 스터디", 10, null, "설명");
 
+      when(studyRepository.getStudyById(STUDY_ID)).thenReturn(study);
       when(scheduleRepository.getById(anyLong())).thenReturn(schedule);
 
       // when
-      manageScheduleService.deleteSchedule(STUDY_ID, scheduleId);
+      manageScheduleService.deleteSchedule(STUDY_ID, scheduleId, CREATOR_ID);
 
       // then
       verify(scheduleRepository).getById(scheduleId);
+    }
+
+    @Test
+    @DisplayName("비호스트가 일정 삭제하면 해당 인원만 일정에서 제외된다")
+    void should_exclude_member_when_non_host_deletes() {
+      // given
+      long scheduleId = 1L;
+      long nonHostMemberId = 999L;
+      Study study = Study.of(STUDY_ID, CREATOR_ID, "테스트 스터디", 10, null, "설명");
+
+      when(studyRepository.getStudyById(STUDY_ID)).thenReturn(study);
+      when(scheduleExclusionRepository.existsByScheduleIdAndMemberId(scheduleId, nonHostMemberId))
+          .thenReturn(false);
+      when(idGenerator.nextId()).thenReturn(100L);
+
+      // when
+      manageScheduleService.deleteSchedule(STUDY_ID, scheduleId, nonHostMemberId);
+
+      // then
+      verify(scheduleExclusionRepository).save(any());
+      verify(scheduleRepository, never()).getById(anyLong());
     }
 
     @Test
@@ -159,11 +192,13 @@ class ManageScheduleServiceTest {
       long scheduleId = 1L;
       long otherStudyId = 999L;
       Schedule schedule = schedule(scheduleId, STUDY_ID);
+      Study study = Study.of(otherStudyId, CREATOR_ID, "테스트 스터디", 10, null, "설명");
 
+      when(studyRepository.getStudyById(otherStudyId)).thenReturn(study);
       when(scheduleRepository.getById(anyLong())).thenReturn(schedule);
 
       // when & then
-      assertThatThrownBy(() -> manageScheduleService.deleteSchedule(otherStudyId, scheduleId))
+      assertThatThrownBy(() -> manageScheduleService.deleteSchedule(otherStudyId, scheduleId, CREATOR_ID))
           .isInstanceOf(GeneralException.class);
     }
 
@@ -172,12 +207,14 @@ class ManageScheduleServiceTest {
     void should_throw_exception_when_schedule_not_found() {
       // given
       long scheduleId = 999L;
+      Study study = Study.of(STUDY_ID, CREATOR_ID, "테스트 스터디", 10, null, "설명");
 
+      when(studyRepository.getStudyById(STUDY_ID)).thenReturn(study);
       when(scheduleRepository.getById(anyLong()))
           .thenThrow(new GeneralException(ErrorStatus._SCHEDULE_NOT_FOUND));
 
       // when & then
-      assertThatThrownBy(() -> manageScheduleService.deleteSchedule(STUDY_ID, scheduleId))
+      assertThatThrownBy(() -> manageScheduleService.deleteSchedule(STUDY_ID, scheduleId, CREATOR_ID))
           .isInstanceOf(GeneralException.class);
     }
   }

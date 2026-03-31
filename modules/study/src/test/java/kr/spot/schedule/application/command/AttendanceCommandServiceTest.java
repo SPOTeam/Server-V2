@@ -32,7 +32,9 @@ import kr.spot.schedule.domain.Schedule;
 import kr.spot.schedule.domain.enums.AttendanceStatus;
 import kr.spot.schedule.infrastructure.crypto.AttendanceTokenEncryptor;
 import kr.spot.schedule.infrastructure.jpa.AttendanceRepository;
+import kr.spot.schedule.infrastructure.jpa.ScheduleExclusionRepository;
 import kr.spot.schedule.infrastructure.jpa.ScheduleRepository;
+import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.study.application.validator.StudyAccessValidator;
 import kr.spot.study.domain.associations.StudyMember;
 import kr.spot.study.domain.enums.StudyMemberStatus;
@@ -59,7 +61,11 @@ class AttendanceCommandServiceTest {
   @Mock
   ScheduleRepository scheduleRepository;
   @Mock
+  StudyRepository studyRepository;
+  @Mock
   AttendanceRepository attendanceRepository;
+  @Mock
+  ScheduleExclusionRepository scheduleExclusionRepository;
   @Mock
   StudyMemberRepository studyMemberRepository;
   @Mock
@@ -78,7 +84,9 @@ class AttendanceCommandServiceTest {
     service = new AttendanceCommandService(
         idGenerator,
         scheduleRepository,
+        studyRepository,
         attendanceRepository,
+        scheduleExclusionRepository,
         studyMemberRepository,
         studyAccessValidator,
         getMemberInfoPort,

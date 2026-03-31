@@ -2,6 +2,7 @@ package kr.spot.study.application.query;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import kr.spot.ports.GetMemberInfoPort;
 import kr.spot.ports.dto.MemberInfoResponse;
 import kr.spot.study.domain.Study;
@@ -9,6 +10,7 @@ import kr.spot.study.domain.associations.StudyCategory;
 import kr.spot.study.domain.associations.StudyMember;
 import kr.spot.study.domain.enums.Category;
 import kr.spot.study.domain.enums.StudyMemberStatus;
+import kr.spot.study.domain.enums.ViewerStatus;
 import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyCategoryRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
@@ -38,8 +40,9 @@ public class GetStudyDetailService {
     Study study = findStudy(studyId);
     List<Category> categories = findCategories(studyId);
     Statistics statistics = buildStatistics(study, studyId, viewerId);
+    ViewerStatus viewerStatus = resolveViewerStatus(studyId, viewerId);
 
-    return toStudyInfoResponse(study, categories, statistics);
+    return toStudyInfoResponse(study, categories, statistics, viewerStatus);
   }
 
   public GetStudyMembersResponse getStudyMembers(long studyId) {
@@ -71,15 +74,32 @@ public class GetStudyDetailService {
     );
   }
 
+  private ViewerStatus resolveViewerStatus(long studyId, long viewerId) {
+    Optional<StudyMember> studyMember = studyMemberRepository
+        .findByMemberIdAndStudyId(viewerId, studyId);
+
+    if (studyMember.isEmpty()) {
+      return ViewerStatus.NOT_APPLIED;
+    }
+
+    return switch (studyMember.get().getStudyMemberStatus()) {
+      case OWNER -> ViewerStatus.OWNER;
+      case APPROVED -> ViewerStatus.APPROVED;
+      case APPLIED, AWAITING_SELF_APPROVAL -> ViewerStatus.APPLIED;
+      default -> ViewerStatus.NOT_APPLIED;
+    };
+  }
+
   private GetStudyInfoResponse toStudyInfoResponse(Study study, List<Category> categories,
-      Statistics statistics) {
+      Statistics statistics, ViewerStatus viewerStatus) {
     return GetStudyInfoResponse.of(
         study.getId(),
         study.getName(),
         study.getDescription(),
         study.getImageUrl(),
         categories,
-        statistics
+        statistics,
+        viewerStatus.name()
     );
   }
 

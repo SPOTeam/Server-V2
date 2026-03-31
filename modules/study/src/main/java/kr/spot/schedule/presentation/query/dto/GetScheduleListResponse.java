@@ -18,12 +18,15 @@ public record GetScheduleListResponse(
       LocalDateTime startAt,
       LocalDateTime endAt,
       boolean isNow,
-      boolean isMine
+      boolean isMine,
+      boolean isAttendanceStartable
   ) {
 
     public static ScheduleResponse from(Long scheduleId, String title,
-        LocalDateTime startAt, LocalDateTime endAt, boolean isNow, boolean isMine) {
-      return new ScheduleResponse(scheduleId, title, startAt, endAt, isNow, isMine);
+        LocalDateTime startAt, LocalDateTime endAt, boolean isNow, boolean isMine,
+        boolean isAttendanceStartable) {
+      return new ScheduleResponse(scheduleId, title, startAt, endAt, isNow, isMine,
+          isAttendanceStartable);
     }
 
   }

@@ -54,11 +54,22 @@ public class Schedule extends BaseEntity {
     super.delete();
   }
 
+  private static final int ATTENDANCE_STARTABLE_MINUTES_BEFORE = 30;
+
   public boolean isOngoing(LocalDateTime now) {
     if (startAt == null || endAt == null) {
       return false;
     }
     return !now.isBefore(startAt) && !now.isAfter(endAt);
+  }
+
+  public boolean isAttendanceStartable() {
+    if (startAt == null || endAt == null) {
+      return false;
+    }
+    LocalDateTime now = LocalDateTime.now();
+    LocalDateTime startableFrom = startAt.minusMinutes(ATTENDANCE_STARTABLE_MINUTES_BEFORE);
+    return !now.isBefore(startableFrom) && !now.isAfter(endAt);
   }
 
   public boolean isAttendanceActive() {
@@ -67,7 +78,7 @@ public class Schedule extends BaseEntity {
 
   public void startAttendance(long studyId) {
     validateIsValidAccess(studyId);
-    validateIsOngoing();
+    validateIsAttendanceStartable();
     validateIsNotAttendanceActive();
     this.attendanceActive = true;
   }
@@ -95,6 +106,12 @@ public class Schedule extends BaseEntity {
 
   private void validateIsOngoing() {
     if (!isOngoing(LocalDateTime.now())) {
+      throw new GeneralException(ErrorStatus._ATTENDANCE_NOT_IN_SCHEDULE_TIME);
+    }
+  }
+
+  private void validateIsAttendanceStartable() {
+    if (!isAttendanceStartable()) {
       throw new GeneralException(ErrorStatus._ATTENDANCE_NOT_IN_SCHEDULE_TIME);
     }
   }
