@@ -140,6 +140,18 @@ public class Study extends BaseEntity {
     this.imageUrl = imageUrl;
   }
 
+  public void update(Long requesterId, String name, Integer maxMembers, Fee fee,
+      String description, Boolean isOnline) {
+    validateIsStudyOwner(requesterId);
+    validateStudyNameIsNotBlank(name);
+    validateMaxMembers(maxMembers);
+    this.name = name;
+    this.maxMembers = maxMembers;
+    this.fee = fee;
+    this.description = description;
+    this.isOnline = isOnline != null && isOnline;
+  }
+
   public void finishStudy(StudyMember studyMember) {
     validateIsStudyOwner(studyMember.getMemberId());
     checkStudyCanDelete();
