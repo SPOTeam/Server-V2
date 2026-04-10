@@ -33,6 +33,7 @@ public final class PostResponseMapper {
         .isPinned(post.isPinned())
         .isOwner(post.isOwnedBy(viewerId))
         .isLiked(isLiked)
+        .writer(toDetailWriterInfoResponse(post.getWriterInfo()))
         .stats(toStatsResponse(stats, displayViewCount))
         .createdAt(post.getCreatedAt())
         .comments(toCommentResponses(comments, viewerId))
