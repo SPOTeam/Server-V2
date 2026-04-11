@@ -8,12 +8,18 @@ import kr.spot.ports.dto.MemberInfoResponse;
 import kr.spot.study.domain.Study;
 import kr.spot.study.domain.associations.StudyCategory;
 import kr.spot.study.domain.associations.StudyMember;
+import kr.spot.study.domain.associations.StudyRegion;
+import kr.spot.study.domain.associations.StudyStyle;
 import kr.spot.study.domain.enums.Category;
+import kr.spot.study.domain.enums.Style;
 import kr.spot.study.domain.enums.StudyMemberStatus;
 import kr.spot.study.domain.enums.ViewerStatus;
+import kr.spot.study.domain.vo.Fee;
 import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyCategoryRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
+import kr.spot.study.infrastructure.jpa.associations.StudyRegionRepository;
+import kr.spot.study.infrastructure.jpa.associations.StudyStyleRepository;
 import kr.spot.study.presentation.query.dto.response.GetStudyInfoResponse;
 import kr.spot.study.presentation.query.dto.response.GetStudyInfoResponse.Statistics;
 import kr.spot.study.presentation.query.dto.response.GetStudyMembersResponse;
@@ -33,16 +39,20 @@ public class GetStudyDetailService {
   private final StudyRepository studyRepository;
   private final StudyCategoryRepository studyCategoryRepository;
   private final StudyMemberRepository studyMemberRepository;
+  private final StudyStyleRepository studyStyleRepository;
+  private final StudyRegionRepository studyRegionRepository;
   private final StudyViewCountService studyViewCountService;
   private final GetMemberInfoPort getMemberInfoPort;
 
   public GetStudyInfoResponse getStudyInfo(long studyId, long viewerId) {
     Study study = findStudy(studyId);
     List<Category> categories = findCategories(studyId);
+    List<Style> styles = findStyles(studyId);
+    List<String> regionCodes = findRegionCodes(studyId);
     Statistics statistics = buildStatistics(study, studyId, viewerId);
     ViewerStatus viewerStatus = resolveViewerStatus(studyId, viewerId);
 
-    return toStudyInfoResponse(study, categories, statistics, viewerStatus);
+    return toStudyInfoResponse(study, categories, styles, regionCodes, statistics, viewerStatus);
   }
 
   public GetStudyMembersResponse getStudyMembers(long studyId) {
@@ -60,6 +70,18 @@ public class GetStudyDetailService {
   private List<Category> findCategories(long studyId) {
     return studyCategoryRepository.findAllByStudyId(studyId).stream()
         .map(StudyCategory::getCategory)
+        .toList();
+  }
+
+  private List<Style> findStyles(long studyId) {
+    return studyStyleRepository.findAllByStudyId(studyId).stream()
+        .map(StudyStyle::getStyle)
+        .toList();
+  }
+
+  private List<String> findRegionCodes(long studyId) {
+    return studyRegionRepository.findAllByStudyId(studyId).stream()
+        .map(StudyRegion::getRegionCode)
         .toList();
   }
 
@@ -91,13 +113,23 @@ public class GetStudyDetailService {
   }
 
   private GetStudyInfoResponse toStudyInfoResponse(Study study, List<Category> categories,
-      Statistics statistics, ViewerStatus viewerStatus) {
+      List<Style> styles, List<String> regionCodes, Statistics statistics,
+      ViewerStatus viewerStatus) {
+    Fee fee = study.getFee();
+    boolean hasFee = fee != null && fee.isHasFee();
+    Integer amount = fee != null ? fee.getAmount() : null;
     return GetStudyInfoResponse.of(
         study.getId(),
         study.getName(),
         study.getDescription(),
         study.getImageUrl(),
+        study.getMaxMembers(),
+        hasFee,
+        amount,
         categories,
+        styles,
+        regionCodes,
+        Boolean.TRUE.equals(study.getIsOnline()),
         statistics,
         viewerStatus.name()
     );

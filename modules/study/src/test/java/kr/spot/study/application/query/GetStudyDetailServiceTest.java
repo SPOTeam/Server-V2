@@ -17,6 +17,8 @@ import kr.spot.study.domain.vo.Fee;
 import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyCategoryRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
+import kr.spot.study.infrastructure.jpa.associations.StudyRegionRepository;
+import kr.spot.study.infrastructure.jpa.associations.StudyStyleRepository;
 import kr.spot.study.presentation.query.dto.response.GetStudyInfoResponse;
 import kr.spot.study.presentation.query.dto.response.GetStudyMembersResponse;
 import kr.spot.study.presentation.query.dto.response.GetStudyMembersResponse.MemberResponse;
@@ -41,6 +43,12 @@ class GetStudyDetailServiceTest {
 
   @Mock
   StudyMemberRepository studyMemberRepository;
+
+  @Mock
+  StudyStyleRepository studyStyleRepository;
+
+  @Mock
+  StudyRegionRepository studyRegionRepository;
 
   @Mock
   StudyViewCountService studyViewCountService;
@@ -71,6 +79,8 @@ class GetStudyDetailServiceTest {
 
       given(studyRepository.getStudyById(studyId)).willReturn(study);
       given(studyCategoryRepository.findAllByStudyId(studyId)).willReturn(categories);
+      given(studyStyleRepository.findAllByStudyId(studyId)).willReturn(List.of());
+      given(studyRegionRepository.findAllByStudyId(studyId)).willReturn(List.of());
       given(studyViewCountService.calculateDisplayViewCount(study, studyId, viewerId))
           .willReturn(displayViewCount);
       given(studyMemberRepository.findByMemberIdAndStudyId(viewerId, studyId))
@@ -81,6 +91,12 @@ class GetStudyDetailServiceTest {
 
       // then
       assertThat(result.title()).isEqualTo("알고리즘 스터디");
+      assertThat(result.maxMembers()).isEqualTo(10);
+      assertThat(result.hasFee()).isFalse();
+      assertThat(result.amount()).isEqualTo(0);
+      assertThat(result.styles()).isEmpty();
+      assertThat(result.regionCodes()).isEmpty();
+      assertThat(result.isOnline()).isFalse();
       assertThat(result.description()).isEqualTo("스터디 설명");
       assertThat(result.categories()).containsExactly(Category.LANGUAGE, Category.CERTIFICATION);
       assertThat(result.statistics().totalMembers()).isEqualTo(10);
@@ -99,6 +115,8 @@ class GetStudyDetailServiceTest {
 
       given(studyRepository.getStudyById(studyId)).willReturn(study);
       given(studyCategoryRepository.findAllByStudyId(studyId)).willReturn(List.of());
+      given(studyStyleRepository.findAllByStudyId(studyId)).willReturn(List.of());
+      given(studyRegionRepository.findAllByStudyId(studyId)).willReturn(List.of());
       given(studyViewCountService.calculateDisplayViewCount(study, studyId, viewerId))
           .willReturn(displayViewCount);
       given(studyMemberRepository.findByMemberIdAndStudyId(viewerId, studyId))
