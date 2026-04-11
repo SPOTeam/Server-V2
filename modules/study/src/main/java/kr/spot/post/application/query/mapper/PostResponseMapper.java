@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 public final class PostResponseMapper {
 
   public static final int DEFAULT_MAX_CONTENT_LENGTH = 100;
-  private static final String PRIVATE_POST_MESSAGE = "이 글은 스터디원에게만 노출됩니다.";
 
   public static PostDetailResponse toDetailResponse(
       Post post,
@@ -41,31 +40,11 @@ public final class PostResponseMapper {
   }
 
   public static PostItem toPostItem(Post post, PostStats stats, int maxContentLength,
-      boolean isStudyMember, boolean isLiked) {
-    if (post.isPrivate() && !isStudyMember) {
-      return toMaskedPostItem(post, stats, isLiked);
-    }
-    return toPublicPostItem(post, stats, maxContentLength, isLiked);
-  }
-
-  private static PostItem toPublicPostItem(Post post, PostStats stats, int maxContentLength,
       boolean isLiked) {
     return PostItem.of(
         post.getId(),
         post.getTitle(),
         summarize(post.getContent(), maxContentLength),
-        post.isPinned(),
-        isLiked,
-        toStatsResponse(stats),
-        post.getCreatedAt()
-    );
-  }
-
-  private static PostItem toMaskedPostItem(Post post, PostStats stats, boolean isLiked) {
-    return PostItem.of(
-        post.getId(),
-        PRIVATE_POST_MESSAGE,
-        PRIVATE_POST_MESSAGE,
         post.isPinned(),
         isLiked,
         toStatsResponse(stats),

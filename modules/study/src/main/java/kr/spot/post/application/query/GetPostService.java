@@ -55,15 +55,15 @@ public class GetPostService {
     int pageSize = Math.min(size, MAX_PAGE_SIZE);
     boolean isStudyMember = accessValidator.isStudyMember(studyId, viewerId);
 
-    List<Post> pinnedPosts = fetchPinnedPostsIfFirstPage(studyId, cursor);
+    List<Post> pinnedPosts = fetchPinnedPostsIfFirstPage(studyId, cursor, isStudyMember);
     PaginationResult paginationResult = fetchNormalPostsWithPagination(studyId, cursor, pageSize,
-        pinnedPosts.size());
+        pinnedPosts.size(), isStudyMember);
 
     List<Post> allPosts = mergePosts(pinnedPosts, paginationResult.posts());
     Map<Long, PostStats> statsMap = fetchStatsForPosts(allPosts);
     Set<Long> likedPostIds = fetchLikedPostIds(allPosts, viewerId);
 
-    List<PostItem> postItems = mapToPostItems(allPosts, statsMap, isStudyMember, likedPostIds);
+    List<PostItem> postItems = mapToPostItems(allPosts, statsMap, likedPostIds);
 
     return buildListResponse(postItems, paginationResult);
   }
@@ -74,19 +74,20 @@ public class GetPostService {
     return post;
   }
 
-  private List<Post> fetchPinnedPostsIfFirstPage(long studyId, Long cursor) {
+  private List<Post> fetchPinnedPostsIfFirstPage(long studyId, Long cursor, boolean isStudyMember) {
     if (cursor != null) {
       return List.of();
     }
-    return postQueryRepository.findPinnedPosts(studyId);
+    return postQueryRepository.findPinnedPosts(studyId, isStudyMember);
   }
 
   private PaginationResult fetchNormalPostsWithPagination(long studyId, Long cursor, int pageSize,
-      int pinnedCount) {
+      int pinnedCount, boolean isStudyMember) {
     int remainingSlots = pageSize - pinnedCount;
     int fetchLimit = remainingSlots + 1;
 
-    List<Post> posts = postQueryRepository.findPageByIdDesc(studyId, cursor, fetchLimit);
+    List<Post> posts = postQueryRepository.findPageByIdDesc(studyId, cursor, fetchLimit,
+        isStudyMember);
     boolean hasNext = posts.size() > remainingSlots;
 
     if (hasNext) {
@@ -115,10 +116,10 @@ public class GetPostService {
   }
 
   private List<PostItem> mapToPostItems(List<Post> posts, Map<Long, PostStats> statsMap,
-      boolean isStudyMember, Set<Long> likedPostIds) {
+      Set<Long> likedPostIds) {
     return posts.stream()
         .map(post -> toPostItem(post, statsMap.get(post.getId()), DEFAULT_MAX_CONTENT_LENGTH,
-            isStudyMember, likedPostIds.contains(post.getId())))
+            likedPostIds.contains(post.getId())))
         .toList();
   }
 

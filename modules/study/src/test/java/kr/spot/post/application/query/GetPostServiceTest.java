@@ -10,6 +10,7 @@ import static kr.spot.post.common.PostFixture.privatePost;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -227,8 +228,8 @@ class GetPostServiceTest {
       Post normal2 = post(4L, STUDY_ID);
 
       when(accessValidator.isStudyMember(STUDY_ID, WRITER_ID)).thenReturn(true);
-      when(postQueryRepository.findPinnedPosts(STUDY_ID)).thenReturn(List.of(pinned1, pinned2));
-      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), anyInt()))
+      when(postQueryRepository.findPinnedPosts(eq(STUDY_ID), anyBoolean())).thenReturn(List.of(pinned1, pinned2));
+      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), anyInt(), anyBoolean()))
           .thenReturn(List.of(normal1, normal2));
       when(postQueryRepository.findStatsByPostIds(any()))
           .thenReturn(
@@ -254,7 +255,7 @@ class GetPostServiceTest {
       Post normal2 = post(1L, STUDY_ID);
 
       when(accessValidator.isStudyMember(STUDY_ID, WRITER_ID)).thenReturn(true);
-      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(cursor), anyInt()))
+      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(cursor), anyInt(), anyBoolean()))
           .thenReturn(List.of(normal1, normal2));
       when(postQueryRepository.findStatsByPostIds(any()))
           .thenReturn(Map.of(2L, postStats(2L), 1L, postStats(1L)));
@@ -264,7 +265,7 @@ class GetPostServiceTest {
 
       // then
       assertThat(response.posts()).hasSize(2);
-      verify(postQueryRepository, never()).findPinnedPosts(anyLong());
+      verify(postQueryRepository, never()).findPinnedPosts(anyLong(), anyBoolean());
     }
 
     @Test
@@ -276,8 +277,9 @@ class GetPostServiceTest {
       Post post3 = post(3L, STUDY_ID); // 다음 페이지 존재 확인용
 
       when(accessValidator.isStudyMember(STUDY_ID, WRITER_ID)).thenReturn(true);
-      when(postQueryRepository.findPinnedPosts(STUDY_ID)).thenReturn(List.of());
-      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), eq(3))) // size + 1
+      when(postQueryRepository.findPinnedPosts(eq(STUDY_ID), anyBoolean())).thenReturn(List.of());
+      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), eq(3),
+          anyBoolean())) // size + 1
           .thenReturn(List.of(post1, post2, post3));
       when(postQueryRepository.findStatsByPostIds(any()))
           .thenReturn(Map.of(5L, postStats(5L), 4L, postStats(4L)));
@@ -299,8 +301,8 @@ class GetPostServiceTest {
       Post post2 = post(1L, STUDY_ID);
 
       when(accessValidator.isStudyMember(STUDY_ID, WRITER_ID)).thenReturn(true);
-      when(postQueryRepository.findPinnedPosts(STUDY_ID)).thenReturn(List.of());
-      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), eq(11)))
+      when(postQueryRepository.findPinnedPosts(eq(STUDY_ID), anyBoolean())).thenReturn(List.of());
+      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), eq(11), anyBoolean()))
           .thenReturn(List.of(post1, post2)); // size보다 적음
       when(postQueryRepository.findStatsByPostIds(any()))
           .thenReturn(Map.of(2L, postStats(2L), 1L, postStats(1L)));
@@ -314,14 +316,14 @@ class GetPostServiceTest {
     }
 
     @Test
-    @DisplayName("스터디원인 경우 비공개 게시글이 정상 표시된다")
-    void should_show_private_post_content_for_study_member() {
+    @DisplayName("스터디원이면 리스트 쿼리에 private 포함 플래그가 전달된다")
+    void should_include_private_posts_for_study_member() {
       // given
       Post privatePostItem = privatePost(1L, STUDY_ID);
 
       when(accessValidator.isStudyMember(STUDY_ID, WRITER_ID)).thenReturn(true);
-      when(postQueryRepository.findPinnedPosts(STUDY_ID)).thenReturn(List.of());
-      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), anyInt()))
+      when(postQueryRepository.findPinnedPosts(STUDY_ID, true)).thenReturn(List.of());
+      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), anyInt(), eq(true)))
           .thenReturn(List.of(privatePostItem));
       when(postQueryRepository.findStatsByPostIds(any()))
           .thenReturn(Map.of(1L, postStats(1L)));
@@ -330,29 +332,30 @@ class GetPostServiceTest {
       PostListResponse response = getPostService.getPostList(STUDY_ID, null, WRITER_ID, 10);
 
       // then
-      assertThat(response.posts().get(0).title()).isNotEqualTo("이 글은 스터디원에게만 노출됩니다.");
+      assertThat(response.posts()).hasSize(1);
+      verify(postQueryRepository).findPinnedPosts(STUDY_ID, true);
+      verify(postQueryRepository).findPageByIdDesc(eq(STUDY_ID), eq(null), anyInt(), eq(true));
     }
 
     @Test
-    @DisplayName("비스터디원인 경우 비공개 게시글이 마스킹된다")
-    void should_mask_private_post_content_for_non_study_member() {
+    @DisplayName("비스터디원이면 리스트 쿼리에 private 제외 플래그가 전달된다")
+    void should_exclude_private_posts_for_non_study_member() {
       // given
       long nonMemberId = 999L;
-      Post privatePostItem = privatePost(1L, STUDY_ID);
 
       when(accessValidator.isStudyMember(STUDY_ID, nonMemberId)).thenReturn(false);
-      when(postQueryRepository.findPinnedPosts(STUDY_ID)).thenReturn(List.of());
-      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), anyInt()))
-          .thenReturn(List.of(privatePostItem));
-      when(postQueryRepository.findStatsByPostIds(any()))
-          .thenReturn(Map.of(1L, postStats(1L)));
+      when(postQueryRepository.findPinnedPosts(STUDY_ID, false)).thenReturn(List.of());
+      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), anyInt(), eq(false)))
+          .thenReturn(List.of());
+      when(postQueryRepository.findStatsByPostIds(any())).thenReturn(Map.of());
 
       // when
       PostListResponse response = getPostService.getPostList(STUDY_ID, null, nonMemberId, 10);
 
       // then
-      assertThat(response.posts().get(0).title()).isEqualTo("이 글은 스터디원에게만 노출됩니다.");
-      assertThat(response.posts().get(0).content()).isEqualTo("이 글은 스터디원에게만 노출됩니다.");
+      assertThat(response.posts()).isEmpty();
+      verify(postQueryRepository).findPinnedPosts(STUDY_ID, false);
+      verify(postQueryRepository).findPageByIdDesc(eq(STUDY_ID), eq(null), anyInt(), eq(false));
     }
 
     @Test
@@ -360,8 +363,8 @@ class GetPostServiceTest {
     void should_return_empty_list_when_no_posts() {
       // given
       when(accessValidator.isStudyMember(STUDY_ID, WRITER_ID)).thenReturn(true);
-      when(postQueryRepository.findPinnedPosts(STUDY_ID)).thenReturn(List.of());
-      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), anyInt()))
+      when(postQueryRepository.findPinnedPosts(eq(STUDY_ID), anyBoolean())).thenReturn(List.of());
+      when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), anyInt(), anyBoolean()))
           .thenReturn(List.of());
       when(postQueryRepository.findStatsByPostIds(any())).thenReturn(Map.of());
 
@@ -379,9 +382,10 @@ class GetPostServiceTest {
     void should_limit_page_size_to_max() {
       // given
       when(accessValidator.isStudyMember(STUDY_ID, WRITER_ID)).thenReturn(true);
-      when(postQueryRepository.findPinnedPosts(STUDY_ID)).thenReturn(List.of());
+      when(postQueryRepository.findPinnedPosts(eq(STUDY_ID), anyBoolean())).thenReturn(List.of());
       when(
-          postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), eq(51))) // MAX_PAGE_SIZE + 1
+          postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null), eq(51),
+              anyBoolean())) // MAX_PAGE_SIZE + 1
           .thenReturn(List.of());
       when(postQueryRepository.findStatsByPostIds(any())).thenReturn(Map.of());
 
@@ -389,7 +393,7 @@ class GetPostServiceTest {
       getPostService.getPostList(STUDY_ID, null, WRITER_ID, 100);
 
       // then
-      verify(postQueryRepository).findPageByIdDesc(STUDY_ID, null, 51);
+      verify(postQueryRepository).findPageByIdDesc(STUDY_ID, null, 51, true);
     }
 
     @Test
@@ -402,9 +406,9 @@ class GetPostServiceTest {
       Post normal3 = post(3L, STUDY_ID); // 다음 페이지 존재 확인용
 
       when(accessValidator.isStudyMember(STUDY_ID, WRITER_ID)).thenReturn(true);
-      when(postQueryRepository.findPinnedPosts(STUDY_ID)).thenReturn(List.of(pinned));
+      when(postQueryRepository.findPinnedPosts(eq(STUDY_ID), anyBoolean())).thenReturn(List.of(pinned));
       when(postQueryRepository.findPageByIdDesc(eq(STUDY_ID), eq(null),
-          eq(3))) // size(3) - pinned(1) + 1
+          eq(3), anyBoolean())) // size(3) - pinned(1) + 1
           .thenReturn(List.of(normal1, normal2, normal3));
       when(postQueryRepository.findStatsByPostIds(any()))
           .thenReturn(Map.of(10L, postStats(10L), 5L, postStats(5L), 4L, postStats(4L)));

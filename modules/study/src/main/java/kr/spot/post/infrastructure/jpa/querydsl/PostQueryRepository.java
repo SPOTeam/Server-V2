@@ -29,24 +29,26 @@ public class PostQueryRepository {
   private final QComment comment = QComment.comment;
   private final QPostLike postLike = QPostLike.postLike;
 
-  public List<Post> findPinnedPosts(long studyId) {
+  public List<Post> findPinnedPosts(long studyId, boolean includePrivate) {
     return query
         .selectFrom(post)
         .where(
             post.studyId.eq(studyId),
-            post.pinnedAt.isNotNull()
+            post.pinnedAt.isNotNull(),
+            excludePrivateIfNeeded(includePrivate)
         )
         .orderBy(post.pinnedAt.desc())
         .fetch();
   }
 
-  public List<Post> findPageByIdDesc(long studyId, Long cursor, int limit) {
+  public List<Post> findPageByIdDesc(long studyId, Long cursor, int limit, boolean includePrivate) {
     return query
         .selectFrom(post)
         .where(
             post.studyId.eq(studyId),
             post.pinnedAt.isNull(),
-            ltCursor(cursor)
+            ltCursor(cursor),
+            excludePrivateIfNeeded(includePrivate)
         )
         .orderBy(post.id.desc())
         .limit(limit)
@@ -55,6 +57,10 @@ public class PostQueryRepository {
 
   private BooleanExpression ltCursor(Long cursor) {
     return (cursor == null) ? null : post.id.lt(cursor);
+  }
+
+  private BooleanExpression excludePrivateIfNeeded(boolean includePrivate) {
+    return includePrivate ? null : post.isPrivate.isFalse();
   }
 
   public Map<Long, PostStats> findStatsByPostIds(Collection<Long> postIds) {
