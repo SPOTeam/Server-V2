@@ -75,6 +75,33 @@ class WithdrawStudyServiceTest {
     }
 
     @Test
+    @DisplayName("일반 멤버가 nextOwnerId=0으로 탈퇴해도 위임 없이 정상 처리된다")
+    void should_ignore_zero_next_owner_id_for_regular_member() {
+      // given
+      long memberId = MEMBER_ID;
+      StudyMember regularMember = StudyMember.apply(1L, STUDY_ID, memberId, "참여 메시지");
+      regularMember.decide(Decision.APPROVE);
+
+      Study study = Study.of(STUDY_ID, 999L, "테스트 스터디", 10, Fee.of(false, 0), "설명");
+
+      WithdrawStudyRequest request = new WithdrawStudyRequest(WithdrawReason.NO_MORE_NEEDS, 0L);
+
+      when(studyMemberRepository.getByMemberIdAndStudyIdAndStudyMemberStatusIn(memberId, STUDY_ID,
+          List.of(StudyMemberStatus.APPROVED, StudyMemberStatus.OWNER)))
+          .thenReturn(regularMember);
+      when(studyRepository.getStudyById(STUDY_ID)).thenReturn(study);
+
+      int initialMemberCount = study.getCurrentMembers();
+
+      // when
+      withdrawStudyService.withdrawStudy(STUDY_ID, memberId, request);
+
+      // then
+      assertThat(regularMember.getStudyMemberStatus()).isEqualTo(StudyMemberStatus.WITHDRAWN);
+      assertThat(study.getCurrentMembers()).isEqualTo(initialMemberCount - 1);
+    }
+
+    @Test
     @DisplayName("오너가 다음 오너를 지정하고 탈퇴하면 권한이 위임되고 회원 수가 감소한다")
     void should_transfer_ownership_and_decrease_member_count() {
       // given

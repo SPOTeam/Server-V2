@@ -42,7 +42,7 @@ public class WithdrawStudyService {
   }
 
   private StudyMember findNextOwner(long studyId, Long nextOwnerId) {
-    if (nextOwnerId == null) {
+    if (nextOwnerId == null || nextOwnerId <= 0) {
       return null;
     }
 
