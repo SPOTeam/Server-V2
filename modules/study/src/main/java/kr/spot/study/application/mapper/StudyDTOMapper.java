@@ -29,11 +29,11 @@ public class StudyDTOMapper {
             study.getDescription(),
             study.getMaxMembers(),
             study.getCurrentMembers(),
-            0,
+            study.getLikeCount(),
             safeLikedIds.contains(study.getId()),
             safeOwnedStudyIds.contains(study.getId()),
             safeAloneStudyIds.contains(study.getId()),
-            0,
+            study.getViewCount(),
             study.getImageUrl()
         )
     ).toList();
