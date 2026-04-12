@@ -19,6 +19,7 @@ import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyCategoryRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyRegionRepository;
+import kr.spot.study.infrastructure.jpa.associations.StudyLikeRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyStyleRepository;
 import kr.spot.study.presentation.query.dto.response.GetStudyInfoResponse;
 import kr.spot.study.presentation.query.dto.response.GetStudyInfoResponse.Statistics;
@@ -41,6 +42,7 @@ public class GetStudyDetailService {
   private final StudyMemberRepository studyMemberRepository;
   private final StudyStyleRepository studyStyleRepository;
   private final StudyRegionRepository studyRegionRepository;
+  private final StudyLikeRepository studyLikeRepository;
   private final StudyViewCountService studyViewCountService;
   private final GetMemberInfoPort getMemberInfoPort;
 
@@ -51,8 +53,10 @@ public class GetStudyDetailService {
     List<String> regionCodes = findRegionCodes(studyId);
     Statistics statistics = buildStatistics(study, studyId, viewerId);
     ViewerStatus viewerStatus = resolveViewerStatus(studyId, viewerId);
+    boolean isLiked = studyLikeRepository.existsByStudyIdAndMemberId(studyId, viewerId);
 
-    return toStudyInfoResponse(study, categories, styles, regionCodes, statistics, viewerStatus);
+    return toStudyInfoResponse(study, categories, styles, regionCodes, statistics, viewerStatus,
+        isLiked);
   }
 
   public GetStudyMembersResponse getStudyMembers(long studyId) {
@@ -114,7 +118,7 @@ public class GetStudyDetailService {
 
   private GetStudyInfoResponse toStudyInfoResponse(Study study, List<Category> categories,
       List<Style> styles, List<String> regionCodes, Statistics statistics,
-      ViewerStatus viewerStatus) {
+      ViewerStatus viewerStatus, boolean isLiked) {
     Fee fee = study.getFee();
     boolean hasFee = fee != null && fee.isHasFee();
     Integer amount = fee != null ? fee.getAmount() : null;
@@ -130,6 +134,7 @@ public class GetStudyDetailService {
         styles,
         regionCodes,
         Boolean.TRUE.equals(study.getIsOnline()),
+        isLiked,
         statistics,
         viewerStatus.name()
     );

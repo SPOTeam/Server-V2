@@ -33,4 +33,6 @@ public interface StudyLikeRepository extends JpaRepository<StudyLike, Long> {
 
   @Query("SELECT sl.studyId FROM StudyLike sl WHERE sl.memberId = :memberId")
   java.util.Set<Long> findStudyIdsByMemberId(@Param("memberId") long memberId);
+
+  boolean existsByStudyIdAndMemberId(long studyId, long memberId);
 }

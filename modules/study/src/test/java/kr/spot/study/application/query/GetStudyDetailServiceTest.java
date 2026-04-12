@@ -17,6 +17,7 @@ import kr.spot.study.domain.vo.Fee;
 import kr.spot.study.infrastructure.jpa.StudyRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyCategoryRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyMemberRepository;
+import kr.spot.study.infrastructure.jpa.associations.StudyLikeRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyRegionRepository;
 import kr.spot.study.infrastructure.jpa.associations.StudyStyleRepository;
 import kr.spot.study.presentation.query.dto.response.GetStudyInfoResponse;
@@ -49,6 +50,9 @@ class GetStudyDetailServiceTest {
 
   @Mock
   StudyRegionRepository studyRegionRepository;
+
+  @Mock
+  StudyLikeRepository studyLikeRepository;
 
   @Mock
   StudyViewCountService studyViewCountService;

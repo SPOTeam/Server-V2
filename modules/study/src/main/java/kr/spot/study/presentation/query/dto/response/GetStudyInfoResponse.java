@@ -16,6 +16,7 @@ public record GetStudyInfoResponse(
     List<Style> styles,
     List<String> regionCodes,
     boolean isOnline,
+    boolean isLiked,
     Statistics statistics,
     String viewerStatus
 ) {
@@ -32,6 +33,7 @@ public record GetStudyInfoResponse(
       List<Style> styles,
       List<String> regionCodes,
       boolean isOnline,
+      boolean isLiked,
       Statistics statistics,
       String viewerStatus
   ) {
@@ -47,6 +49,7 @@ public record GetStudyInfoResponse(
         styles,
         regionCodes,
         isOnline,
+        isLiked,
         statistics,
         viewerStatus
     );
