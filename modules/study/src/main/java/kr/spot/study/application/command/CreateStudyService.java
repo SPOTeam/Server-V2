@@ -36,8 +36,9 @@ public class CreateStudyService {
 
   public long createStudy(CreateStudyRequest request, long leaderId, MultipartFile imageFile) {
     long studyId = idGenerator.nextId();
+    String imageUrl = (imageFile == null || imageFile.isEmpty()) ? "" : null;
     Study study = Study.of(studyId, leaderId, request.name(), request.maxMembers(),
-        Fee.of(request.hasFee(), request.amount()), null, request.description(), request.isOnline());
+        Fee.of(request.hasFee(), request.amount()), imageUrl, request.description(), request.isOnline());
     StudyMember studyMember = StudyMember.create(idGenerator.nextId(), studyId, leaderId);
 
     studyRepository.save(study);
