@@ -4,8 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.MediaType;
 import kr.spot.ApiResponse;
 import kr.spot.annotations.CurrentMember;
 import kr.spot.code.status.SuccessStatus;
@@ -57,6 +59,12 @@ public class StudyCommandController {
           """, content = @Content(schema = @Schema(implementation = kr.spot.ApiResponse.class))),
       @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자입니다.", content = @Content(schema = @Schema(implementation = kr.spot.ApiResponse.class)))
   })
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+          schemaProperties = {
+              @SchemaProperty(name = "request", schema = @Schema(implementation = CreateStudyRequest.class)),
+              @SchemaProperty(name = "imageFile", schema = @Schema(type = "string", format = "binary"))
+          }))
   @PostMapping
   public ResponseEntity<ApiResponse<CreateStudyResponse>> createStudy(
       @RequestPart CreateStudyRequest request,
@@ -85,6 +93,12 @@ public class StudyCommandController {
       @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "`STUDY4030`: 스터디장만 접근할 수 있습니다.", content = @Content(schema = @Schema(implementation = kr.spot.ApiResponse.class))),
       @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "`STUDY4040`: 존재하지 않는 스터디입니다.", content = @Content(schema = @Schema(implementation = kr.spot.ApiResponse.class)))
   })
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+          schemaProperties = {
+              @SchemaProperty(name = "request", schema = @Schema(implementation = CreateStudyRequest.class)),
+              @SchemaProperty(name = "imageFile", schema = @Schema(type = "string", format = "binary"))
+          }))
   @PatchMapping("/{studyId}")
   public ResponseEntity<ApiResponse<Void>> updateStudy(
       @PathVariable Long studyId,
