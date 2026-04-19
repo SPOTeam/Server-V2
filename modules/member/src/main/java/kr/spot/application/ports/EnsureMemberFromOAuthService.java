@@ -8,6 +8,7 @@ import kr.spot.domain.vo.Email;
 import kr.spot.exception.GeneralException;
 import kr.spot.infrastructure.jpa.MemberRepository;
 import kr.spot.ports.EnsureMemberFromOAuthPort;
+import kr.spot.ports.dto.EnsureResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,13 +20,13 @@ public class EnsureMemberFromOAuthService implements EnsureMemberFromOAuthPort {
   private final MemberRepository memberRepository;
 
   @Override
-  public long ensure(String provider, String email, String nickname, String imageUrl) {
+  public EnsureResult ensure(String provider, String email, String nickname, String imageUrl) {
     LoginType loginType = LoginType.valueOf(provider);
     if (checkIsExistMember(email, loginType)) {
-      return findMember(email, loginType).getId();
+      return EnsureResult.of(findMember(email, loginType).getId(), false);
     }
     Member save = createAndSaveMember(email, nickname, imageUrl, loginType);
-    return save.getId();
+    return EnsureResult.of(save.getId(), true);
   }
 
   private Member createAndSaveMember(String email, String nickname, String imageUrl,

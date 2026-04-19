@@ -6,6 +6,7 @@ import kr.spot.domain.RefreshToken;
 import kr.spot.impl.Snowflake;
 import kr.spot.infrastructure.jpa.RefreshTokenRepository;
 import kr.spot.ports.EnsureMemberFromOAuthPort;
+import kr.spot.ports.dto.EnsureResult;
 import kr.spot.presentation.command.dto.TokenDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,14 +23,14 @@ public class OAuthMemberProcessor {
   private final RefreshTokenRepository refreshTokenRepository;
   
   public TokenDTO processOAuthMember(OAuthProfile oAuthProfile) {
-    long createdMemberId = ensureMemberFromOAuthPort.ensure(oAuthProfile.loginType().toString(),
+    EnsureResult result = ensureMemberFromOAuthPort.ensure(oAuthProfile.loginType().toString(),
         oAuthProfile.email(),
         oAuthProfile.nickname(),
         oAuthProfile.profileImageUrl());
 
-    TokenDTO tokenDTO = tokenProvider.createToken(createdMemberId);
-    saveRefreshToken(createdMemberId, tokenDTO);
-    return tokenDTO;
+    TokenDTO tokenDTO = tokenProvider.createToken(result.memberId());
+    saveRefreshToken(result.memberId(), tokenDTO);
+    return TokenDTO.of(tokenDTO.id(), tokenDTO.accessToken(), tokenDTO.refreshToken(), result.isNew());
   }
 
   private void saveRefreshToken(long createdMemberId, TokenDTO tokenDTO) {

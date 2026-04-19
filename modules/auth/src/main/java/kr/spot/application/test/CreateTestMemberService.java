@@ -30,7 +30,7 @@ public class CreateTestMemberService {
         randomEmail,
         nickname,
         null
-    );
+    ).memberId();
 
     TokenDTO tokenDTO = jwtTokenProvider.createTestToken(memberId);
     saveRefreshToken(memberId, tokenDTO);

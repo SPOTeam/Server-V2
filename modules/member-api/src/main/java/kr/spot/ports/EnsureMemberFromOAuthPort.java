@@ -1,5 +1,7 @@
 package kr.spot.ports;
 
+import kr.spot.ports.dto.EnsureResult;
+
 public interface EnsureMemberFromOAuthPort {
-    long ensure(String provider, String email, String nickname, String imageUrl);
+    EnsureResult ensure(String provider, String email, String nickname, String imageUrl);
 }
