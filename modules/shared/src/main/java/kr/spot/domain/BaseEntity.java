@@ -31,4 +31,8 @@ public abstract class BaseEntity {
   public void delete() {
     this.status = Status.INACTIVE;
   }
+
+  public void restore() {
+    this.status = Status.ACTIVE;
+  }
 }
