@@ -56,6 +56,11 @@ public class Member extends BaseEntity {
     return new Member(id, email, name, loginType, profileImageUrl);
   }
 
+  public void withdraw() {
+    this.email = Email.of("withdrawn-" + id + "@spot.test");
+    delete();
+  }
+
   private static void validateName(String name) {
     if (isBlank(name)) {
       throw new GeneralException(ErrorStatus._NAME_CAN_NOT_NULL_OR_EMPTY);

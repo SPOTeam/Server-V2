@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import kr.spot.domain.enums.LoginType;
+import kr.spot.domain.enums.Status;
 import kr.spot.domain.vo.Email;
 import kr.spot.exception.GeneralException;
 import org.junit.jupiter.api.DisplayName;
@@ -55,5 +56,19 @@ class MemberTest {
     // when & then
     assertThrows(GeneralException.class,
         () -> Member.of(ID, null, NAME, LoginType.KAKAO, PROFILE_IMAGE));
+  }
+
+  @Test
+  @DisplayName("탈퇴 시 email이 익명화되고 status가 INACTIVE 로 바뀐다.")
+  void should_anonymize_email_and_mark_inactive_on_withdraw() {
+    // given
+    Member member = Member.of(ID, email(), NAME, LoginType.KAKAO, PROFILE_IMAGE);
+
+    // when
+    member.withdraw();
+
+    // then
+    assertEquals(Status.INACTIVE, member.getStatus());
+    assertEquals("withdrawn-" + ID + "@spot.test", member.getEmail().getValue());
   }
 }

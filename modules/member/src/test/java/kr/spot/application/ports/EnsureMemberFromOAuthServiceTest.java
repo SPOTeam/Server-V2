@@ -10,6 +10,7 @@ import kr.spot.common.fixture.MemberFixture;
 import kr.spot.domain.Member;
 import kr.spot.domain.enums.LoginType;
 import kr.spot.infrastructure.jpa.MemberRepository;
+import kr.spot.ports.dto.EnsureResult;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +40,7 @@ class EnsureMemberFromOAuthServiceTest {
         .thenAnswer(inv -> inv.getArgument(0));
 
     // when
-    long returnedId = service.ensure(
+    EnsureResult result = service.ensure(
         LoginType.KAKAO.name(),
         MemberFixture.EMAIL,
         MemberFixture.NAME,
@@ -56,6 +57,7 @@ class EnsureMemberFromOAuthServiceTest {
     assertThat(saved.getName()).isEqualTo(MemberFixture.NAME);
     assertThat(saved.getProfileImageUrl()).isEqualTo(MemberFixture.PROFILE_IMAGE);
 
-    assertThat(returnedId).isEqualTo(saved.getId());
+    assertThat(result.memberId()).isEqualTo(saved.getId());
+    assertThat(result.isNew()).isTrue();
   }
 }

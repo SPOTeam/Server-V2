@@ -1,6 +1,7 @@
 package kr.spot.application.command;
 
 import kr.spot.code.status.ErrorStatus;
+import kr.spot.domain.Member;
 import kr.spot.domain.events.MemberWithdrawnEvent;
 import kr.spot.exception.GeneralException;
 import kr.spot.infrastructure.jpa.MemberRepository;
@@ -21,7 +22,8 @@ public class MemberWithdrawService {
   @Transactional
   public void withdraw(long memberId) {
     validateCanWithdraw(memberId);
-    memberRepository.deleteById(memberId);
+    Member member = memberRepository.getMemberById(memberId);
+    member.withdraw();
     eventPublisher.publishEvent(new MemberWithdrawnEvent(memberId));
   }
 
