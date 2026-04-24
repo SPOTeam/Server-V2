@@ -17,11 +17,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
   Optional<Member> findByEmailAndLoginType(Email email, LoginType loginType);
 
-  @Query(value = "SELECT * FROM member WHERE email = :email AND login_type = :loginType LIMIT 1",
-      nativeQuery = true)
-  Optional<Member> findByEmailAndLoginTypeIncludingInactive(
-      @Param("email") String email, @Param("loginType") String loginType);
-
   default Member getMemberById(long id) {
     return findById(id).orElseThrow(() -> new GeneralException(ErrorStatus._MEMBER_NOT_FOUND));
   }
