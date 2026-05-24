@@ -1,5 +1,6 @@
 package kr.spot.review.domain.vo;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,12 +18,15 @@ import lombok.NoArgsConstructor;
 public class Content {
 
   // 오늘은 무엇을 했나요?
+  @Column(columnDefinition = "TEXT")
   private String activity;
 
   // 오늘 새롭게 배운 점은 무엇인가요?
+  @Column(columnDefinition = "TEXT")
   private String learned;
 
   // 고생한 나에게 한마디
+  @Column(columnDefinition = "TEXT")
   private String encouragement;
 
   private String imageUrl;
